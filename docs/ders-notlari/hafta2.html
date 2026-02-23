@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veri Modelleme, Dosya Formatları ve Pandas | Büyük Veri Teknolojileri</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body>
+
+<!-- ═══════════ TOP NAV ═══════════ -->
+<header class="top-nav">
+  <a href="#" class="nav-brand">📊 Büyük Veri Teknolojileri</a>
+  <div class="nav-links">
+    <a href="hafta1.html">Dağıtık Sistemler & Python</a>
+    <a href="hafta2.html" class="active">Veri Modelleme & Pandas</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero">
+  <span class="week-badge">📅 BÖLÜM 2</span>
+  <h1>Veri Modelleme, Dosya Formatları ve Pandas'a Giriş</h1>
+  <p class="subtitle">Veri hiyerarşisini, dosya türlerini (text, binary, CSV, JSON, Excel), Pandas kütüphanesini ve büyük veri platformlarını öğreniyoruz.</p>
+  <div class="meta-info">
+    <span>📖 Teori: 2 saat</span>
+    <span>💻 Uygulama: 3 saat</span>
+    <span>📊 Seviye: Giriş</span>
+  </div>
+</section>
+
+<!-- ═══════════ MAIN LAYOUT ═══════════ -->
+<div class="main-container">
+
+  <!-- ─── Sidebar TOC ─── -->
+  <aside class="sidebar">
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list">
+      <a href="hafta1.html">📘 Dağıtık Sistemler & Python</a>
+      <a href="hafta2.html" class="current-page">📗 Veri Modelleme & Pandas</a>
+    </div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <!-- ─── Content ─── -->
+  <main class="content">
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="kazanimlar">🎯 Bu Haftanın Kazanımları</h2>
+
+    <ul class="objectives-list">
+      <li><span class="obj-icon">✅</span> "Data/datum" kelimelerinin kökenini ve veri ile bilgi arasındaki farkı açıklayabilir</li>
+      <li><span class="obj-icon">✅</span> Insight (içgörü) kavramını gerçek dünya örnekleriyle tanımlayabilir</li>
+      <li><span class="obj-icon">✅</span> Veri patlamasının nedenlerini ve büyük verinin 5V'sini somut örneklerle bilir</li>
+      <li><span class="obj-icon">✅</span> Excel'in neden yetmediğini ve dağıtık sistemlere neden ihtiyaç duyulduğunu kavrar</li>
+      <li><span class="obj-icon">✅</span> DIKW piramidini (veri → bilgi → bilgi birikimi → bilgelik) açıklayabilir</li>
+      <li><span class="obj-icon">✅</span> Yapılandırılmış, yarı-yapılandırılmış, yapılandırılmamış veri ayrımını bilir</li>
+      <li><span class="obj-icon">✅</span> İşaretli (labeled) ve işaretsiz (unlabeled) veri kavramlarını tanır</li>
+      <li><span class="obj-icon">✅</span> API, web scraping, crawler gibi veri toplama yöntemlerini açıklayabilir</li>
+      <li><span class="obj-icon">✅</span> Text ve binary dosya farkını, Python ile dosya okuma/yazma yapabilir</li>
+      <li><span class="obj-icon">✅</span> CSV ve JSON formatlarını detaylı şekilde anlayabilir ve Python ile işleyebilir</li>
+      <li><span class="obj-icon">✅</span> Pandas kütüphanesiyle temel veri okuma, keşif ve filtreleme yapabilir</li>
+      <li><span class="obj-icon">✅</span> Kaggle, HuggingFace gibi veri platformlarını tanır ve hesap açabilir</li>
+    </ul>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="veri-hiyerarsisi">📊 Bölüm 1: Veri Nedir? — Tanım, Köken ve Önemi</h2>
+
+    <div class="meme-box">
+      <img src="data1.jpeg" alt="Data meme" loading="lazy">
+      <div class="meme-caption">😄 Veri dünyasına hoş geldiniz!</div>
+    </div>
+
+    <h3 id="data-kokeni">📖 "Data" Kelimesinin Kökeni</h3>
+
+    <p><strong>"Data"</strong> kelimesi Latince <strong>"datum"</strong> sözcüğünün çoğuludur. Latince'de <em>dare</em> fiili <strong>"vermek"</strong> anlamına gelir. <em>Datum</em> bu fiilin geçmiş zaman ortacıdır (past participle) ve <strong>"verilmiş olan şey"</strong> (something given) demektir. Çoğulu olan <em>data</em> ise <strong>"verilmiş olan şeyler"</strong> — yani gerçek dünyadan elde edilen, henüz işlenmemiş ham gerçekler.</p>
+
+    <p>Türkçe'deki <strong>"veri"</strong> kelimesi de aynı mantıkla <strong>"vermek"</strong> fiilinden türetilmiştir. Yani hem İngilizce'de hem Türkçe'de bu kelime <em>dışarıdan bize verilen, gözlemlenen, ölçülen şeyler</em> fikrini taşır.</p>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 "Data" Tekil mi Çoğul mu?</div>
+      <p>Gramer kurallarına göre <em>data</em> çoğuldur ve "The data <strong>are</strong> collected" denmelidir. Ancak günlük ve modern İngilizce'de <em>data</em> tekil bir isim gibi kullanılır: "The data <strong>is</strong> collected." Her iki kullanım da kabul edilmektedir. Akademik metinlerde ise <em>"datum"</em> (tek bir veri noktası) hâlâ kullanılır.</p>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Terim</th><th>Dil</th><th>Anlam</th><th>Örnek Kullanım</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Dare</strong></td><td>Latince (fiil)</td><td>Vermek (to give)</td><td>Kök fiil — datum ve data buradan türer</td></tr>
+          <tr><td><strong>Datum</strong></td><td>Latince (tekil)</td><td>Verilmiş olan tek bir şey</td><td>"This datum suggests a temperature of 38°C"</td></tr>
+          <tr><td><strong>Data</strong></td><td>Latince→İngilizce (çoğul)</td><td>Verilmiş olan şeyler</td><td>"Big data is transforming industries"</td></tr>
+          <tr><td><strong>Veri</strong></td><td>Türkçe</td><td>Data'nın Türkçe karşılığı</td><td>"Vermek" fiilinden türetilmiş (TDK, 1960'lar)</td></tr>
+          <tr><td><strong>Information</strong></td><td>İngilizce</td><td>Bilgi — işlenmiş veri</td><td>"Data becomes information when processed"</td></tr>
+          <tr><td><strong>Insight</strong></td><td>İngilizce</td><td>İçgörü, kavrayış — derin anlam</td><td>"Customer insights drive business decisions"</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="veri-bilgi-farki">📌 Veri ile Bilgi Arasındaki Fark</h3>
+
+    <p>Veri ile bilgiyi karıştırmak çok kolaydır. Aralarındaki farkı net anlamak, bu dersin en temel yapı taşlarından biridir:</p>
+
+    <div class="comparison">
+      <div class="side">
+        <div class="side-title">📝 Veri (Data) — Ham Gerçekler</div>
+        <ul>
+          <li><strong>38.5</strong> — tek başına hiçbir anlam ifade etmez</li>
+          <li><strong>"İstanbul"</strong> — bir şehir adı, ama ne bağlamda?</li>
+          <li><strong>1453</strong> — bir sayı, ne anlama geliyor?</li>
+          <li><strong>[23, 45, 67, 12, 89]</strong> — bir sayı listesi, nedir bunlar?</li>
+        </ul>
+        <p>Veri <strong>bağlamdan yoksundur</strong>. Ne, neden, nerede sorusuna cevap vermez.</p>
+      </div>
+      <div class="side">
+        <div class="side-title">📊 Bilgi (Information) — Anlam Kazanmış Veri</div>
+        <ul>
+          <li><strong>38.5</strong> → "Hastanın vücut sıcaklığı 38.5°C"</li>
+          <li><strong>"İstanbul"</strong> → "Sipariş İstanbul'dan geldi"</li>
+          <li><strong>1453</strong> → "İstanbul'un fetih yılı 1453"</li>
+          <li><strong>[23, 45, 67, 12, 89]</strong> → "Öğrencilerin sınav notları, ort: 47.2"</li>
+        </ul>
+        <p>Bilgi, veriye <strong>bağlam (context)</strong> eklenmesiyle elde edilir.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">🎯 Analoji: Bulmaca Parçası</div>
+      <p>Tek bir veri noktasını bir <strong>bulmaca parçası</strong> gibi düşünün. Tek başına bir parça anlamsızdır. Ama doğru yere koyduğunuzda resmin bir parçası ortaya çıkar — bu <strong>bilgidir</strong>. Tüm parçaları birleştirdiğinizde resmin tamamını (büyük tabloyu) görürsünüz — bu da <strong>içgörüdür (insight)</strong>.</p>
+    </div>
+
+    <h3 id="insight-kavram">💎 "Insight" (İçgörü) Nedir?</h3>
+
+    <p><strong>Insight</strong> (Türkçe: <strong>içgörü, kavrayış</strong>), büyük veri dünyasının en değerli çıktısıdır. Insight, veriden elde edilen <strong>derin, beklenmeyen ve eyleme dönüştürülebilir</strong> anlam demektir. Basitçe: <strong>"Aha! İşte bu yüzden!"</strong> anı.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🛒</div>
+        <div class="card-title">E-Ticaret Insight Örneği</div>
+        <div class="card-desc">
+          <p><strong>Veri:</strong> 1 milyon satış kaydı</p>
+          <p><strong>Bilgi:</strong> "Cuma günleri satış %30 artıyor"</p>
+          <p><strong>Insight:</strong> "Müşteriler maaş gününden sonraki ilk cuma alışveriş yapma eğiliminde — Cuma günlerine özel kampanya düzenle!"</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏥</div>
+        <div class="card-title">Sağlık Insight Örneği</div>
+        <div class="card-desc">
+          <p><strong>Veri:</strong> 50.000 hasta kaydı</p>
+          <p><strong>Bilgi:</strong> "Kış aylarında grip vakaları artıyor"</p>
+          <p><strong>Insight:</strong> "Grip vakalarının artışı hava nemine değil, kapalı mekanlarda geçirilen süreye bağlı — havalandırma iyileştirilmeli!"</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📱</div>
+        <div class="card-title">Sosyal Medya Insight Örneği</div>
+        <div class="card-desc">
+          <p><strong>Veri:</strong> 10 milyon tweet</p>
+          <p><strong>Bilgi:</strong> "Ürün hakkında %60 pozitif yorum var"</p>
+          <p><strong>Insight:</strong> "Pozitif yorumların %80'i 18-24 yaş grubundan, ama en çok satış 35-44 yaş grubuna — gençlerin tavsiyesi yaşlıları etkiliyor!"</p>
+        </div>
+      </div>
+    </div>
+
+    <h3 id="veri-onemi">🌍 Veri Neden Bu Kadar Önemli?</h3>
+
+    <p>21. yüzyılda veri, <strong>"yeni petrol"</strong> olarak adlandırılıyor (bu ifade ilk kez 2006'da İngiliz matematikçi <strong>Clive Humby</strong> tarafından kullanıldı). Ancak ham petrol gibi, ham veri de <strong>işlenmeden</strong> pek bir işe yaramaz. Veriyi değerli kılan, onu <strong>bilgiye</strong> ve <strong>içgörüye</strong> (insight) dönüştürebilmektir.</p>
+
+    <div class="alert alert-warning">
+      <div class="alert-title">🛢️ "Veri Yeni Petroldür" — Ama Neden?</div>
+      <p>Petrol ham haliyle yakıt olarak kullanılamaz; rafine edilmesi gerekir. Aynı şekilde ham veri de işlenmeden değersizdir. İşlenmiş petrol nasıl ekonomileri ayakta tutuyorsa, işlenmiş veri de modern şirketlerin kararlarını yönlendiriyor:</p>
+      <ul>
+        <li>🏪 <strong>Walmart</strong>, kasırga öncesi satış verilerini analiz ederek kasırga yaklaşırken raflara çilek Pop-Tart koyar — çünkü veri bu ürünün kasırga öncesi %7 kat arttığını gösterdi.</li>
+        <li>🎬 <strong>Netflix</strong>, izleme verilerinize göre dizi önerir. "House of Cards" dizisi tamamen veri analizine dayanarak üretildi (Kevin Spacey + David Fincher + politik drama = izlenme garantisi).</li>
+        <li>🚗 <strong>Tesla</strong>, tüm araçlarından gelen sürüş verisini toplayarak otonom sürüş algoritmasını sürekli iyileştirir — her Tesla kullanıcısı aslında bir veri kaynağıdır.</li>
+        <li>🏥 <strong>Google DeepMind</strong>, göz tarama verilerini analiz ederek 50+ göz hastalığını doktorlardan daha doğru teşhis eden bir yapay zeka geliştirdi.</li>
+      </ul>
+    </div>
+
+    <h3 id="neden-simdi">⏰ Neden Şimdi? — Veri Her Zaman Vardı!</h3>
+
+    <p>Veri aslında insanlık tarihi kadar eski bir kavram. Eski Mısırlılar papirüse nüfus sayımı yazardı, Osmanlılar tahrir defterleri tutardı. Peki <strong>neden "büyük veri" kavramı son 15-20 yılda</strong> bu kadar önemli hale geldi?</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Faktör</th><th>Açıklama</th><th>Sonuç</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>📱 İnternet & Akıllı Telefonlar</strong></td><td>Dünya nüfusunun %60+'ı internet kullanıyor. Herkes sürekli veri üretiyor.</td><td>Veri miktarı katlanarak arttı</td></tr>
+          <tr><td><strong>💰 Ucuzlayan Depolama</strong></td><td>1 GB depolama: 1980'lerde $100.000+, bugün < $0.01</td><td>Her şeyi saklamak mümkün hale geldi</td></tr>
+          <tr><td><strong>⚡ İşlem Gücü (Moore Yasası)</strong></td><td>İşlemci hızı her ~2 yılda ikiye katlanıyor</td><td>Devasa veri setlerini işleyebiliyoruz</td></tr>
+          <tr><td><strong>🌐 IoT (Nesnelerin İnterneti)</strong></td><td>Sensörler, kameralar, akıllı cihazlar sürekli veri üretiyor</td><td>İnsan üretmese bile makineler veri üretiyor</td></tr>
+          <tr><td><strong>🧠 Yapay Zeka & ML</strong></td><td>Makine öğrenmesi algoritmaları veriden öğrenebiliyor</td><td>Veri ne kadar çoksa, model o kadar iyi</td></tr>
+          <tr><td><strong>🏢 İş Dünyası Rekabeti</strong></td><td>Veriye dayalı karar veren şirketler %5-6 daha verimli</td><td>Veri kullanmayan rekabette geri kalıyor</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">📖 İlginç Anekdot: Cholera Haritası (1854)</div>
+      <p>Büyük verinin atası sayılabilecek bir olay: Londra'da 1854 kolera salgınında doktor <strong>John Snow</strong> (evet, isim tesadüf 😄), ölüm verilerini bir <strong>haritaya</strong> işleyerek suyun kirlenmesinden kaynaklandığını kanıtladı. Bu, tarihteki ilk "veri görselleştirme" ve "veri tabanlı karar verme" örneklerinden biridir. Üstelik mikrop teorisi henüz bilinmiyordu — <strong>sadece veri konuştu!</strong></p>
+    </div>
+
+    <h3 id="veri-patlamasi">💥 İnternet Çağında Veri Patlaması (Data Explosion)</h3>
+
+    <p>İnternetin yaygınlaşmasıyla üretilen veri miktarı inanılmaz bir hızla artıyor. Ama sadece internet değil — akıllı telefonlar, sensörler, sosyal medya, IoT cihazları, güvenlik kameraları, araçlar, hastaneler, bankalar… neredeyse <strong>her şey</strong> sürekli veri üretiyor. İnsan üretmese bile <strong>makineler</strong> üretiyor.</p>
+
+    <p>Bir perspektif vermek gerekirse: siz bu cümleyi okurken, dünyada tahminen <strong>1.7 MB</strong> veri <strong>kişi başına her saniye</strong> üretiliyor. İşte bazı çarpıcı istatistikler:</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📈</div>
+        <div class="card-title">Dakikada Üretilen Veri (2024)</div>
+        <div class="card-desc">
+          <ul>
+            <li>📧 <strong>231 milyon</strong> e-posta gönderiliyor</li>
+            <li>🔍 <strong>6.3 milyon</strong> Google araması yapılıyor</li>
+            <li>📱 <strong>66 bin</strong> saat Netflix izleniyor</li>
+            <li>💬 <strong>16 milyon</strong> mesaj gönderiliyor (WhatsApp, iMessage)</li>
+            <li>📸 <strong>65 bin</strong> fotoğraf Instagram'a yükleniyor</li>
+            <li>🐦 <strong>360 bin</strong> tweet atılıyor</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🗄️</div>
+        <div class="card-title">Toplam Veri Miktarı</div>
+        <div class="card-desc">
+          <ul>
+            <li>2010: <strong>2 Zettabyte</strong></li>
+            <li>2020: <strong>64 Zettabyte</strong></li>
+            <li>2025: <strong>181 Zettabyte</strong> (tahmini)</li>
+            <li>2030: <strong>612 Zettabyte</strong> (tahmini)</li>
+          </ul>
+          <p>1 Zettabyte = 1 trilyon Gigabyte! 😱</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Birim</th><th>Kısaltma</th><th>Boyut</th><th>Günlük Karşılık</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Byte</td><td>B</td><td>1 karakter</td><td>Tek bir harf</td></tr>
+          <tr><td>Kilobyte</td><td>KB</td><td>~1.000 B</td><td>Kısa bir metin dosyası</td></tr>
+          <tr><td>Megabyte</td><td>MB</td><td>~1.000 KB</td><td>Bir fotoğraf (3-5 MB)</td></tr>
+          <tr><td>Gigabyte</td><td>GB</td><td>~1.000 MB</td><td>Bir film (1-2 GB)</td></tr>
+          <tr><td>Terabyte</td><td>TB</td><td>~1.000 GB</td><td>500 saatlik HD video</td></tr>
+          <tr><td>Petabyte</td><td>PB</td><td>~1.000 TB</td><td>ABD Kongre Kütüphanesi'nin 50 katı</td></tr>
+          <tr><td>Exabyte</td><td>EB</td><td>~1.000 PB</td><td>İnternetteki tüm web sayfaları (~)</td></tr>
+          <tr><td>Zettabyte</td><td>ZB</td><td>~1.000 EB</td><td>Dünyada yılda üretilen toplam veri</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      <div class="alert-title">⚠️ Problem: Veri Çok Ama Anlamlandırmak Zor!</div>
+      İnsanlık tarihinde <strong>son 2 yılda</strong> üretilen veri, önceki tüm tarihi boyunca üretilenden <strong>daha fazla</strong>dır. Ancak bu verinin büyük çoğunluğu (<strong>%80+</strong>) yapılandırılmamış ve anlamlandırılmamıştır. İşte <strong>Büyük Veri Teknolojileri</strong>'nin varlık sebebi budur: bu devasa veri yığınından <strong>anlam çıkarmak</strong>, <strong>içgörü (insight) elde etmek</strong>.
+    </div>
+
+    <div class="alert alert-danger">
+      <div class="alert-title">❌ Neden Excel Yetmiyor?</div>
+      <p>"Tabloyu Excel'de açsak olmaz mı?" — Hayır! İşte somut sebepleri:</p>
+      <ul>
+        <li>📊 Excel'in satır limiti <strong>1.048.576 satır</strong>. Bir e-ticaret sitesinin günlük tıklama verisi bunun 10 katı olabilir.</li>
+        <li>🐌 10 MB'lık bir CSV'yi bile Excel <strong>dakikalarca</strong> açabilir. 1 GB'lık bir dosya? Çökme garantili.</li>
+        <li>🖥️ Excel <strong>tek bilgisayarın RAM'inde</strong> çalışır. 100 GB veriyi 8 GB RAM'li bir bilgisayara sığdıramazsınız.</li>
+        <li>🔄 Excel'de gerçek zamanlı (real-time) veri işleme <strong>mümkün değildir</strong>.</li>
+      </ul>
+      <p>İşte bu yüzden <strong>Hadoop, Spark, Kafka</strong> gibi dağıtık sistemlere ihtiyaç var: veriyi <strong>birden fazla bilgisayara</strong> yayıp <strong>paralel</strong> işliyorlar. Bu derste bunları öğreneceğiz!</p>
+    </div>
+
+    <h3 id="buyuk-veri-5v">📐 Büyük Verinin 5V'si (The 5 V's of Big Data)</h3>
+
+    <p>Peki bir veri ne zaman <strong>"büyük veri"</strong> sayılır? Sadece boyutu büyük olması yetmez. Büyük veri, geleneksel araçlarla (Excel, tek sunucu, basit SQL) işlenemeyecek kadar büyük, hızlı ve karmaşık veri kümelerini tanımlar. Bu kavram genellikle <strong>5V</strong> ile karakterize edilir. İlk 3V (Volume, Velocity, Variety) 2001 yılında <strong>Gartner analisti Doug Laney</strong> tarafından tanımlandı; sonradan Veracity ve Value eklendi.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📦</div>
+        <div class="card-title">1. Volume (Hacim)</div>
+        <div class="card-desc">
+          Verinin <strong>miktarı, boyutu</strong>. Artık Gigabyte değil, Terabyte, Petabyte, hatta Exabyte seviyesindeyiz.
+          <ul>
+            <li>📹 YouTube'a dakikada <strong>500 saat</strong> video yükleniyor</li>
+            <li>📘 Facebook günde <strong>4 Petabyte</strong> veri üretiyor</li>
+            <li>🔬 CERN parçacık hızlandırıcısı saniyede <strong>1 Petabyte</strong> ham veri üretiyor (bunun ancak %0.001'i saklanabiliyor!)</li>
+          </ul>
+          <p><strong>Problem:</strong> Bu kadar veriyi Excel'de açamazsınız. Hadoop, Spark gibi dağıtık sistemler tam da bu yüzden geliştirildi.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <div class="card-title">2. Velocity (Hız)</div>
+        <div class="card-desc">
+          Verinin <strong>üretilme ve işlenme hızı</strong>. Bazı veriler anında işlenmezse değerini kaybeder.
+          <ul>
+            <li>📈 Borsa verileri <strong>milisaniye</strong> içinde değişir — 1 saniye gecikme milyonlarca dolar kayıp demek</li>
+            <li>💳 Kredi kartı dolandırıcılığı <strong>işlem anında</strong> tespit edilmeli, sonra zaten para gitti</li>
+            <li>🚦 Otonom araçlar <strong>anlık</strong> sensör verisini değerlendirmeli, 1 saniyelik gecikme kaza demek</li>
+          </ul>
+          <p><strong>Kavram:</strong> Batch processing (yığın işleme) vs Stream processing (akış işleme). İkisini de bu derste öğreneceğiz.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎭</div>
+        <div class="card-title">3. Variety (Çeşitlilik)</div>
+        <div class="card-desc">
+          Verinin <strong>farklı kaynaklardan, farklı formatlarda</strong> gelmesi. Hepsi bir arada analiz edilmeli.
+          <ul>
+            <li>📊 <strong>Yapılandırılmış:</strong> SQL tabloları, CSV dosyaları (%20)</li>
+            <li>📋 <strong>Yarı-yapılandırılmış:</strong> JSON, XML, log dosyaları (%10)</li>
+            <li>📄 <strong>Yapılandırılmamış:</strong> E-postalar, tweetler, fotoğraflar, videolar (%70-80)</li>
+          </ul>
+          <p><strong>Problem:</strong> Bir hastanenin veritabanı (tablo) + röntgen görüntüleri (resim) + doktor notları (metin) = hepsi farklı format. Birleştirmek zor!</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <div class="card-title">4. Veracity (Doğruluk)</div>
+        <div class="card-desc">
+          Verinin <strong>güvenilirliği, kalitesi, tutarlılığı</strong>. Kirli veri, yanlış karar demektir.
+          <ul>
+            <li>🗑️ <strong>Garbage In, Garbage Out (GIGO):</strong> Çöp veri girersen, çöp sonuç alırsın</li>
+            <li>📱 Twitter'da botlar sahte trendler oluşturuyor — bu veri güvenilir mi?</li>
+            <li>📊 Anket verilerinde insanlar gerçeği söylemeyebilir (toplumsal baskı etkisi)</li>
+          </ul>
+          <p><strong>Çözüm:</strong> Veri temizleme (data cleaning), veri doğrulama (validation), aykırı değer (outlier) tespiti — Hafta 12'de detaylı göreceğiz.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">💎</div>
+        <div class="card-title">5. Value (Değer)</div>
+        <div class="card-desc">
+          Veriden <strong>elde edilen iş değeri, fayda</strong>. Sonuçta amaç veriyi biriktirmek değil, ondan değer çıkarmak.
+          <ul>
+            <li>🏪 Walmart kasırga öncesi <strong>çilek Pop-Tart</strong> satışlarını analiz edip raflara koyar — satışlar %7x arttı</li>
+            <li>🎬 Netflix veri analizi sayesinde "House of Cards" dizisini üretti — tarihin ilk <strong>data-driven</strong> dizisi</li>
+            <li>💰 McKinsey'e göre veri odaklı şirketler, rakiplerine göre <strong>%23 daha kârlı</strong></li>
+          </ul>
+          <p><strong>Mesaj:</strong> Veri tek başına değersizdir. Onu insight'a dönüştüren süreç değer yaratır.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">🧠 5V Özet Formülü</div>
+      <p>Büyük veri = <strong>Çok veri</strong> (Volume) + <strong>Hızlı akan</strong> (Velocity) + <strong>Çeşitli formatlarda</strong> (Variety) + <strong>Güvenilirliği sorgulanması gereken</strong> (Veracity) + <strong>İş değeri çıkarılabilecek</strong> (Value) veri kümeleri.</p>
+      <p>Bir veri kümesi bu 5 özelliğin hepsini veya birkaçını barındırıyorsa, artık <strong>geleneksel araçlarla değil, büyük veri teknolojileriyle</strong> (Hadoop, Spark, Kafka...) işlenmelidir. Bu derste bu araçları öğreneceğiz!</p>
+    </div>
+
+    <h3 id="okuma-kaynaklar">📚 Okuma ve İzleme Önerileri</h3>
+
+    <p>Aşağıdaki kaynaklar bu bölümdeki konuları farklı açılardan ele alıyor. Hepsini incelemeniz gerekmez, ama en az 2-3 tanesine göz atmanızı tavsiye ediyoruz:</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Kaynak</th><th>Tür</th><th>Süre / Boyut</th><th>Link</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>DOMO — Data Never Sleeps (her yıl güncellenen infografik)</td><td>📊 İnfografik</td><td>1 sayfa</td><td><a href="https://www.domo.com/data-never-sleeps" target="_blank">domo.com/data-never-sleeps</a></td></tr>
+          <tr><td>How Much Data Is Created Every Day?</td><td>📄 Makale</td><td>~10 dk</td><td><a href="https://explodingtopics.com/blog/data-generated-per-day" target="_blank">explodingtopics.com</a></td></tr>
+          <tr><td>Big Data In 5 Minutes — Simplilearn</td><td>🎬 Video (EN)</td><td>5 dk</td><td><a href="https://www.youtube.com/watch?v=bAyrObl7TYE" target="_blank">YouTube</a></td></tr>
+          <tr><td>Büyük Veri Nedir? — IBM Türkiye</td><td>🎬 Video (TR)</td><td>~5 dk</td><td><a href="https://www.youtube.com/watch?v=7D1CQ_LOizA" target="_blank">YouTube</a></td></tr>
+          <tr><td>What is Big Data? — Fireship</td><td>🎬 Video (EN)</td><td>~5 dk</td><td><a href="https://www.youtube.com/watch?v=9yzKLBHEP8Q" target="_blank">YouTube</a></td></tr>
+          <tr><td>The Human Face of Big Data (Belgesel)</td><td>🎥 Belgesel</td><td>60 dk</td><td><a href="https://www.youtube.com/results?search_query=human+face+of+big+data+documentary" target="_blank">YouTube'da ara</a></td></tr>
+          <tr><td>John Snow ve Kolera Haritası</td><td>📄 Makale</td><td>~5 dk</td><td><a href="https://en.wikipedia.org/wiki/1854_Broad_Street_cholera_outbreak" target="_blank">Wikipedia</a></td></tr>
+          <tr><td>Clive Humby: "Data is the new oil"</td><td>📄 Makale</td><td>~3 dk</td><td><a href="https://ana.blogs.com/maestros/2006/11/data_is_the_new.html" target="_blank">ana.blogs.com</a></td></tr>
+          <tr><td>Veri Okuryazarlığı Nedir?</td><td>📄 Blog</td><td>~5 dk</td><td><a href="https://www.tableau.com/learn/articles/data-literacy" target="_blank">Tableau — Data Literacy</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">📖 Kitap Önerileri (İsteğe Bağlı)</div>
+      <ul>
+        <li>📕 <strong>"Everybody Lies"</strong> — Seth Stephens-Davidowitz: Google arama verilerinin insanlar hakkında ortaya koyduğu şaşırtıcı gerçekler. Çok eğlenceli ve kolay bir okuma.</li>
+        <li>📗 <strong>"Weapons of Math Destruction"</strong> — Cathy O'Neil: Büyük veri ve algoritmaların toplumda yarattığı eşitsizlikler. Verinin karanlık yüzü.</li>
+        <li>📘 <strong>"Big Data"</strong> — Viktor Mayer-Schönberger & Kenneth Cukier: Büyük veriye giriş için klasik kaynak.</li>
+      </ul>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="dikw-piramidi-bolum">📊 Bölüm 2: DIKW Piramidi</h2>
+
+    <p>"Veri" kelimesini her gün duyuyoruz ama veri tam olarak nedir? Ve "büyük veri" neden bu kadar önemli? Bunu anlamak için <strong>veri hiyerarşisinden</strong> (DIKW piramidi) başlayalım.</p>
+
+    <h3 id="dikw-piramidi">DIKW Piramidi (Data → Information → Knowledge → Wisdom)</h3>
+
+    <div class="diagram-container">
+      <div class="diagram-box">
+        <div class="mermaid">
+graph TB
+    D["📝 VERİ (Data)<br><i>Ham, işlenmemiş gerçekler</i><br>Örn: 38.5"] --> I["📊 BİLGİ (Information)<br><i>İşlenmiş, anlamlı veri</i><br>Örn: Hastanın ateşi 38.5°C"]
+    I --> K["🧠 BİLGİ BİRİKİMİ (Knowledge)<br><i>Bilginin yorumlanması</i><br>Örn: Hasta yüksek ateşli, enfeksiyon olabilir"]
+    K --> W["💡 BİLGELİK (Wisdom)<br><i>Doğru karar verme</i><br>Örn: Antibiyotik tedavisi başlanmalı"]
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil 1: DIKW Piramidi — Veriden bilgeliğe giden yol</div>
+    </div>
+
+    <div class="meme-box">
+      <img src="dikw-sketchplanations.png" alt="DIKW Piramidi — Sketchplanations" loading="lazy">
+      <div class="meme-caption">Kaynak: <a href="https://sketchplanations.com/dikw" target="_blank" rel="noopener">Sketchplanations — DIKW</a> (Jono Hey)</div>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Katman</th><th>Ne Demek?</th><th>Günlük Hayat Örneği</th><th>Büyük Veri Örneği</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Veri</strong></td><td>Ham, işlenmemiş gerçekler</td><td>"25", "İstanbul", "Yağmurlu"</td><td>Milyonlarca satırlık log dosyası</td></tr>
+          <tr><td><strong>Bilgi</strong></td><td>İşlenmiş, bağlamlandırılmış veri</td><td>"İstanbul'da hava 25°C ve yağmurlu"</td><td>Günlük ortalama sıcaklık tablosu</td></tr>
+          <tr><td><strong>Bilgi Birikimi</strong></td><td>Bilgiden çıkarılan anlam</td><td>"Yağmurda şemsiye almalıyım"</td><td>Yağış trendleri ve mevsimsel kalıplar</td></tr>
+          <tr><td><strong>Bilgelik</strong></td><td>Doğru zamanda doğru karar</td><td>"Yağmur devam edecek, dışarı çıkmayı ertele"</td><td>Hava durumu tahmin modeli</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 Büyük Veri Bağlamı</div>
+      <strong>Büyük Veri Teknolojileri</strong> dersi olarak bizim işimiz, ham <strong>veriyi</strong> toplayıp, işleyip, <strong>bilgiye</strong> dönüştürmektir. Bu bilgiden <strong>bilgi birikimi</strong> ve <strong>bilgelik</strong> elde etmek ise veri analizi ve makine öğrenmesi ile mümkün olur.
+    </div>
+
+    <!-- ─── Veri Türleri ─── -->
+    <h3 id="veri-turleri">Veri Türleri: Yapılandırılmış, Yarı-Yapılandırılmış, Yapılandırılmamış</h3>
+
+    <p>Veriler yapılarına göre üç kategoriye ayrılır. Bu ayrımı bilmek önemlidir çünkü hangi aracı kullanacağımız buna bağlıdır.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <div class="card-title">Yapılandırılmış (Structured)</div>
+        <div class="card-desc">
+          Satır ve sütunlardan oluşan tablo formatındaki veriler. <br>
+          <strong>Örnekler:</strong> Excel tabloları, SQL veritabanları, CSV dosyaları<br>
+          <strong>Araçlar:</strong> SQL, Pandas, Excel<br>
+          <strong>Oran:</strong> Tüm verilerin ~%20'si
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📋</div>
+        <div class="card-title">Yarı-Yapılandırılmış (Semi-structured)</div>
+        <div class="card-desc">
+          Tablo formatı değil ama belirli bir yapısı/etiketleri var.<br>
+          <strong>Örnekler:</strong> JSON, XML, HTML, log dosyaları<br>
+          <strong>Araçlar:</strong> Python json, NoSQL (MongoDB)<br>
+          <strong>Oran:</strong> Tüm verilerin ~%10'u
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📄</div>
+        <div class="card-title">Yapılandırılmamış (Unstructured)</div>
+        <div class="card-desc">
+          Hiçbir standart formatı olmayan veriler.<br>
+          <strong>Örnekler:</strong> Metin belgeleri, resimler, videolar, ses dosyaları, e-postalar<br>
+          <strong>Araçlar:</strong> NLP, bilgisayar görüşü, derin öğrenme<br>
+          <strong>Oran:</strong> Tüm verilerin ~%70-80'i
+        </div>
+      </div>
+    </div>
+
+    <h3 id="etiketli-etiketsiz">İşaretli vs İşaretsiz Veri (Labeled vs Unlabeled Data)</h3>
+
+    <p>Makine öğrenmesinde veriler bir de <strong>işaretli</strong> (labeled) ve <strong>işaretsiz</strong> (unlabeled) olarak ayrılır. Bu ayrım, hangi öğrenme yöntemini kullanacağımızı belirler.</p>
+
+    <div class="comparison">
+      <div class="side">
+        <div class="side-title">🏷️ İşaretli Veri (Labeled Data)</div>
+        <p>Her veri noktasının bir <strong>etiketi / doğru cevabı</strong> var.</p>
+        <ul>
+          <li>📧 E-posta → <strong>"spam"</strong> veya <strong>"spam değil"</strong></li>
+          <li>🖼️ Fotoğraf → <strong>"kedi"</strong> veya <strong>"köpek"</strong></li>
+          <li>📊 Öğrenci notu → <strong>"geçti"</strong> veya <strong>"kaldı"</strong></li>
+        </ul>
+        <p><strong>Kullanım:</strong> Gözetimli öğrenme (Supervised Learning)</p>
+      </div>
+      <div class="side">
+        <div class="side-title">❓ İşaretsiz Veri (Unlabeled Data)</div>
+        <p>Veri var ama <strong>etiketi/doğru cevabı yok</strong>.</p>
+        <ul>
+          <li>📧 Binlerce e-posta — hangisi spam bilmiyoruz</li>
+          <li>🖼️ Binlerce fotoğraf — ne olduğu belirtilmemiş</li>
+          <li>👥 Müşteri verileri — grupları bilinmiyor</li>
+        </ul>
+        <p><strong>Kullanım:</strong> Gözetimsiz öğrenme (Unsupervised Learning)</p>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 Neden Önemli?</div>
+      Dünyada üretilen verinin çok büyük çoğunluğu <strong>işaretsizdir</strong>. Çünkü veriyi etiketlemek pahalı ve zaman alıcıdır (insan gücü gerekir). Büyük veri teknolojileri sayesinde hem işaretli hem işaretsiz verilerden anlam çıkarılabilir.
+    </div>
+
+    <h3 id="veri-toplama">Veri Nereden Gelir? — Veri Toplama Yöntemleri</h3>
+
+    <p>Büyük veride veriler birçok farklı kaynaktan toplanır:</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Yöntem (TR)</th><th>İngilizce</th><th>Açıklama</th><th>Örnek</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>API</strong></td><td>Application Programming Interface</td><td>Programlar arası veri alışverişi. Uygulamalar birbirleriyle API üzerinden konuşur.</td><td>Twitter API, Hava durumu API</td></tr>
+          <tr><td><strong>Web Kazıma</strong></td><td>Web Scraping</td><td>Web sayfalarından veri çekme. HTML içeriğini parse ederek veri elde etme.</td><td>Fiyat karşılaştırma, haber toplama</td></tr>
+          <tr><td><strong>Ağ Örümceği</strong></td><td>Web Crawler / Spider</td><td>Web sitelerini otomatik olarak dolaşıp indexleme. Sayfadan sayfaya link takip eder.</td><td>Googlebot, Bing crawler</td></tr>
+          <tr><td><strong>Sensörler</strong></td><td>Sensors / IoT</td><td>Fiziksel ortamdan veri toplayan cihazlar.</td><td>Sıcaklık, nem, GPS sensörleri</td></tr>
+          <tr><td><strong>Log Dosyaları</strong></td><td>Log Files</td><td>Sistemlerin otomatik tuttuğu kayıtlar.</td><td>Sunucu logları, uygulama logları</td></tr>
+          <tr><td><strong>Formlar/Anketler</strong></td><td>Forms / Surveys</td><td>Kullanıcılardan doğrudan toplanan veri.</td><td>Google Forms, anket siteleri</td></tr>
+          <tr><td><strong>Açık Veri</strong></td><td>Open Data</td><td>Kamuya açık paylaşılan veri setleri.</td><td>Kaggle, TÜİK, data.gov</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">💜 Crawler vs Scraper Farkı</div>
+      <strong>Crawler</strong> (örümcek), web sitelerini dolaşır ve <strong>keşfeder</strong> — Google'ın yaptığı budur. <strong>Scraper</strong> ise belirli bir sayfadaki veriyi <strong>çeker/toplar</strong>. Crawler daha geniş ölçekli, scraper daha hedeflidir. Python'da <code>requests</code> + <code>BeautifulSoup</code> ile basit scraping yapılabilir; <code>Scrapy</code> kütüphanesi ise profesyonel crawling için kullanılır.
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">💜 Neden Önemli?</div>
+      Dünyada üretilen verilerin büyük çoğunluğu (%70-80) <strong>yapılandırılmamış</strong>tır. Büyük veri teknolojilerinin asıl gücü, bu yapılandırılmamış verileri de işleyebilmesidir.
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="dosya-kavramlari">📁 Bölüm 3: Dosya Kavramları</h2>
+
+    <p>Bilgisayarda her şey dosyalarda saklanır. Büyük veri ile çalışırken sürekli dosyaları okuyup yazacağız. O yüzden dosya kavramını iyi anlamak önemlidir.</p>
+
+    <h3 id="text-vs-binary">Text Dosyalar vs Binary Dosyalar</h3>
+
+    <p>Bilgisayardaki dosyalar temelde iki kategoriye ayrılır:</p>
+
+    <div class="comparison">
+      <div class="side">
+        <div class="side-title">📄 Text (Metin) Dosyalar</div>
+        <ul>
+          <li>İçeriği <strong>okunabilir karakterlerden</strong> oluşur</li>
+          <li>Notepad/TextEdit ile açıp okuyabilirsiniz</li>
+          <li>Her satır bir <strong>satır sonu karakteri</strong> (\n) ile biter</li>
+          <li>Boyutu genellikle daha büyük (çünkü her karakter ayrı kodlanır)</li>
+        </ul>
+        <p><strong>Örnekler:</strong></p>
+        <code>.txt</code>, <code>.csv</code>, <code>.json</code>, <code>.py</code>, <code>.html</code>, <code>.xml</code>, <code>.md</code>, <code>.log</code>
+      </div>
+      <div class="side">
+        <div class="side-title">🔢 Binary (İkili) Dosyalar</div>
+        <ul>
+          <li>İçeriği <strong>0 ve 1'lerden</strong> (byte dizilerinden) oluşur</li>
+          <li>Notepad ile açarsanız <strong>anlamsız karakterler</strong> görürsünüz</li>
+          <li>Özel programlarla açılması gerekir</li>
+          <li>Boyutu genellikle daha küçük (sıkıştırılmış olabilir)</li>
+        </ul>
+        <p><strong>Örnekler:</strong></p>
+        <code>.xlsx</code>, <code>.docx</code>, <code>.pdf</code>, <code>.jpg</code>, <code>.png</code>, <code>.mp4</code>, <code>.mp3</code>, <code>.zip</code>, <code>.parquet</code>
+      </div>
+    </div>
+
+    <div class="alert alert-warning">
+      <div class="alert-title">⚠️ Dikkat</div>
+      <code>.xlsx</code> (Excel) dosyası bir <strong>binary</strong> dosyadır! <code>.csv</code> ise <strong>text</strong> dosyadır. İkisi de tablo verisi içerir ama yapıları tamamen farklıdır. Bu farkı birazdan detaylıca göreceğiz.
+    </div>
+
+    <!-- ─── Python ile Dosya Okuma/Yazma ─── -->
+    <h3 id="dosya-okuma-yazma">Python ile Dosya Okuma ve Yazma</h3>
+
+    <p>Python'da dosya işlemleri <code>open()</code> fonksiyonu ile yapılır. Bu fonksiyon bir <strong>dosya nesnesi</strong> döndürür ve bu nesne üzerinden okuma/yazma işlemleri yapılır.</p>
+
+    <h4 id="dosya-modlari">Dosya Açma Modları</h4>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Mod</th><th>Açıklama</th><th>Dosya Yoksa?</th><th>Dosya Varsa?</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>"r"</code></td><td>Okuma (Read) — Varsayılan mod</td><td>❌ Hata verir</td><td>Baştan okur</td></tr>
+          <tr><td><code>"w"</code></td><td>Yazma (Write)</td><td>✅ Yeni dosya oluşturur</td><td>⚠️ İçeriği siler, baştan yazar</td></tr>
+          <tr><td><code>"a"</code></td><td>Ekleme (Append)</td><td>✅ Yeni dosya oluşturur</td><td>Sonuna ekler</td></tr>
+          <tr><td><code>"r+"</code></td><td>Okuma + Yazma</td><td>❌ Hata verir</td><td>Okur ve yazar</td></tr>
+          <tr><td><code>"rb"</code></td><td>Binary okuma</td><td>❌ Hata verir</td><td>Binary olarak okur</td></tr>
+          <tr><td><code>"wb"</code></td><td>Binary yazma</td><td>✅ Yeni dosya oluşturur</td><td>Binary olarak yazar</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4 id="text-dosya-yazma">Text Dosya Yazma</h4>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># ─── Dosyaya Yazma ───
+
+# Yöntem 1: with bloğu (önerilen ✅)
+# 'with' bloğu dosyayı otomatik kapatır
+with open("ornek.txt", "w", encoding="utf-8") as dosya:
+    dosya.write("Merhaba Dünya!\n")
+    dosya.write("Bu ilk satır.\n")
+    dosya.write("Bu ikinci satır.\n")
+    dosya.write("Büyük Veri Teknolojileri dersi.\n")
+
+print("✅ Dosya başarıyla yazıldı!")
+
+# Yöntem 2: writelines ile birden fazla satır
+satirlar = [
+    "Birinci satır\n",
+    "İkinci satır\n",
+    "Üçüncü satır\n"
+]
+
+with open("ornek2.txt", "w", encoding="utf-8") as dosya:
+    dosya.writelines(satirlar)
+
+# Yöntem 3: Sonuna ekleme (append)
+with open("ornek.txt", "a", encoding="utf-8") as dosya:
+    dosya.write("Bu satır sonradan eklendi.\n")</code></pre>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 encoding="utf-8" Nedir?</div>
+      <strong>Encoding</strong> (karakter kodlaması), harflerin bilgisayarda nasıl temsil edildiğini belirler. <code>utf-8</code> kullanmak, Türkçe karakterlerin (ş, ç, ğ, ü, ö, ı, İ) doğru görünmesini sağlar. Her zaman <code>encoding="utf-8"</code> parametresini eklemenizi öneriyoruz.
+    </div>
+
+    <h4 id="text-dosya-okuma">Text Dosya Okuma</h4>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># ─── Dosyadan Okuma ───
+
+# Tüm içeriği tek seferde okuma
+with open("ornek.txt", "r", encoding="utf-8") as dosya:
+    icerik = dosya.read()
+    print("=== Tüm İçerik ===")
+    print(icerik)
+
+# Satır satır okuma (büyük dosyalar için önerilir!)
+print("=== Satır Satır ===")
+with open("ornek.txt", "r", encoding="utf-8") as dosya:
+    for satir_no, satir in enumerate(dosya, 1):
+        print(f"Satır {satir_no}: {satir.strip()}")
+
+# Tüm satırları listeye alma
+with open("ornek.txt", "r", encoding="utf-8") as dosya:
+    satirlar = dosya.readlines()
+    print(f"\nToplam {len(satirlar)} satır var.")
+    print(f"İlk satır: {satirlar[0].strip()}")
+    print(f"Son satır: {satirlar[-1].strip()}")</code></pre>
+    </div>
+
+    <div class="alert alert-danger">
+      <div class="alert-title">🚫 Büyük Dosyalarda Dikkat!</div>
+      <code>dosya.read()</code> tüm dosyayı RAM'e yükler. 10 GB'lık bir dosyada bunu yaparsanız bilgisayarınızın belleği dolabilir! Büyük dosyaları her zaman <strong>satır satır</strong> (<code>for satir in dosya</code>) okuyun. Bu, büyük verinin temel prensiplerinden biridir.
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="csv-formati">📊 Bölüm 4: CSV Formatı</h2>
+
+    <h3 id="csv-nedir">CSV Nedir?</h3>
+
+    <p><strong>CSV</strong> (Comma-Separated Values — Virgülle Ayrılmış Değerler), tablo verilerini düz metin olarak saklayan bir formattır. Her satır bir <strong>kayıt</strong> (record), her virgülle ayrılmış parça bir <strong>alan</strong> (field) temsil eder.</p>
+
+    <div class="code-block" data-lang="csv">
+      <pre><code>isim,yas,bolum,not_ortalamasi
+Ahmet,21,Bilişim,85.5
+Ayşe,22,Bilişim,92.3
+Mehmet,20,Bilişim,78.1
+Fatma,21,Bilişim,88.7</code></pre>
+    </div>
+
+    <p>Yukarıdaki CSV dosyasını tablo olarak düşünürsek:</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>isim</th><th>yas</th><th>bolum</th><th>not_ortalamasi</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Ahmet</td><td>21</td><td>Bilişim</td><td>85.5</td></tr>
+          <tr><td>Ayşe</td><td>22</td><td>Bilişim</td><td>92.3</td></tr>
+          <tr><td>Mehmet</td><td>20</td><td>Bilişim</td><td>78.1</td></tr>
+          <tr><td>Fatma</td><td>21</td><td>Bilişim</td><td>88.7</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="csv-ozellikleri">CSV'nin Temel Özellikleri</h3>
+
+    <ul>
+      <li>✅ <strong>Düz metin dosyasıdır</strong> — herhangi bir metin editörüyle açılabilir</li>
+      <li>✅ <strong>Platform bağımsızdır</strong> — Windows, Mac, Linux hepsinde çalışır</li>
+      <li>✅ <strong>Basit yapısı</strong> sayesinde neredeyse her program okuyabilir</li>
+      <li>✅ <strong>Küçük boyutludur</strong> — aynı veri Excel'den daha az yer kaplar</li>
+      <li>❌ <strong>Formatlama bilgisi yok</strong> — renk, kalın yazı, formül saklayamaz</li>
+      <li>❌ <strong>Tek bir sayfa/tablo</strong> — birden fazla sheet tutulamaz</li>
+      <li>❌ <strong>Veri tipi bilgisi yok</strong> — her şey metin olarak saklanır</li>
+    </ul>
+
+    <h3 id="csv-turleri">CSV Türleri (Ayraç Çeşitleri)</h3>
+
+    <p>"CSV" adında "virgül" geçse de, aslında farklı <strong>ayraçlar</strong> (delimiter/separator) kullanılabilir:</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Tür</th><th>Ayraç</th><th>Dosya Uzantısı</th><th>Örnek Satır</th><th>Kullanım Alanı</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>CSV</strong> (Virgül)</td><td><code>,</code></td><td>.csv</td><td><code>Ahmet,21,85.5</code></td><td>Uluslararası standart</td></tr>
+          <tr><td><strong>TSV</strong> (Tab)</td><td><code>\t</code> (Tab tuşu)</td><td>.tsv veya .csv</td><td><code>Ahmet	21	85.5</code></td><td>Metin içinde virgül varsa</td></tr>
+          <tr><td><strong>SSV</strong> (Noktalı virgül)</td><td><code>;</code></td><td>.csv</td><td><code>Ahmet;21;85.5</code></td><td>Avrupa ülkeleri (ondalık virgül)</td></tr>
+          <tr><td><strong>Pipe-separated</strong></td><td><code>|</code></td><td>.csv veya .txt</td><td><code>Ahmet|21|85.5</code></td><td>Veri ambarları, eski sistemler</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      <div class="alert-title">⚠️ Türkiye'de Dikkat!</div>
+      Türkiye'de ondalık ayracı olarak <strong>virgül</strong> kullanılır (85,5 gibi). Bu durumda CSV'de virgül hem ayraç hem ondalık olur ve karışır! Bu yüzden Türk Excel'leri genellikle <strong>noktalı virgül (;)</strong> ile CSV oluşturur. Veri okurken <code>sep=";"</code> parametresini kullanmayı unutmayın.
+    </div>
+
+    <h3 id="csv-python">Python ile CSV Okuma ve Yazma</h3>
+
+    <h4 id="csv-modulu">csv Modülü ile (Yerleşik)</h4>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import csv
+
+# ─── CSV Dosyası Oluşturma ───
+ogrenciler = [
+    ["isim", "yas", "bolum", "not_ortalamasi"],
+    ["Ahmet", 21, "Bilişim", 85.5],
+    ["Ayşe", 22, "Bilişim", 92.3],
+    ["Mehmet", 20, "Bilişim", 78.1],
+    ["Fatma", 21, "Bilişim", 88.7],
+]
+
+with open("ogrenciler.csv", "w", newline="", encoding="utf-8") as dosya:
+    yazici = csv.writer(dosya)
+    for satir in ogrenciler:
+        yazici.writerow(satir)
+
+print("✅ CSV dosyası oluşturuldu!")
+
+# ─── CSV Dosyası Okuma ───
+print("\n=== CSV Dosyası İçeriği ===")
+with open("ogrenciler.csv", "r", encoding="utf-8") as dosya:
+    okuyucu = csv.reader(dosya)
+    baslik = next(okuyucu)  # İlk satır (başlık)
+    print(f"Sütunlar: {baslik}")
+    print("-" * 40)
+    for satir in okuyucu:
+        print(f"  {satir[0]:10s} | Yaş: {satir[1]} | Not: {satir[3]}")
+
+# ─── DictReader ile okuma (daha pratik!) ───
+print("\n=== DictReader ile ===")
+with open("ogrenciler.csv", "r", encoding="utf-8") as dosya:
+    okuyucu = csv.DictReader(dosya)
+    for satir in okuyucu:
+        print(f"  {satir['isim']} - {satir['bolum']} - Not: {satir['not_ortalamasi']}")</code></pre>
+    </div>
+
+    <h3 id="csv-vs-excel">CSV ve Excel (XLS/XLSX) Karşılaştırması</h3>
+
+    <p>Öğrenciler sıklıkla CSV ve Excel'i karıştırır. İkisi de tablo verisi tutar ama yapıları çok farklıdır:</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Özellik</th><th>CSV (.csv)</th><th>Excel (.xlsx)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Dosya Türü</strong></td><td>📄 Text (düz metin)</td><td>🔢 Binary (sıkıştırılmış XML)</td></tr>
+          <tr><td><strong>Açma Yöntemi</strong></td><td>Herhangi bir metin editörü</td><td>Excel, LibreOffice veya özel kütüphane</td></tr>
+          <tr><td><strong>Formatlama</strong></td><td>❌ Yok (renk, kalın, italik yok)</td><td>✅ Var (renk, yazı tipi, kenarlık vb.)</td></tr>
+          <tr><td><strong>Formüller</strong></td><td>❌ Yok</td><td>✅ Var (=TOPLA, =EĞER vb.)</td></tr>
+          <tr><td><strong>Çoklu Sayfa</strong></td><td>❌ Tek tablo</td><td>✅ Birden fazla sheet</td></tr>
+          <tr><td><strong>Grafikler</strong></td><td>❌ Yok</td><td>✅ Var</td></tr>
+          <tr><td><strong>Boyut</strong></td><td>✅ Çok küçük</td><td>❌ Daha büyük</td></tr>
+          <tr><td><strong>Satır Limiti</strong></td><td>✅ Sınırsız</td><td>❌ 1.048.576 satır</td></tr>
+          <tr><td><strong>Hız</strong></td><td>✅ Çok hızlı okunur</td><td>❌ Daha yavaş</td></tr>
+          <tr><td><strong>Programla İşleme</strong></td><td>✅ Çok kolay</td><td>⚠️ Özel kütüphane gerekir (openpyxl)</td></tr>
+          <tr><td><strong>Büyük Veride?</strong></td><td>✅ Yaygın kullanılır</td><td>❌ Tercih edilmez (performans)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-success">
+      <div class="alert-title">🎯 Sonuç</div>
+      Büyük veri dünyasında <strong>CSV</strong> tercih edilir çünkü basit, hafif ve her araçla okunabilir. Excel, insan tarafından "bakılacak" raporlar için uygunken; CSV, bilgisayarlar tarafından "işlenecek" veriler için idealdir.
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="json-formati">📋 Bölüm 5: JSON Formatı</h2>
+
+    <h3 id="json-nedir">JSON Nedir?</h3>
+
+    <p><strong>JSON</strong> (JavaScript Object Notation), verileri <strong>anahtar-değer çiftleri</strong> halinde saklayan, insanlar tarafından okunabilir bir veri formatıdır. Adında "JavaScript" geçse de, <strong>tüm programlama dillerinde</strong> kullanılır.</p>
+
+    <p>Bugün internette veri alışverişinin büyük çoğunluğu JSON formatındadır. API'ler (web servisleri) JSON döndürür, MongoDB gibi NoSQL veritabanları JSON benzeri yapıda veri saklar.</p>
+
+    <h3 id="json-yapisi">JSON'un Yapısı</h3>
+
+    <div class="code-block" data-lang="json">
+      <pre><code>{
+    "isim": "Ahmet",
+    "soyisim": "Yılmaz",
+    "yas": 21,
+    "ogrenci_mi": true,
+    "boy": 1.75,
+    "adres": null,
+    "bolum": "Bilişim Teknolojileri",
+    "notlar": [85, 92, 78, 95],
+    "iletisim": {
+        "email": "ahmet@mail.com",
+        "telefon": "0555-123-4567"
+    },
+    "hobiler": ["programlama", "yüzme", "satranç"]
+}</code></pre>
+    </div>
+
+    <h3 id="json-veri-tipleri">JSON'da Kullanılabilen Veri Tipleri</h3>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>JSON Tipi</th><th>Açıklama</th><th>Örnek</th><th>Python Karşılığı</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>String</strong></td><td>Metin (çift tırnak ile!)</td><td><code>"Merhaba"</code></td><td><code>str</code></td></tr>
+          <tr><td><strong>Number</strong></td><td>Sayı (tam veya ondalıklı)</td><td><code>42</code>, <code>3.14</code></td><td><code>int</code>, <code>float</code></td></tr>
+          <tr><td><strong>Boolean</strong></td><td>Mantıksal değer</td><td><code>true</code>, <code>false</code></td><td><code>True</code>, <code>False</code></td></tr>
+          <tr><td><strong>Null</strong></td><td>Boş/tanımsız değer</td><td><code>null</code></td><td><code>None</code></td></tr>
+          <tr><td><strong>Array</strong></td><td>Sıralı liste</td><td><code>[1, 2, 3]</code></td><td><code>list</code></td></tr>
+          <tr><td><strong>Object</strong></td><td>Anahtar-değer çiftleri</td><td><code>{"a": 1}</code></td><td><code>dict</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      <div class="alert-title">⚠️ JSON vs Python Farkları</div>
+      <ul>
+        <li>JSON'da <code>true/false</code> (küçük harf) → Python'da <code>True/False</code> (büyük harf)</li>
+        <li>JSON'da <code>null</code> → Python'da <code>None</code></li>
+        <li>JSON'da anahtarlar <strong>sadece çift tırnak</strong> <code>"key"</code> → Python'da tek tırnak da olur</li>
+        <li>JSON'da son elemandan sonra <strong>virgül olmaz</strong> → Python'da olabilir (trailing comma)</li>
+      </ul>
+    </div>
+
+    <h3 id="json-ic-ice">İç İçe (Nested) JSON</h3>
+
+    <p>JSON'un gerçek gücü, iç içe yapılar oluşturabilmesidir. Gerçek dünyada API'lerden gelen veriler genellikle iç içe geçmiş yapılardadır:</p>
+
+    <div class="code-block" data-lang="json">
+      <pre><code>{
+    "universite": "XYZ Üniversitesi",
+    "bolum": "Bilişim Teknolojileri",
+    "donem": "2025-2026 Bahar",
+    "ders": {
+        "ad": "Büyük Veri Teknolojileri",
+        "saat": "2+3",
+        "akts": 5
+    },
+    "ogrenciler": [
+        {
+            "id": 1,
+            "isim": "Ahmet Yılmaz",
+            "notlar": {
+                "vize": 85,
+                "final": 90,
+                "ortalama": 88.0
+            }
+        },
+        {
+            "id": 2,
+            "isim": "Ayşe Demir",
+            "notlar": {
+                "vize": 92,
+                "final": 88,
+                "ortalama": 89.6
+            }
+        }
+    ],
+    "toplam_ogrenci": 2,
+    "aktif": true
+}</code></pre>
+    </div>
+
+    <h3 id="json-python">Python ile JSON İşlemleri</h3>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import json
+
+# ─── Python Sözlüğünden JSON Oluşturma ───
+ogrenci = {
+    "isim": "Ahmet",
+    "yas": 21,
+    "notlar": [85, 92, 78],
+    "aktif": True,
+    "adres": None,
+    "iletisim": {
+        "email": "ahmet@mail.com",
+        "telefon": "0555-123-4567"
+    }
+}
+
+# Sözlüğü JSON string'e çevirme
+json_str = json.dumps(ogrenci, ensure_ascii=False, indent=4)
+print("=== JSON String ===")
+print(json_str)
+
+# ─── JSON Dosyasına Yazma ───
+with open("ogrenci.json", "w", encoding="utf-8") as dosya:
+    json.dump(ogrenci, dosya, ensure_ascii=False, indent=4)
+print("\n✅ JSON dosyası yazıldı!")
+
+# ─── JSON Dosyasından Okuma ───
+with open("ogrenci.json", "r", encoding="utf-8") as dosya:
+    okunan = json.load(dosya)
+
+print("\n=== Okunan Veri ===")
+print(f"İsim: {okunan['isim']}")
+print(f"E-posta: {okunan['iletisim']['email']}")
+print(f"Notlar: {okunan['notlar']}")
+print(f"Not ortalaması: {sum(okunan['notlar']) / len(okunan['notlar']):.1f}")</code></pre>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 json.dumps() Parametreleri</div>
+      <ul>
+        <li><code>ensure_ascii=False</code> — Türkçe karakterlerin doğru görünmesi için</li>
+        <li><code>indent=4</code> — Güzel görünüm için 4 boşluk girinti</li>
+        <li><code>sort_keys=True</code> — Anahtarları alfabetik sırala (opsiyonel)</li>
+      </ul>
+    </div>
+
+    <h4 id="json-liste">JSON Dizisi (Array of Objects)</h4>
+
+    <p>Birden fazla kayıt içeren JSON dosyaları genellikle bir dizi (array) şeklindedir:</p>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import json
+
+# Birden fazla öğrenci
+ogrenciler = [
+    {"isim": "Ahmet", "yas": 21, "not": 85},
+    {"isim": "Ayşe", "yas": 22, "not": 92},
+    {"isim": "Mehmet", "yas": 20, "not": 78},
+    {"isim": "Fatma", "yas": 21, "not": 88},
+]
+
+# JSON dosyasına yaz
+with open("sinif.json", "w", encoding="utf-8") as f:
+    json.dump(ogrenciler, f, ensure_ascii=False, indent=2)
+
+# JSON dosyasından oku ve işle
+with open("sinif.json", "r", encoding="utf-8") as f:
+    sinif = json.load(f)
+
+# Veri analizi
+print(f"Toplam öğrenci: {len(sinif)}")
+notlar = [o["not"] for o in sinif]
+print(f"En yüksek not: {max(notlar)}")
+print(f"Ortalama: {sum(notlar) / len(notlar):.1f}")
+
+# Filtreleme
+basarili = [o for o in sinif if o["not"] >= 80]
+print(f"\n80 ve üzeri alanlar:")
+for o in basarili:
+    print(f"  🎓 {o['isim']}: {o['not']}")</code></pre>
+    </div>
+
+    <h3 id="csv-vs-json">CSV vs JSON Karşılaştırması</h3>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Özellik</th><th>CSV</th><th>JSON</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Yapı</strong></td><td>Düz tablo (satır-sütun)</td><td>İç içe geçebilen ağaç yapısı</td></tr>
+          <tr><td><strong>Okunabilirlik</strong></td><td>Tablo formatında kolay</td><td>Hiyerarşik yapı için kolay</td></tr>
+          <tr><td><strong>Boyut</strong></td><td>✅ Daha küçük</td><td>❌ Daha büyük (anahtar isimleri tekrarlanır)</td></tr>
+          <tr><td><strong>Veri tipi</strong></td><td>❌ Hepsi metin</td><td>✅ String, number, boolean, null</td></tr>
+          <tr><td><strong>İç içe veri</strong></td><td>❌ Desteklemez</td><td>✅ Tam destek</td></tr>
+          <tr><td><strong>Web API'ler</strong></td><td>❌ Nadir</td><td>✅ Standart format</td></tr>
+          <tr><td><strong>Büyük tablolar</strong></td><td>✅ İdeal</td><td>⚠️ Şişebilir</td></tr>
+          <tr><td><strong>Şeması</strong></td><td>İlk satır başlık</td><td>Her kayıtta anahtar ismi var</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">💜 Ne Zaman Hangisi?</div>
+      <ul>
+        <li><strong>CSV:</strong> Büyük tablolar, veri analizi, raporlama, veritabanı import/export</li>
+        <li><strong>JSON:</strong> API'ler, yapılandırma dosyaları, iç içe veriler, web uygulamaları, NoSQL veritabanları</li>
+      </ul>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="pandas-giris">🐼 Bölüm 6: Pandas Kütüphanesine Giriş</h2>
+
+    <p><strong>Pandas</strong>, Python'da veri analizi için en çok kullanılan kütüphanedir. Adı "Panel Data" (panel veri) kelimelerinden gelir. CSV, Excel, JSON, SQL gibi kaynaklardan veri okuyabilir ve güçlü veri işleme yetenekleri sunar.</p>
+
+    <h3 id="pandas-neden">Neden Pandas?</h3>
+
+    <div class="comparison">
+      <div class="side">
+        <div class="side-title">❌ Pandas Olmadan</div>
+        <div class="code-block" data-lang="python">
+          <pre><code>import csv
+
+# Önce örnek CSV dosyasını oluşturalım
+with open("veri.csv", "w", newline="", encoding="utf-8") as f:
+    yazici = csv.writer(f)
+    yazici.writerows([
+        ["isim", "yas", "bolum", "not"],
+        ["Ahmet", 21, "Bilişim", 85],
+        ["Ayşe", 22, "Bilişim", 92],
+        ["Mehmet", 20, "Elektrik", 78],
+        ["Fatma", 21, "Bilişim", 88],
+    ])
+
+toplam = 0
+sayac = 0
+with open("veri.csv") as f:
+    okuyucu = csv.DictReader(f)
+    for satir in okuyucu:
+        if satir["bolum"] == "Bilişim":
+            toplam += float(satir["not"])
+            sayac += 1
+print(f"Ort: {toplam/sayac:.1f}")</code></pre>
+        </div>
+      </div>
+      <div class="side">
+        <div class="side-title">✅ Pandas ile</div>
+        <div class="code-block" data-lang="python">
+          <pre><code>import pandas as pd
+
+# veri.csv önceki blokta oluşturuldu
+df = pd.read_csv("veri.csv")
+ort = df[df["bolum"] == "Bilişim"]["not"].mean()
+print(f"Ort: {ort:.1f}")
+
+# 10+ satır kod vs 3 satır kod!</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <h3 id="dataframe-series">DataFrame ve Series</h3>
+
+    <p>Pandas'ın iki temel veri yapısı vardır:</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <div class="card-title">DataFrame</div>
+        <div class="card-desc">İki boyutlu tablo yapısı. Satırları ve sütunları vardır. Excel tablosu gibi düşünebilirsiniz. CSV, JSON, SQL gibi kaynaklardan oluşturulabilir.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📏</div>
+        <div class="card-title">Series</div>
+        <div class="card-desc">Tek boyutlu dizi yapısı. DataFrame'in her bir sütunu aslında bir Series'dir. NumPy array'ine benzer ama daha güçlüdür.</div>
+      </div>
+    </div>
+
+    <h3 id="pandas-kurulum">Pandas Kurulumu ve İlk Adımlar</h3>
+
+    <div class="code-block" data-lang="bash">
+      <pre><code># Kurulum (Google Colab'da zaten kurulu!)
+pip install pandas
+
+# Jupyter/Colab'da:
+# !pip install pandas</code></pre>
+    </div>
+
+    <h4 id="dataframe-olusturma">DataFrame Oluşturma</h4>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import pandas as pd
+
+# ─── 1) Sözlükten DataFrame oluşturma ───
+veri = {
+    "isim": ["Ahmet", "Ayşe", "Mehmet", "Fatma", "Ali"],
+    "yas": [21, 22, 20, 21, 23],
+    "bolum": ["Bilişim", "Bilişim", "Elektrik", "Bilişim", "Elektrik"],
+    "not_ort": [85.5, 92.3, 78.1, 88.7, 65.4],
+}
+
+df = pd.DataFrame(veri)
+print(df)
+print(f"\nBoyut: {df.shape}")  # (5, 4) → 5 satır, 4 sütun</code></pre>
+    </div>
+
+    <h4 id="csv-okuma">CSV Dosyasından Okuma</h4>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import pandas as pd
+
+# CSV'den okuma (en sık kullanılan yöntem!)
+# df = pd.read_csv("ogrenciler.csv")
+
+# Türkçe CSV'ler için (noktalı virgül ayraçlı)
+# df = pd.read_csv("veri.csv", sep=";", encoding="utf-8")
+
+# Örnek olarak sözlükten oluşturalım
+df = pd.DataFrame({
+    "isim": ["Ahmet", "Ayşe", "Mehmet", "Fatma", "Ali", "Zeynep"],
+    "yas": [21, 22, 20, 21, 23, 22],
+    "bolum": ["Bilişim", "Bilişim", "Elektrik", "Bilişim", "Elektrik", "Bilişim"],
+    "not_ort": [85.5, 92.3, 78.1, 88.7, 65.4, 91.0],
+    "devamsizlik": [2, 0, 5, 1, 8, 0]
+})
+
+# ─── Temel Keşif Fonksiyonları ───
+
+# İlk 5 satır (varsayılan)
+print("=== head() ===")
+print(df.head())
+
+# Son 3 satır
+print("\n=== tail(3) ===")
+print(df.tail(3))
+
+# Genel bilgi
+print("\n=== info() ===")
+print(df.info())
+
+# İstatistiksel özet
+print("\n=== describe() ===")
+print(df.describe())
+
+# Sütun isimleri
+print(f"\nSütunlar: {list(df.columns)}")
+
+# Boyut
+print(f"Boyut: {df.shape[0]} satır, {df.shape[1]} sütun")
+
+# Veri tipleri
+print(f"\nVeri Tipleri:\n{df.dtypes}")</code></pre>
+    </div>
+
+    <h4 id="pandas-filtreleme">Veri Seçme ve Filtreleme</h4>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import pandas as pd
+
+df = pd.DataFrame({
+    "isim": ["Ahmet", "Ayşe", "Mehmet", "Fatma", "Ali", "Zeynep"],
+    "yas": [21, 22, 20, 21, 23, 22],
+    "bolum": ["Bilişim", "Bilişim", "Elektrik", "Bilişim", "Elektrik", "Bilişim"],
+    "not_ort": [85.5, 92.3, 78.1, 88.7, 65.4, 91.0],
+})
+
+# ─── Sütun Seçme ───
+print("=== Tek sütun (Series) ===")
+print(df["isim"])
+
+print("\n=== Birden fazla sütun (DataFrame) ===")
+print(df[["isim", "not_ort"]])
+
+# ─── Koşullu Filtreleme ───
+print("\n=== Notu 80'den yüksek olanlar ===")
+basarili = df[df["not_ort"] > 80]
+print(basarili)
+
+print("\n=== Bilişim bölümündekiler ===")
+bilisim = df[df["bolum"] == "Bilişim"]
+print(bilisim)
+
+# ─── Birden Fazla Koşul ───
+print("\n=== Bilişim + Not > 85 ===")
+filtre = df[(df["bolum"] == "Bilişim") & (df["not_ort"] > 85)]
+print(filtre)
+
+# ─── Sıralama ───
+print("\n=== Nota göre sıralama (büyükten küçüğe) ===")
+print(df.sort_values("not_ort", ascending=False))
+
+# ─── Yeni Sütun Ekleme ===
+df["harf_notu"] = df["not_ort"].apply(
+    lambda x: "AA" if x >= 90 else "BA" if x >= 80 else "BB" if x >= 70 else "CB" if x >= 60 else "FF"
+)
+print("\n=== Harf Notu Eklendi ===")
+print(df)</code></pre>
+    </div>
+
+    <h4 id="pandas-gruplama">Gruplama ve Toplama (groupby)</h4>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import pandas as pd
+
+df = pd.DataFrame({
+    "isim": ["Ahmet", "Ayşe", "Mehmet", "Fatma", "Ali", "Zeynep"],
+    "bolum": ["Bilişim", "Bilişim", "Elektrik", "Bilişim", "Elektrik", "Bilişim"],
+    "not_ort": [85.5, 92.3, 78.1, 88.7, 65.4, 91.0],
+    "devamsizlik": [2, 0, 5, 1, 8, 0]
+})
+
+# Bölüme göre gruplama
+print("=== Bölüm bazında ortalama not ===")
+bolum_ort = df.groupby("bolum")["not_ort"].mean()
+print(bolum_ort)
+
+# Birden fazla istatistik
+print("\n=== Bölüm bazında detaylı istatistik ===")
+bolum_detay = df.groupby("bolum").agg({
+    "not_ort": ["mean", "min", "max", "count"],
+    "devamsizlik": "sum"
+})
+print(bolum_detay)
+
+# value_counts: Benzersiz değerlerin sayısı
+print("\n=== Bölüm dağılımı ===")
+print(df["bolum"].value_counts())</code></pre>
+    </div>
+
+    <h3 id="pandas-diger-formatlar">Pandas ile Farklı Formatları Okuma</h3>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Format</th><th>Okuma</th><th>Yazma</th><th>Not</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>CSV</strong></td><td><code>pd.read_csv("dosya.csv")</code></td><td><code>df.to_csv("dosya.csv")</code></td><td>En yaygın format</td></tr>
+          <tr><td><strong>Excel</strong></td><td><code>pd.read_excel("dosya.xlsx")</code></td><td><code>df.to_excel("dosya.xlsx")</code></td><td><code>openpyxl</code> gerekir</td></tr>
+          <tr><td><strong>JSON</strong></td><td><code>pd.read_json("dosya.json")</code></td><td><code>df.to_json("dosya.json")</code></td><td>İç içe yapılar için dikkat</td></tr>
+          <tr><td><strong>SQL</strong></td><td><code>pd.read_sql(query, conn)</code></td><td><code>df.to_sql("tablo", conn)</code></td><td>Veritabanı bağlantısı gerekir</td></tr>
+          <tr><td><strong>Parquet</strong></td><td><code>pd.read_parquet("dosya.parquet")</code></td><td><code>df.to_parquet("dosya.parquet")</code></td><td>Büyük veri için ideal format</td></tr>
+          <tr><td><strong>HTML</strong></td><td><code>pd.read_html("url")</code></td><td><code>df.to_html("dosya.html")</code></td><td>Web tablolarını çekebilir</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="veri-modelleme">📐 Bölüm 7: Veri Modelleme (Genel Bakış)</h2>
+
+    <p><strong>Veri modelleme</strong>, verilerin nasıl organize edileceğini, saklanacağını ve birbirleriyle nasıl ilişkilendirileceğini planlama sürecidir. Bir binanın mimari planı gibi düşünebilirsiniz — inşaata başlamadan önce planı çizersiniz.</p>
+
+    <h3 id="model-turleri">Veri Modeli Türleri</h3>
+
+    <div class="diagram-container">
+      <div class="diagram-box">
+        <div class="mermaid">
+graph LR
+    A["📋 Kavramsal Model<br><i>NE saklanacak?</i><br>İş dünyasının bakışı"] --> B["📊 Mantıksal Model<br><i>NASIL organize edilecek?</i><br>Tablo ve ilişkiler"]
+    B --> C["💾 Fiziksel Model<br><i>NEREDE saklanacak?</i><br>Veritabanı yapısı"]
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil 2: Veri modellemenin üç aşaması</div>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Model Türü</th><th>Soru</th><th>Detay Seviyesi</th><th>Kim İçin?</th><th>Örnek</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Kavramsal</strong></td><td>NE saklanacak?</td><td>En genel</td><td>İş analistleri, yöneticiler</td><td>"Öğrenci, Ders, Not bilgileri tutulacak"</td></tr>
+          <tr><td><strong>Mantıksal</strong></td><td>NASIL organize edilecek?</td><td>Orta</td><td>Veri analistleri, tasarımcılar</td><td>"Öğrenci tablosu: id, isim, bölüm sütunları"</td></tr>
+          <tr><td><strong>Fiziksel</strong></td><td>NEREDE, hangi teknoloji?</td><td>En detaylı</td><td>Veritabanı yöneticileri</td><td>"PostgreSQL, id INTEGER PRIMARY KEY..."</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 Bu Derste</div>
+      Veri modellemeyi bu hafta sadece <strong>tanıtım düzeyinde</strong> görüyoruz. Hafta 4'te SQL ve veritabanı konusuna geçtiğimizde mantıksal ve fiziksel modellemeyi daha detaylı öğreneceğiz.
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="veri-platformlari">🌍 Bölüm 8: Büyük Veri Platformları</h2>
+
+    <p>Veri analizi ve büyük veri projelerinde en önemli şeylerden biri <strong>veri bulmaktır</strong>. Neyse ki, ücretsiz ve kaliteli veri setleri sunan platformlar var. Bu platformlarda hesap açmanızı ve keşfetmenizi şiddetle tavsiye ediyoruz!</p>
+
+    <div class="alert alert-danger">
+      <div class="alert-title">⚠️ Önemli: Hesap Açma Gereksinimleri</div>
+      <p>Bu ders boyunca aşağıdaki platformlarda <strong>hesabınızın olması zorunludur</strong>:</p>
+      <ol>
+        <li><strong>GitHub</strong> — Ödevler GitHub Classroom üzerinden verilecek. İlk haftanın notlarındaki yönergeleri izleyerek hesap açın.</li>
+        <li><strong>Kaggle</strong> — Veri setleri indirmek ve notebook'ları incelemek için</li>
+        <li><strong>HuggingFace</strong> — Yapay zeka modelleri ve veri setleri için</li>
+      </ol>
+    </div>
+
+    <h3 id="kaggle">🏆 Kaggle</h3>
+
+    <div class="card">
+      <div class="card-title">🏆 Kaggle — <a href="https://www.kaggle.com" target="_blank">kaggle.com</a></div>
+      <div class="card-desc">
+        <p>Google'a ait olan Kaggle, dünyanın en büyük veri bilimi topluluğudur.</p>
+        <ul>
+          <li>📊 <strong>Datasets:</strong> 200.000+ ücretsiz veri seti (CSV, JSON, resim, metin...)</li>
+          <li>🏅 <strong>Competitions:</strong> Ödüllü yarışmalar (Netflix Prize gibi)</li>
+          <li>📓 <strong>Notebooks:</strong> Hazır Jupyter notebook'ları (başkalarının çözümlerini inceleyebilirsiniz)</li>
+          <li>📚 <strong>Learn:</strong> Ücretsiz dersler (Python, Pandas, ML...)</li>
+          <li>☁️ <strong>Free GPU/TPU:</strong> Ücretsiz bilgi işlem gücü</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="alert alert-success">
+      <div class="alert-title">📝 Yapmanız Gereken</div>
+      <ol>
+        <li><a href="https://www.kaggle.com" target="_blank">kaggle.com</a> adresine gidin ve <strong>ücretsiz hesap</strong> açın</li>
+        <li>"Datasets" bölümüne girin ve "student" veya "turkey" gibi aratın</li>
+        <li>Bir veri setini indirip Colab'da açmayı deneyin</li>
+        <li>"Learn" bölümündeki "Pandas" kursuna göz atın (ücretsiz ve çok faydalı!)</li>
+      </ol>
+    </div>
+
+    <h3 id="huggingface">🤗 HuggingFace</h3>
+
+    <div class="card">
+      <div class="card-title">🤗 HuggingFace — <a href="https://huggingface.co" target="_blank">huggingface.co</a></div>
+      <div class="card-desc">
+        <p>Yapay zeka ve NLP (doğal dil işleme) alanında en popüler platform. Son yıllarda veri setleri konusunda da Kaggle'a rakip oldu.</p>
+        <ul>
+          <li>📊 <strong>Datasets:</strong> 100.000+ veri seti (özellikle metin ve dil verileri)</li>
+          <li>🤖 <strong>Models:</strong> 500.000+ hazır AI modeli</li>
+          <li>🚀 <strong>Spaces:</strong> Hazır demo uygulamaları</li>
+          <li>📚 <strong>Course:</strong> Ücretsiz NLP ve ML dersleri</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 id="diger-platformlar">Diğer Faydalı Platformlar</h3>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Platform</th><th>URL</th><th>Özellik</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>UCI ML Repository</strong></td><td><a href="https://archive.ics.uci.edu/ml" target="_blank">archive.ics.uci.edu</a></td><td>Akademik veri setleri (Iris, Wine, Titanic...)</td></tr>
+          <tr><td><strong>Google Dataset Search</strong></td><td><a href="https://datasetsearch.research.google.com" target="_blank">datasetsearch.research.google.com</a></td><td>Veri setleri için Google araması</td></tr>
+          <tr><td><strong>data.gov</strong></td><td><a href="https://data.gov" target="_blank">data.gov</a></td><td>ABD devlet açık verileri</td></tr>
+          <tr><td><strong>TÜİK</strong></td><td><a href="https://data.tuik.gov.tr" target="_blank">data.tuik.gov.tr</a></td><td>Türkiye İstatistik Kurumu verileri</td></tr>
+          <tr><td><strong>GitHub Awesome Datasets</strong></td><td><a href="https://github.com/awesomedata/awesome-public-datasets" target="_blank">github.com/awesome...</a></td><td>Kategorize edilmiş veri seti listesi</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="diger-formatlar">📄 Bölüm 9: Diğer Önemli Dosya Formatları</h2>
+
+    <p>CSV ve JSON dışında, büyük veri dünyasında sıkça karşılaşacağınız birkaç format daha var:</p>
+
+    <h3 id="parquet">Apache Parquet</h3>
+    <p><strong>Parquet</strong>, büyük veri için optimize edilmiş <strong>sütun tabanlı</strong> (columnar) bir binary formattır. Spark, Pandas ve diğer büyük veri araçlarıyla doğrudan çalışır.</p>
+
+    <div class="comparison">
+      <div class="side">
+        <div class="side-title">📊 Satır Tabanlı (CSV)</div>
+        <p>Tüm sütunları satır satır okur. Tek bir sütun istesen bile tüm satırı okumak zorundasın.</p>
+        <pre style="font-size: 0.8rem; background: var(--bg-code); padding: 0.5rem; border-radius: 4px;">
+Ahmet, 21, Bilişim, 85
+Ayşe,  22, Bilişim, 92
+Mehmet,20, Elektrik,78</pre>
+      </div>
+      <div class="side">
+        <div class="side-title">📊 Sütun Tabanlı (Parquet)</div>
+        <p>Her sütunu ayrı ayrı saklar. Sadece istediğin sütunu okuyabilirsin → çok daha hızlı!</p>
+        <pre style="font-size: 0.8rem; background: var(--bg-code); padding: 0.5rem; border-radius: 4px;">
+isim:  [Ahmet, Ayşe, Mehmet]
+yas:   [21, 22, 20]
+bolum: [Bilişim, Bilişim, Elektrik]
+not:   [85, 92, 78]</pre>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 Neden Parquet?</div>
+      10 GB'lık bir CSV dosyasından sadece "not" sütununu okumak istiyorsanız, CSV tüm 10 GB'ı okumalıdır. Parquet ise sadece "not" sütununun verisini okur — belki sadece 200 MB. Bu, büyük veride <strong>devasa</strong> bir performans farkı yaratır. İleriki haftalarda Parquet'i PySpark ile kullanacağız.
+    </div>
+
+    <h3 id="xml">XML (Extensible Markup Language)</h3>
+    <p>HTML'e benzeyen, etiket tabanlı bir veri formatıdır. Eskiden çok kullanılırdı, bugün yerini büyük ölçüde JSON'a bıraktı.</p>
+
+    <div class="code-block" data-lang="text">
+      <pre><code>&lt;ogrenciler&gt;
+    &lt;ogrenci&gt;
+        &lt;isim&gt;Ahmet&lt;/isim&gt;
+        &lt;yas&gt;21&lt;/yas&gt;
+        &lt;bolum&gt;Bilişim&lt;/bolum&gt;
+    &lt;/ogrenci&gt;
+    &lt;ogrenci&gt;
+        &lt;isim&gt;Ayşe&lt;/isim&gt;
+        &lt;yas&gt;22&lt;/yas&gt;
+        &lt;bolum&gt;Bilişim&lt;/bolum&gt;
+    &lt;/ogrenci&gt;
+&lt;/ogrenciler&gt;</code></pre>
+    </div>
+
+    <h3 id="format-karsilastirma">Tüm Formatların Karşılaştırması</h3>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Format</th><th>Tür</th><th>Okunabilir?</th><th>Boyut</th><th>Hız</th><th>Büyük Veride?</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>CSV</strong></td><td>Text</td><td>✅ Evet</td><td>Orta</td><td>Orta</td><td>Yaygın (giriş)</td></tr>
+          <tr><td><strong>JSON</strong></td><td>Text</td><td>✅ Evet</td><td>Büyük</td><td>Orta</td><td>API, NoSQL</td></tr>
+          <tr><td><strong>Excel</strong></td><td>Binary</td><td>❌ Özel program</td><td>Orta</td><td>Yavaş</td><td>❌ Uygun değil</td></tr>
+          <tr><td><strong>Parquet</strong></td><td>Binary</td><td>❌ Özel araç</td><td>✅ Çok küçük</td><td>✅ Çok hızlı</td><td>✅ İdeal</td></tr>
+          <tr><td><strong>XML</strong></td><td>Text</td><td>⚠️ Zor</td><td>Çok büyük</td><td>Yavaş</td><td>❌ Eski</td></tr>
+          <tr><td><strong>Avro</strong></td><td>Binary</td><td>❌ Özel araç</td><td>Küçük</td><td>Hızlı</td><td>✅ Kafka, Spark</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="ozet">📋 Bölüm Özeti</h2>
+
+    <div class="card">
+      <div class="card-title">Bu Hafta Neler Öğrendik?</div>
+      <ul>
+        <li>✅ <strong>Veri kavramı:</strong> Data (Latince: datum = "verilmiş şey"), veri ile bilgi arasındaki fark</li>
+        <li>✅ <strong>Insight (içgörü):</strong> Veriden elde edilen derin, eyleme dönüştürülebilir anlam</li>
+        <li>✅ <strong>Veri neden önemli?</strong> "Veri yeni petroldür" (Clive Humby), Walmart/Netflix/Tesla anekdotları</li>
+        <li>✅ <strong>Neden şimdi?</strong> Ucuzlayan depolama, internet, IoT, yapay zeka → veri patlaması</li>
+        <li>✅ <strong>Veri patlaması:</strong> Dakikada 231M e-posta, 6.3M Google araması; 2010: 2ZB → 2025: 181ZB</li>
+        <li>✅ <strong>Excel neden yetmiyor?</strong> 1M satır limiti, tek bilgisayar RAM'i, real-time işleme yok</li>
+        <li>✅ <strong>Büyük verinin 5V'si:</strong> Volume, Velocity, Variety, Veracity, Value — somut örneklerle</li>
+        <li>✅ <strong>DIKW piramidi:</strong> Veri → Bilgi → Bilgi Birikimi → Bilgelik (John Snow kolera haritası)</li>
+        <li>✅ <strong>Veri türleri:</strong> Yapılandırılmış (%20), yarı-yapılandırılmış (%10), yapılandırılmamış (%70-80)</li>
+        <li>✅ <strong>İşaretli vs İşaretsiz:</strong> Labeled → Supervised, Unlabeled → Unsupervised Learning</li>
+        <li>✅ <strong>Veri toplama yöntemleri:</strong> API, web scraping, crawler, sensörler, loglar, açık veri</li>
+        <li>✅ <strong>Dosya türleri:</strong> Text (.csv, .json, .py) vs Binary (.xlsx, .jpg, .parquet)</li>
+        <li>✅ <strong>CSV & JSON:</strong> Yapıları, Python ile okuma/yazma, csv ve json modülleri</li>
+        <li>✅ <strong>Pandas:</strong> DataFrame/Series, head/info/describe, filtreleme, groupby</li>
+        <li>✅ <strong>Veri modelleme:</strong> Kavramsal → Mantıksal → Fiziksel model</li>
+        <li>✅ <strong>Platformlar:</strong> Kaggle, HuggingFace, UCI, Google Dataset Search, TÜİK</li>
+        <li>✅ <strong>Diğer formatlar:</strong> Parquet (sütun tabanlı, hızlı), XML (eski), Avro</li>
+      </ul>
+    </div>
+
+    <div class="alert alert-warning">
+      <div class="alert-title">🐍 Daha Fazla Python İçin</div>
+      <p>Python bilgilerinizi tazelemek veya derinleştirmek isterseniz, geçen dönemki ders notlarına göz atabilirsiniz:</p>
+      <p>👉 <a href="https://gusanmaz.github.io/algs/" target="_blank" style="color: var(--accent); font-weight: 600;">gusanmaz.github.io/algs/</a></p>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">📝 Ev Ödevi</div>
+      <ol>
+        <li>Henüz açmadıysanız bir <strong>GitHub</strong> hesabı oluşturun — ödevler GitHub Classroom üzerinden verilecektir</li>
+        <li><strong>Kaggle</strong> ve <strong>HuggingFace</strong>'te hesap açın</li>
+        <li>Kaggle'dan ilginizi çeken bir CSV veri seti indirin</li>
+        <li>Bu veri setini Google Colab'da <strong>Pandas</strong> ile açın ve şunları yapın:
+          <ul>
+            <li><code>head()</code>, <code>info()</code>, <code>describe()</code> çıktılarını inceleyin</li>
+            <li>En az 2 farklı filtreleme yapın</li>
+            <li>Bir sütuna göre <code>groupby</code> yapıp ortalama hesaplayın</li>
+          </ul>
+        </li>
+        <li>Aynı veriyi <strong>JSON</strong> formatında kaydedin (<code>df.to_json()</code>) ve dosya boyutlarını karşılaştırın</li>
+        <li>(Bonus) Python ile kendi <code>.csv</code> dosyanızı sıfırdan oluşturun (5 sütun, 10 satır)</li>
+      </ol>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="page-footer">
+  <p class="footer-text">Büyük Veri Teknolojileri Ders Notları — 2025-2026 Bahar Dönemi</p>
+</footer>
+
+<!-- Scroll to Top -->
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<!-- Pyodide Status -->
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python motoru yükleniyor...</span>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,374 @@
+soyle yapalim     İçerikler
+    Notlarım
+
+1
+1.Hafta Gelişmiş Dağıtık Sistemler
+28d 14sn
+  ( 1/2 )
+1.1_Hadoop Cloudera Cloud Kurulumu
+14d 32sn
+1.2_Hadoop HDFS Komutları
+13d 42sn
+2
+2.Hafta Gelişmiş Veri Modelleme
+55d 36sn
+  ( 0/8 )
+2.1_Veri Hiyerarşisi
+7d 11sn
+2.2_Veri Yapısı
+5d 41sn
+2.3_Veri Analizi
+8d 51sn
+2.4_Veri Modelleme
+8d 17sn
+2.5_Kavramsal Veri Modeli
+6d 33sn
+2.6_Mantıksal Veri Modeli
+5d 49sn
+2.7_Fiziksel Veri Modeli
+5d 13sn
+2.8_Veri Modeli Diyagramı Oluşturma
+8d 1sn
+3
+3.Hafta Büyük Veri Altyapı Yönetimi
+1s 51d 14sn
+  ( 1/9 )
+3.1_Big Data Nedir Neden Big Data
+18d 16sn
+3.2. Big Data Ekosistemi (Kütüphaneleri)
+17d 16sn
+3.3_Hadoop ve Bileşenleri
+16d 52sn
+3.4_ Hadoop Kurulum Modları ve Cloudera
+10d 34sn
+3.5_ Apache Hive Nedir?
+18d
+3.6_ Apache Hive Konsol İşlemleri
+1d 50sn
+3.7_Büyük Veri
+8d 45sn
+3.8_Büyük Veri V leri
+9d 12sn
+3.9_Büyük Veri Araçları
+10d 29sn
+4
+4.Hafta Gelişmiş Veri İşleme Çerçeveleri
+2s 20d 23sn
+  ( 0/19 )
+4.1_Apache Spark Nedir?
+7d 33sn
+4.2_Apache Spark RDD Yapısı
+3d 3sn
+4.3_Apache Spark Proje Oluşturma
+8d 30sn
+4.4_Apache Spark Veri Yükleme Aşamaları
+4d 7sn
+4.5_Apache Spark RDD Transformasyon Yapısı Map Methodu
+11d 31sn
+4.6.ApacheSparkRDDTransformasyonYapisiFilterMethodu
+9d 14sn
+4.7_Apache Spark Flat Map Distinct Methodu
+4d 49sn
+4.8_ApacheSparkPairRDDveGroupByKeyMethodu
+9d 1sn
+4.9_ApacheSparkLazyEvulationKavrami
+3d 11sn
+4.10_ApacheSparkActionMethodu
+5d 17sn
+4.11_ApacheSparkSQLNedir
+8d 49sn
+4.12_ApacheSparkSQLCsvOkuma
+6d 12sn
+4.13_ApacheSparkSQLStructType
+9d 39sn
+4.14_ApacheSparkSQLFilterYapisi
+9d 53sn
+4.15_Apache Spark SQL Group By Yapisi
+11d 31sn
+4.16_Apache Spark SQL API
+5d 55sn
+4.17_ApacheSparkTempviewGlobalviewKavramlari
+1d 55sn
+4.18_SparkveHadoop(HDFS)Entegrasyonu-Okuma
+10d 11sn
+4.19_SparkveHadoop(HDFS)Entegrasyonu-Yazma
+10d 2sn
+5
+5.Hafta Ölçeklenebilir Veri Depolama Çözümleri
+1s 28d 21sn
+  ( 0/5 )
+5.1_Mongo DB Nedir?
+8d 15sn
+5.2_Mongo DB Kurulumu
+8d 31sn
+5.3_Mongo DB Atlas(Cloud) Kurulumu
+7d 34sn
+5.4_Mongo DB Java Entegrasyonu
+33d
+5.6_MongoDB Cluster Kurulumu
+31d 1sn
+6
+6.Hafta Gerçek Zamanlı Veri Akışı
+3s 45d 26sn
+  ( 0/24 )
+6.1_Elastic search Nedir?
+8d 12sn
+6.2_Elasticsearch Kurulumu
+4d 38sn
+6.3_Elasticsearch CRUD İşlemleri
+15d 34sn
+6.4_Elasticsearch Java Entegrasyonu
+7d 9sn
+6.5_Elasticsearch Java Index Api Kullanımı
+8d 47sn
+6.6_Elasticsearch Java GetApi Kullanımı
+3d 29sn
+6.7_Elasticsearch JavaSearch Api Kullanımı
+5d 15sn
+6.8_Elasticsearch Java Delete Api Kullanımı
+3d 49sn
+6.9_Apache Kafka Nedir?
+5d 47sn
+6.10_Apache Kafka ve Zookeeper Windows Kurulumları
+7d 59sn
+6.11_Apache Kafka Kavramları
+16d 52sn
+6.12_Apache Kafka Topic Komutları
+3d 30sn
+6.13_Apache Kafka Java Producer
+11d 25sn
+6.14_Apache Kafka Java Consumer
+8d 36sn
+6.15_Spark Streaming Nedir?
+7d 17sn
+6.16_Spark Streaming Çesitleri
+3d 45sn
+6.17_Spark Streamingile Anlik Mesaj Analizi
+14d 18sn
+6.18_Spark Streaming Örneginin Mimarisi
+3d 48sn
+6.19_Spark Streaming ile IoT Analizi
+15d 27sn
+6.20_Streaming Complete ve Update Modları
+4d 26sn
+6.21_Spark Streaming Time Window (ZamanGruplari)
+5d 34sn
+6.22_Spark Streaming Time Window ile Mesaj Analizi
+11d 29sn
+6.23_Spark Streaming ileKafka Entegrasyonu
+22d 21sn
+6.24_Apache Kafka Cloud Kurulumu
+25d 59sn
+7
+7. Hafta Gelişmiş Veri Analiz Teknikleri
+2s 50d 37sn
+  ( 0/16 )
+7.1_Makine Öğrenmesi Nedir?
+13d 21sn
+7.2_Apache Spark MLlib Kütüphanesi
+9d 16sn
+7.3_Tahmin(Regresyon) Nedir?
+3d 14sn
+7.4_Linear Regression(DogrusalRegresyon) Nedir?
+3d 24sn
+7.5_Linear Regression Veri seti
+4d 27sn
+7.6_Spark MLlib ile Linear Regression Uygulaması
+20d 12sn
+7.7_Model Değerlendirme R2 YÖntemi
+8d 29sn
+7.8_Naive Bayes Algoritması
+10d 48sn
+7.9_Spark MLlib ile Naive Bayes Uygulaması
+17d 11sn
+7.10_Naive Bayes Model Değerlendirme
+3d 18sn
+7.11_Naive Bayes ile Şeker Hastalığı Tahmini
+18d 37sn
+7.12_Veri Madenciliği
+11d 25sn
+7.13_Veri Madenciliği Süreci
+13d 10sn
+7.14_Veri Madenciliği Yöntemleri
+14d 7sn
+7.15_Veri Madenciliği Araçları
+6d 58sn
+7.16_Veri Madenciliği Örnek Uygulama
+12d 40sn
+8
+8. Hafta Gelişmiş Veri Görselleştirme ve Keşif
+28d 16sn
+  ( 0/3 )
+8.1_Veri Görselleştirmeye Giriş
+8d 57sn
+8.2_Veri Görselleştirmeye Yöntemleri
+12d 11sn
+8.3_Veri Görselleştirmeye Araçları
+7d 8sn
+9
+9.Hafta Büyük Veri Güvenliği ve Gizliliği
+1s 13d 23sn
+  ( 0/5 )
+9.1_Veri Güvenliği
+8d 11sn
+9.2_Kişisel Cihaz Güvenliği
+11d 10sn
+9.3_Elasticsearch Security İşlemleri-1
+14d 43sn
+9.4_Elasticsearch Security İşlemleri-2
+11d 30sn
+9.5_MongoDB Security İşlemleri
+27d 49sn
+10
+10.Hafta Bulut Tabanlı Büyük Veri Çözümleri
+1s 17d 5sn
+  ( 0/5 )
+10.1_Bulut (Cloud) Ortamı Tanıtımı
+16d 4sn
+10.2_MongoDB Cloud Kurulumu
+8d 44sn
+10.3_Elasticsearch ve Kibana Cloud Kurulumu
+14d 29sn
+10.4_Apache Spark için Databricks Cloud Kurulumu
+26d 36sn
+10.5_JDK ve Intellij Kurulumu
+11d 12sn
+11
+11.Hafta Gelişmiş Veri Entegrasyonu ve ETL Süreçleri
+1s 34d 3sn
+  ( 0/10 )
+11.1_Veri Depolama Seçeneklerine Giriş
+42sn
+11.2_Google Cloud Üzerinde Depolama Seçenekleri
+5d 25sn
+11.3_Google Cloud Storage Servisine Giriş
+8d
+11.4_Google Cloud Yönetilen Veri Hizmetlerine Genel Bakış
+5d 38sn
+11.5_Google Cloud Big Data Hizmetlerine Genel Bakış
+14d 14sn
+11.6_Google Cloud Machine Learning Hizmetlerine Genel Bakış
+19d 44sn
+11.7_Azure Veri Depolama Seçeneklerine Giriş
+2d 32sn
+11.8_Verileri Depolamak İçin Azure Kullanmanın Avantajları
+6d 40sn
+11.9_Azure Veri Depolama İş Depolama İhtiyaçlarınızı Nasıl Karşılar
+16d 31sn
+11.10_Azure Veri Depolama Ve Şirket İçi Depolama Karşılaştırması
+14d 37sn
+12
+12.Hafta Büyük Veri Yönetişimi ve Uyumluluk
+1s 34d 57sn
+  ( 0/11 )
+12.1_Veri Kalitesi
+11d 28sn
+12.2_Veri Kalitesini Bozan Sebepler
+6d 48sn
+12.3_Veri Temizleme
+7d 58sn
+12.4_Veri Optimizasyonu
+5d 42sn
+12.5_Veri Bütünlüğü
+8d 13sn
+12.6_Veri Tabanı ve Veri Ambarı Kavramları
+4d 54sn
+12.7_Veri Tabanı Kavramı
+14d 3sn
+12.8_Yapısal Sorgu Dili
+9d 15sn
+12.9_Veri Ambarı Kavramı
+11d 10sn
+12.10_Veri Tabanı ve Veri Ambarı Karşılaştırma
+7d 42sn
+12.11_Veri Tabanı Örnek Uygulama
+7d 44sn
+13
+13.Hafta Optimizasyon ve Performans Ayarlama
+45d 26sn
+  ( 0/4 )
+13.1_Model Seçimi
+11d 59sn
+13.2_Model Seçme Yöntemleri
+15d 26sn
+13.3_Regularizasyon
+10d 45sn
+13.4_Hiperparametre Ayarlaması
+7d 16sn
+14
+14.Hafta Gelişmiş Analitik Uygulamaları
+5s 51d 42sn
+  ( 0/15 )
+14.1_Sosyal Medya Büyük Veri Uygulamaları
+20d 5sn
+14.2_Twitter Api Oluşturma ve Kullanma
+17d 7sn
+14.3_Twitter Java Api MongoDB Entegrasyonu
+28d 26sn
+14.4_Twitter Java Api Kafka Entegrasyonu
+25d 4sn
+14.5_PySpark ile Twitter Analizi
+27d 16sn
+14.6_Fenomen ve Sahte Hesapların Tespiti
+18d 58sn
+14.7_Elasticsearch ile Coğrafi Sorgular
+22d 21sn
+14.8_En Yakın Noktayı Bulma Projesi
+18d 55sn
+14.9_Kibana ile Coğrafi Sorgular
+14d 50sn
+14.10_Click Event Uygulamaları
+19d 39sn
+14.11_Click Event için API Hazirlama
+36d 51sn
+14.12_Click Event Elasticsearch İşlemleri
+27d 55sn
+14.13_Click Event Random İşlemleri
+20d 55sn
+14.14_Click Event Kibana İşlemleri
+29d 34sn
+14.15_Click Event Frontend Entegrasyonu
+23d 46sn
+15
+15.Hafta Sektörlerde Büyük Veri Teknolojileri
+6s 4d 10sn
+  ( 0/20 )
+15.1_E-Ticaret Büyük Veri Kullanımları
+31d 40sn
+15.2_Müşteri Arama Kayıtları Projesi
+8d 12sn
+15.3_Müşteri Arama Kayıtları Projesi API Hazırlanması
+17d 8sn
+15.4_Müşteri Arama Kayıtları Projesi Kafka Producer
+12d 30sn
+15.5_Müşteri Arama Kayıtları Projesi Kafka Consumer
+21d 47sn
+15.6_Müşteri Arama Kayıtları Projesi Spark ile Veri Analizi
+16d 40sn
+15.7_Müşteri Arama Kayıtları Projesi Pivot İşlemleri
+18d 25sn
+15.8_Müşteri Arama Kayıtları Projesi Streaming İşlemleri
+11d 5sn
+15.9_Gerçek Zamanlı Ürün Takibi
+13d 7sn
+15.10_Günün En Yoğun Saatlerinin Tespiti
+9d 49sn
+15.11_Projenin Frontend Entegrasyonu
+14d 46sn
+15.12_Finans Büyük Veri Kullanımları
+17d 13sn
+15.13_EFT Takip Projesi Veri Hazırlama
+27d 18sn
+15.14_EFT Takip Projesi Kafka İşlemleri
+14d 28sn
+15.15_EFT Takip Projesi Spark İşlemleri
+35d 55sn
+15.16_EFT Takip Projesi Kaydetme İşlemleri
+19d
+15.17_İlişkisel Veritabanı Kurulumu
+14d 46sn
+15.18_Dwh için Veri Aktarımı
+14d 52sn
+15.19_Qrcode Kullanım Projesi
+35d 35sn
+15.20_Qrcode Kullanım Projesi-2 burayi duzenle

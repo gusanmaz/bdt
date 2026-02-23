@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dağıtık Sistemlere Giriş ve Python Hatırlatma | Büyük Veri Teknolojileri</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body>
+
+<!-- ═══════════ TOP NAV ═══════════ -->
+<header class="top-nav">
+  <a href="#" class="nav-brand">📊 Büyük Veri Teknolojileri</a>
+  <div class="nav-links">
+    <a href="hafta1.html" class="active">Dağıtık Sistemler & Python</a>
+    <a href="hafta2.html">Veri Modelleme & Pandas</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero">
+  <span class="week-badge">📅 BÖLÜM 1</span>
+  <h1>Dağıtık Sistemlere Giriş ve Python Hatırlatma</h1>
+  <p class="subtitle">Büyük veri dünyasına ilk adım: Python temellerini tazeleyip, dağıtık sistemlerin ne olduğunu ve neden ihtiyaç duyulduğunu öğreniyoruz.</p>
+  <div class="meta-info">
+    <span>📖 Teori: 2 saat</span>
+    <span>💻 Uygulama: 3 saat</span>
+    <span>📊 Seviye: Giriş</span>
+  </div>
+</section>
+
+<!-- ═══════════ MAIN LAYOUT ═══════════ -->
+<div class="main-container">
+
+  <!-- ─── Sidebar TOC ─── -->
+  <aside class="sidebar">
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list">
+      <a href="hafta1.html" class="current-page">📘 Dağıtık Sistemler & Python</a>
+      <a href="hafta2.html">📗 Veri Modelleme & Pandas</a>
+    </div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <!-- ─── Content ─── -->
+  <main class="content">
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="ders-plani">📅 Dönemlik Ders Planı (Tentative)</h2>
+
+    <div class="alert alert-warning">
+      <div class="alert-title">⚠️ Bu plan taslaktır (tentative) ve dönem içinde değişebilir!</div>
+      <p>Aşağıdaki plan, dersin genel gidişatını göstermek amacıyla hazırlanmıştır. Öğrenci ihtiyaçlarına, ilerleme hızına ve güncel gelişmelere bağlı olarak konu sıralaması ve içeriklerde değişiklikler yapılabilir. <strong>Sınav haftalarında ders işlenmez.</strong></p>
+    </div>
+
+    <div class="alert alert-danger">
+      <div class="alert-title">⚖️ Yasal Mevzuat ve Akademik Dürüstlük</div>
+      <p>Bu ders kapsamındaki tüm sınavlar, ödevler ve projeler <strong>2547 sayılı Yükseköğretim Kanunu</strong> ve ilgili yönetmelikler çerçevesinde değerlendirilir. Sınavlarda <strong>kopya çekmek, kopya vermek veya buna teşebbüs etmek</strong> disiplin suçudur.</p>
+      <ul>
+        <li>📌 Kopya fiili tespit edildiğinde ilgili sınav <strong>geçersiz</strong> sayılır ve tutanak tutulur.</li>
+        <li>📌 <strong>Kınama</strong> veya daha ağır disiplin cezalarına yol açabilir; tekrarlayan durumlarda <strong>uzaklaştırma</strong> cezası uygulanabilir.</li>
+        <li>📌 Ödev ve projelerde <strong>intihal (plagiarism)</strong> de aynı kapsamda değerlendirilir.</li>
+      </ul>
+      <p>📄 <strong>2547 Sayılı Yükseköğretim Kanunu:</strong> <a href="https://cdn.anadolu.edu.tr/files/anadolu-cms/7gldkYw1/file/2547-sayili-yuksekogretim-kanunu-3befcc7ff61806b0.pdf" target="_blank">PDF İndir</a></p>
+      <p>⚠️ Tüm öğrenciler, kayıtlı oldukları üniversitenin <strong>öğrenci disiplin yönetmeliği</strong>ni okumakla yükümlüdür.</p>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Hafta</th><th>Konu Başlığı</th><th>Teori Özet</th><th>Uygulama Özet</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>1</strong></td><td>Dağıtık Sistemlere Giriş</td><td>Dağıtık sistem nedir? Hadoop, MapReduce (kavramsal)</td><td>Python tekrarı, map/filter/reduce, Word Count</td></tr>
+          <tr><td><strong>2</strong></td><td>Veri Modelleme</td><td>Veri hiyerarşisi, veri türleri, 5V, DIKW</td><td>CSV/JSON okuma-yazma, Pandas'a giriş</td></tr>
+          <tr><td><strong>3</strong></td><td>Veri İşleme Çerçeveleri</td><td>Spark nedir? Batch vs Stream, lazy evaluation</td><td>PySpark ile ilk adımlar (Colab)</td></tr>
+          <tr><td><strong>4</strong></td><td>Veri Depolama</td><td>Veritabanı nedir? SQL vs NoSQL</td><td>SQLite ile SQL temelleri, MongoDB Atlas tanıtım</td></tr>
+          <tr><td><strong>5</strong></td><td>Gerçek Zamanlı Veri Akışı</td><td>Kafka, Streaming kavramları</td><td>Python ile producer-consumer simülasyonu</td></tr>
+          <tr><td><strong>6</strong></td><td>Veri Analiz Teknikleri</td><td>EDA, makine öğrenmesine giriş</td><td>Scikit-learn ile temel regresyon</td></tr>
+          <tr><td><strong>7</strong></td><td>Büyük Veri Altyapı Yönetimi</td><td>Ekosistem haritası, araçlar</td><td>PySpark SQL sorguları</td></tr>
+          <tr style="background: var(--accent-color); color: white; font-weight: bold;"><td><strong>8</strong></td><td>📝 ARA SINAV</td><td colspan="2">Bu hafta ders işlenmez — tüm süre sınava ayrılmıştır</td></tr>
+          <tr><td><strong>9</strong></td><td>Veri Görselleştirme</td><td>Grafik türleri, dashboard kavramı</td><td>Matplotlib, Seaborn, Plotly</td></tr>
+          <tr><td><strong>10</strong></td><td>Büyük Veri Güvenliği</td><td>CIA, KVKK, GDPR, anonimleştirme</td><td>Python ile veri hashleme, maskeleme</td></tr>
+          <tr><td><strong>11</strong></td><td>Bulut Tabanlı Çözümler</td><td>Bulut bilişim, Databricks</td><td>Databricks Community Edition ile PySpark</td></tr>
+          <tr><td><strong>12</strong></td><td>Veri Entegrasyonu ve ETL</td><td>ETL nedir? Veri kaynakları</td><td>API'den veri çekme, Pandas ile temizleme</td></tr>
+          <tr><td><strong>13</strong></td><td>Yönetişim ve Optimizasyon</td><td>Veri kalitesi, performans, format karşılaştırma</td><td>Veri temizleme + CSV vs Parquet testi</td></tr>
+          <tr><td><strong>14</strong></td><td>Gelişmiş Analitik</td><td>Sınıflandırma, metin analizi, NLP</td><td>Duygu analizi uygulaması</td></tr>
+          <tr><td><strong>15</strong></td><td>Proje Sunumları</td><td colspan="2">Öğrenci proje sunumları + dönem değerlendirmesi</td></tr>
+          <tr style="background: var(--accent-color); color: white; font-weight: bold;"><td><strong>Final</strong></td><td>📝 FİNAL SINAVI</td><td colspan="2">Ders işlenmez — tüm dönem konularından sınav</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">📊 Değerlendirme (Tentative)</div>
+      <div class="table-wrapper" style="margin-top: 0.5rem;">
+        <table>
+          <tbody>
+            <tr><td><strong>Derse Katılım & Lab Çalışmaları</strong></td><td>%10</td></tr>
+            <tr><td><strong>Ara Sınav (Hafta 8 — ders yok)</strong></td><td>%25</td></tr>
+            <tr><td><strong>Dönem Projesi (Hafta 15)</strong></td><td>%25</td></tr>
+            <tr><td><strong>Final Sınavı (dönem sonu — ders yok)</strong></td><td>%40</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="kazanimlar">🎯 Bu Haftanın Kazanımları</h2>
+
+    <ul class="objectives-list">
+      <li><span class="obj-icon">✅</span> Python'da değişken, liste, sözlük, döngü ve fonksiyon kavramlarını hatırlayıp uygulayabilir</li>
+      <li><span class="obj-icon">✅</span> Nesne yönelimli programlamanın (OOP) temellerini anlayabilir</li>
+      <li><span class="obj-icon">✅</span> Sunucu (server) kavramını ve dağıtık sistemleri açıklayabilir</li>
+      <li><span class="obj-icon">✅</span> MapReduce mantığını kavramsal düzeyde anlayabilir</li>
+      <li><span class="obj-icon">✅</span> Python'da <code>map()</code>, <code>filter()</code>, <code>reduce()</code> fonksiyonlarını kullanabilir</li>
+      <li><span class="obj-icon">✅</span> Basit bir word count uygulamasını Python ile yazabilir</li>
+      <li><span class="obj-icon">✅</span> Git ve GitHub temellerini bilir, GitHub hesabı açabilir</li>
+    </ul>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="python-hatirlama">🐍 Bölüm 1: Python Hatırlatma</h2>
+
+    <p>Bu bölümde geçen dönem öğrendiğiniz Python temellerini hızlıca hatırlayacağız. Her konuyu küçük örneklerle pekiştireceğiz. Eğer bir konuyu unuttuysanız endişelenmeyin — burada adım adım tekrar edeceğiz.</p>
+
+    <!-- ─── Değişkenler ─── -->
+    <h3 id="degiskenler">📦 Değişkenler ve Veri Tipleri</h3>
+
+    <p>Programlamada <strong>değişken</strong> (variable), bir değeri bellekte saklamamıza yarayan isimlendirilmiş kutulardır. Python'da değişken tanımlamak çok kolaydır — tip belirtmeye gerek yoktur, Python bunu otomatik anlar.</p>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># Değişken tanımlama
+isim = "Ahmet"          # str (metin/string)
+yas = 21                # int (tam sayı)
+boy = 1.75              # float (ondalıklı sayı)
+ogrenci_mi = True       # bool (mantıksal değer)
+
+# Değişkenleri ekrana yazdırma
+print(isim)             # Ahmet
+print(type(isim))       # <class 'str'>
+print(type(yas))        # <class 'int'>
+print(type(boy))        # <class 'float'>
+print(type(ogrenci_mi)) # <class 'bool'>
+
+# f-string ile formatlı yazdırma
+print(f"Merhaba, ben {isim}. {yas} yaşındayım ve boyum {boy} metre.")</code></pre>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 Bilgi</div>
+      Python'da 4 temel veri tipi vardır: <code>str</code> (metin), <code>int</code> (tam sayı), <code>float</code> (ondalıklı sayı) ve <code>bool</code> (True/False). <code>type()</code> fonksiyonu ile herhangi bir değerin tipini öğrenebilirsiniz.
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Veri Tipi</th><th>Python Adı</th><th>Örnek</th><th>Açıklama</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Metin</td><td><code>str</code></td><td><code>"Merhaba"</code></td><td>Tırnak içinde yazılır</td></tr>
+          <tr><td>Tam Sayı</td><td><code>int</code></td><td><code>42</code></td><td>Ondalık kısmı olmayan sayılar</td></tr>
+          <tr><td>Ondalıklı Sayı</td><td><code>float</code></td><td><code>3.14</code></td><td>Noktadan sonra rakam içerir</td></tr>
+          <tr><td>Mantıksal</td><td><code>bool</code></td><td><code>True</code> / <code>False</code></td><td>Sadece iki değer alabilir</td></tr>
+          <tr><td>Hiçbir Şey</td><td><code>NoneType</code></td><td><code>None</code></td><td>Değer olmadığını belirtir</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ─── Listeler ─── -->
+    <h3 id="listeler">📋 Listeler (Lists)</h3>
+
+    <p><strong>Liste</strong>, birden fazla değeri sıralı bir şekilde saklamak için kullanılan veri yapısıdır. Büyük veri ile çalışırken sürekli listelerle karşılaşacaksınız — çünkü veriler genellikle bir "şeylerin listesi" şeklindedir.</p>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># Liste oluşturma
+notlar = [85, 92, 78, 95, 88]
+isimler = ["Ahmet", "Ayşe", "Mehmet", "Fatma"]
+karisik = [1, "hello", 3.14, True]  # Farklı tipler olabilir
+
+# Eleman erişimi (index 0'dan başlar!)
+print(notlar[0])    # 85 (ilk eleman)
+print(notlar[-1])   # 88 (son eleman)
+print(notlar[1:3])  # [92, 78] (1. ve 2. index, 3 dahil değil)
+
+# Liste uzunluğu
+print(len(notlar))  # 5
+
+# Eleman ekleme
+notlar.append(100)         # Sona ekle
+notlar.insert(0, 70)       # Başa ekle
+print(notlar)              # [70, 85, 92, 78, 95, 88, 100]
+
+# Eleman silme
+notlar.remove(78)          # Değere göre sil
+silinen = notlar.pop()     # Son elemanı çıkar ve döndür
+print(f"Silinen: {silinen}")
+
+# Liste sıralama
+notlar.sort()              # Küçükten büyüğe
+print(notlar)
+
+# Faydalı fonksiyonlar
+print(f"En yüksek not: {max(notlar)}")
+print(f"En düşük not: {min(notlar)}")
+print(f"Ortalama: {sum(notlar) / len(notlar):.1f}")</code></pre>
+    </div>
+
+    <!-- ─── Sözlükler ─── -->
+    <h3 id="sozlukler">📖 Sözlükler (Dictionaries)</h3>
+
+    <p><strong>Sözlük</strong> (<code>dict</code>), verileri <em>anahtar-değer</em> (key-value) çiftleri halinde saklayan veri yapısıdır. Gerçek hayattaki bir sözlük gibi düşünün: kelimeyi (anahtar) ararsınız, anlamını (değer) bulursunuz.</p>
+
+    <p>Büyük veri teknolojilerinde sözlükler çok önemlidir. <strong>JSON</strong> formatı (buna ileride detaylıca bakacağız), NoSQL veritabanları ve API'ler hep bu anahtar-değer mantığını kullanır.</p>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># Sözlük oluşturma
+ogrenci = {
+    "isim": "Ahmet",
+    "yas": 21,
+    "bolum": "Bilişim Teknolojileri",
+    "notlar": [85, 92, 78],
+    "aktif": True
+}
+
+# Değer okuma
+print(ogrenci["isim"])        # Ahmet
+print(ogrenci.get("yas"))     # 21
+print(ogrenci.get("adres", "Belirtilmemiş"))  # Belirtilmemiş (varsayılan)
+
+# Değer ekleme/güncelleme
+ogrenci["email"] = "ahmet@mail.com"  # Yeni anahtar ekleme
+ogrenci["yas"] = 22                   # Mevcut değeri güncelleme
+
+# Sözlük üzerinde gezinme
+for anahtar, deger in ogrenci.items():
+    print(f"{anahtar}: {deger}")
+
+# Tüm anahtarlar ve değerler
+print(ogrenci.keys())    # Anahtarlar
+print(ogrenci.values())  # Değerler
+
+# Sözlüğün içinde sözlük (iç içe yapı)
+sinif = {
+    "ogrenci_1": {"isim": "Ahmet", "not": 85},
+    "ogrenci_2": {"isim": "Ayşe", "not": 92},
+    "ogrenci_3": {"isim": "Mehmet", "not": 78},
+}
+print(sinif["ogrenci_2"]["isim"])  # Ayşe</code></pre>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">💜 İpucu</div>
+      Sözlüklerin <code>dict</code> yapısı, JSON formatının Python'daki doğal karşılığıdır. JSON'u ileride öğrendiğinizde "bu zaten sözlük gibi" diyeceksiniz!
+    </div>
+
+    <!-- ─── Döngüler ─── -->
+    <h3 id="donguler">🔄 Döngüler</h3>
+
+    <p>Döngüler, aynı işlemi tekrar tekrar yapmak için kullanılır. Büyük veri işleme, aslında milyonlarca kayıt üzerinde döngü kurmak demektir!</p>
+
+    <h4 id="for-dongusu">for Döngüsü</h4>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># Liste üzerinde gezinme
+meyveler = ["elma", "armut", "portakal", "muz"]
+
+for meyve in meyveler:
+    print(f"🍎 {meyve}")
+
+# range() ile sayı döngüsü
+for i in range(5):        # 0, 1, 2, 3, 4
+    print(i, end=" ")
+print()                   # Yeni satır
+
+# range(başlangıç, bitiş, adım)
+for i in range(1, 10, 2):  # 1, 3, 5, 7, 9
+    print(i, end=" ")
+print()
+
+# enumerate() ile index ve değer birlikte
+for index, meyve in enumerate(meyveler):
+    print(f"{index + 1}. {meyve}")
+
+# Sözlük üzerinde döngü
+ogrenci = {"isim": "Ahmet", "yas": 21, "bolum": "BT"}
+for key, value in ogrenci.items():
+    print(f"{key} → {value}")</code></pre>
+    </div>
+
+    <h4 id="while-dongusu">while Döngüsü</h4>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># Bir koşul doğru olduğu sürece döner
+sayac = 0
+while sayac < 5:
+    print(f"Sayaç: {sayac}")
+    sayac += 1
+
+# Toplam hesaplama
+toplam = 0
+sayi = 1
+while sayi <= 100:
+    toplam += sayi
+    sayi += 1
+print(f"1'den 100'e toplam: {toplam}")  # 5050</code></pre>
+    </div>
+
+    <h4 id="list-comprehension">List Comprehension (Liste Üreteci)</h4>
+
+    <p><strong>List comprehension</strong>, döngüyle liste oluşturmanın kısa ve şık yoludur. Python'a özgü ve çok kullanılan bir tekniktir.</p>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># Klasik yol
+kareler = []
+for i in range(1, 6):
+    kareler.append(i ** 2)
+print(kareler)  # [1, 4, 9, 16, 25]
+
+# List comprehension ile aynı şey (tek satır!)
+kareler = [i ** 2 for i in range(1, 6)]
+print(kareler)  # [1, 4, 9, 16, 25]
+
+# Koşullu list comprehension
+cift_sayilar = [x for x in range(20) if x % 2 == 0]
+print(cift_sayilar)  # [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
+
+# String işlemiyle birlikte
+isimler = ["ahmet", "ayşe", "mehmet"]
+buyuk_isimler = [isim.upper() for isim in isimler]
+print(buyuk_isimler)  # ['AHMET', 'AYŞE', 'MEHMET']</code></pre>
+    </div>
+
+    <!-- ─── Fonksiyonlar ─── -->
+    <h3 id="fonksiyonlar">⚙️ Fonksiyonlar</h3>
+
+    <p><strong>Fonksiyon</strong>, belirli bir görevi yapan ve tekrar tekrar çağrılabilen kod bloğudur. "Yemek tarifi" gibi düşünebilirsiniz: bir kez yazarsınız, istediğiniz kadar kullanırsınız.</p>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># Basit fonksiyon
+def selamla(isim):
+    """Verilen ismi selamlar."""
+    return f"Merhaba, {isim}! 👋"
+
+mesaj = selamla("Ahmet")
+print(mesaj)  # Merhaba, Ahmet! 👋
+
+# Birden fazla parametre
+def toplam_bul(sayilar):
+    """Bir listedeki sayıların toplamını döndürür."""
+    sonuc = 0
+    for sayi in sayilar:
+        sonuc += sayi
+    return sonuc
+
+notlar = [85, 92, 78, 95, 88]
+print(f"Toplam: {toplam_bul(notlar)}")  # 438
+
+# Varsayılan parametre
+def bilgi_goster(isim, bolum="Belirtilmemiş"):
+    print(f"İsim: {isim}, Bölüm: {bolum}")
+
+bilgi_goster("Ahmet", "Bilişim")   # İsim: Ahmet, Bölüm: Bilişim
+bilgi_goster("Ayşe")                # İsim: Ayşe, Bölüm: Belirtilmemiş
+
+# Birden fazla değer döndürme
+def istatistikler(sayilar):
+    """Min, max ve ortalama döndürür."""
+    return min(sayilar), max(sayilar), sum(sayilar) / len(sayilar)
+
+en_kucuk, en_buyuk, ortalama = istatistikler(notlar)
+print(f"Min: {en_kucuk}, Max: {en_buyuk}, Ort: {ortalama:.1f}")</code></pre>
+    </div>
+
+    <div class="alert alert-warning">
+      <div class="alert-title">⚠️ Dikkat</div>
+      <code>def</code> anahtar kelimesinden sonra fonksiyon adı, parantez içinde parametreler ve <code>:</code> gelir. Fonksiyon gövdesi <strong>girintili</strong> (indented) yazılmalıdır — Python'da girinti çok önemlidir!
+    </div>
+
+    <!-- ─── Lambda ─── -->
+    <h3 id="lambda">⚡ Lambda (Anonim Fonksiyonlar)</h3>
+
+    <p><strong>Lambda</strong>, tek satırlık küçük fonksiyonlar oluşturmak için kullanılır. İsim vermeden hızlıca bir fonksiyon tanımlarsınız. Birazdan göreceğimiz <code>map()</code> ve <code>filter()</code> ile sıkça kullanılır.</p>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># Normal fonksiyon
+def kare_al(x):
+    return x ** 2
+
+# Aynısı lambda ile
+kare_al = lambda x: x ** 2
+print(kare_al(5))  # 25
+
+# İki parametre
+topla = lambda a, b: a + b
+print(topla(3, 4))  # 7
+
+# Sıralama'da lambda kullanımı
+ogrenciler = [
+    {"isim": "Ahmet", "not": 85},
+    {"isim": "Ayşe", "not": 92},
+    {"isim": "Mehmet", "not": 78},
+]
+
+# Nota göre sırala (büyükten küçüğe)
+sirali = sorted(ogrenciler, key=lambda x: x["not"], reverse=True)
+for o in sirali:
+    print(f"{o['isim']}: {o['not']}")</code></pre>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">📚 Daha Fazla Python İçin</div>
+      Geçen dönem <strong>Veri Yapıları ve Algoritmalar</strong> dersinde Python'u daha detaylı öğrenmiştik. O dersin notlarına aşağıdaki linkten ulaşabilirsiniz:<br><br>
+      🔗 <a href="https://gusanmaz.github.io/algs/" target="_blank"><strong>Veri Yapıları ve Algoritmalar Ders Notları</strong></a><br><br>
+      Python temellerinizi tazelemek istiyorsanız oradan başlamak iyi bir fikir!
+    </div>
+
+    <!-- ─── OOP ─── -->
+    <h3 id="oop">🏗️ Nesne Yönelimli Programlama (OOP — Object-Oriented Programming)</h3>
+
+    <p><strong>OOP</strong>, kodu <strong>nesneler</strong> (objects) etrafında organize eden bir programlama yaklaşımıdır. Gerçek dünyadaki kavramları (öğrenci, araba, dosya) yazılıma modellememizi sağlar. Büyük veri kütüphaneleri (Pandas, PySpark) OOP yapısındadır — <code>DataFrame</code> aslında bir <strong>sınıfın</strong> (class) örneğidir (instance).</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Kavram (TR)</th><th>İngilizce</th><th>Açıklama</th><th>Örnek</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Sınıf</strong></td><td>Class</td><td>Nesnenin kalıbı, şablonu</td><td><code>class Ogrenci:</code></td></tr>
+          <tr><td><strong>Nesne</strong></td><td>Object / Instance</td><td>Sınıftan oluşturulan somut örnek</td><td><code>ahmet = Ogrenci("Ahmet")</code></td></tr>
+          <tr><td><strong>Özellik</strong></td><td>Attribute / Property</td><td>Nesnenin verileri</td><td><code>ahmet.isim</code>, <code>ahmet.yas</code></td></tr>
+          <tr><td><strong>Metot</strong></td><td>Method</td><td>Nesnenin davranışları/fonksiyonları</td><td><code>ahmet.selamla()</code></td></tr>
+          <tr><td><strong>Yapıcı</strong></td><td>Constructor (<code>__init__</code>)</td><td>Nesne oluşturulunca çalışan fonksiyon</td><td><code>def __init__(self, isim):</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># Basit bir sınıf tanımlama
+class Ogrenci:
+    """Öğrenci bilgilerini tutan sınıf."""
+
+    def __init__(self, isim, numara, bolum="Bilişim"):
+        # Özellikler (attributes)
+        self.isim = isim
+        self.numara = numara
+        self.bolum = bolum
+        self.notlar = []
+
+    def not_ekle(self, not_):
+        """Öğrenciye not ekler."""
+        self.notlar.append(not_)
+
+    def ortalama(self):
+        """Not ortalamasını döndürür."""
+        if not self.notlar:
+            return 0
+        return sum(self.notlar) / len(self.notlar)
+
+    def bilgi(self):
+        """Öğrenci bilgilerini yazdırır."""
+        print(f"📋 {self.isim} ({self.numara}) - {self.bolum}")
+        print(f"   Notlar: {self.notlar}")
+        print(f"   Ortalama: {self.ortalama():.1f}")
+
+# Nesne (object/instance) oluşturma
+ahmet = Ogrenci("Ahmet Yılmaz", "2024001")
+ahmet.not_ekle(85)
+ahmet.not_ekle(92)
+ahmet.not_ekle(78)
+ahmet.bilgi()
+
+# Farklı parametrelerle başka bir nesne
+ayse = Ogrenci("Ayşe Demir", "2024002", "Elektrik")
+ayse.not_ekle(95)
+ayse.bilgi()
+
+# Neden önemli? Pandas'ta her DataFrame aslında bir nesne!
+# df = pd.DataFrame(...)  # DataFrame sınıfından nesne oluşturma
+# df.head()               # head() bir metot
+# df.shape                # shape bir özellik (attribute)</code></pre>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">💜 Neden OOP Bilmek Lazım?</div>
+      Bu derste sürekli kullanacağımız <code>pd.DataFrame()</code>, <code>spark.read.csv()</code> gibi ifadelerin hepsi OOP yapısındadır. <code>df.head()</code> dediğinizde aslında <code>DataFrame</code> sınıfının <code>head</code> <strong>metodunu</strong> çağırıyorsunuz. Bunu bilmek, hata mesajlarını anlamanızı çok kolaylaştırır!
+    </div>
+
+    <!-- ─── Python ile Dosya Okuma ─── -->
+    <h3 id="dosya-islemleri">📂 Python ile Dosya Okuma/Yazma</h3>
+
+    <p>Büyük veri ile çalışırken sürekli dosyaları okuyup yazacağız. Python'un <code>open()</code> fonksiyonu bu iş için temel araçtır.</p>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># ─── Dosyaya yazma ───
+with open("merhaba.txt", "w", encoding="utf-8") as dosya:
+    dosya.write("Merhaba Dünya!\n")
+    dosya.write("Büyük Veri Teknolojileri dersi.\n")
+
+# ─── Dosyadan okuma ───
+with open("merhaba.txt", "r", encoding="utf-8") as dosya:
+    icerik = dosya.read()
+    print(icerik)
+
+# ─── Satır satır okuma (büyük dosyalar için!) ───
+with open("merhaba.txt", "r", encoding="utf-8") as dosya:
+    for satir_no, satir in enumerate(dosya, 1):
+        print(f"Satır {satir_no}: {satir.strip()}")
+
+# ─── Sonuna ekleme (append) ───
+with open("merhaba.txt", "a", encoding="utf-8") as dosya:
+    dosya.write("Bu satır sonradan eklendi.\n")</code></pre>
+    </div>
+
+    <div class="alert alert-warning">
+      <div class="alert-title">⚠️ with bloğu nedir?</div>
+      <code>with open(...) as dosya:</code> yapısı, dosyayı otomatik olarak kapatır. <code>with</code> kullanmazsanız <code>dosya.close()</code> yazmanız gerekir — unutursanız veri kaybı olabilir!
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="git-github">🐙 Bölüm 2: Git, GitHub ve GitHub Classroom</h2>
+
+    <p>Bu derste ödevler <strong>GitHub Classroom</strong> üzerinden verilecektir. Bu yüzden Git ve GitHub'ı öğrenmek zorunludur! Ayrıca Git, yazılım dünyasında en temel araçlardan biridir — iş hayatında da sürekli kullanacaksınız.</p>
+
+    <h3 id="git-nedir">Git Nedir?</h3>
+
+    <p><strong>Git</strong>, kodlarınızdaki değişiklikleri takip eden bir <strong>versiyon kontrol sistemidir</strong> (Version Control System — VCS). Bir belgenin "v1, v2, v3..." sürümlerini elle tutmak yerine, Git bunu otomatik ve akıllı bir şekilde yapar.</p>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 Analoji</div>
+      Git'i Google Docs'taki <strong>"Sürüm geçmişi"</strong> (Version History) gibi düşünebilirsiniz. Her değişikliği kaydeder, istediğiniz zaman geriye dönebilirsiniz. Ama Git çok daha güçlüdür — birden fazla kişi aynı anda çalışabilir!
+    </div>
+
+    <h3 id="github-nedir">GitHub Nedir?</h3>
+
+    <p><strong>GitHub</strong>, Git projelerinizi internette sakladığınız bir platformdur. Kodlarınızı yedekler, başkalarıyla paylaşmanızı sağlar ve ekip çalışması için gerekli araçları sunar.</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Kavram</th><th>İngilizce</th><th>Açıklama</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Depo</strong></td><td>Repository (repo)</td><td>Proje klasörünüz — tüm dosyalar ve geçmiş burada</td></tr>
+          <tr><td><strong>Kayıt</strong></td><td>Commit</td><td>Değişikliklerin anlık fotoğrafı (snapshot)</td></tr>
+          <tr><td><strong>Dal</strong></td><td>Branch</td><td>Ana koddan bağımsız çalışma alanı</td></tr>
+          <tr><td><strong>İtme</strong></td><td>Push</td><td>Yerel değişiklikleri GitHub'a gönderme</td></tr>
+          <tr><td><strong>Çekme</strong></td><td>Pull</td><td>GitHub'daki değişiklikleri yerel bilgisayara alma</td></tr>
+          <tr><td><strong>Klonlama</strong></td><td>Clone</td><td>Bir GitHub deposunu bilgisayara kopyalama</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="github-hesap">📝 GitHub Hesabı Açma</h3>
+
+    <div class="alert alert-success">
+      <div class="alert-title">🚀 Hemen Yapın!</div>
+      <ol>
+        <li><a href="https://github.com" target="_blank"><strong>github.com</strong></a> adresine gidin</li>
+        <li><strong>"Sign up"</strong> butonuna tıklayın</li>
+        <li>Kullanıcı adınızı <strong>profesyonel</strong> seçin (ör: <code>ahmet-yilmaz</code>, gerçek isminizi kullanın)</li>
+        <li>Okul e-postanızı kullanırsanız <a href="https://education.github.com/pack" target="_blank"><strong>GitHub Student Developer Pack</strong></a> (ücretsiz Pro hesap!) alabilirsiniz</li>
+      </ol>
+    </div>
+
+    <h3 id="git-kurulum">⚙️ Git Kurulumu ve Temel Komutlar</h3>
+
+    <div class="code-block" data-lang="bash">
+      <pre><code># Git kurulumu
+# Windows: https://git-scm.com/download/win
+# Mac: brew install git
+# Linux: sudo apt install git
+
+# İlk kurulum (bir kez yapılır)
+git config --global user.name "Adınız Soyadınız"
+git config --global user.email "email@adresiniz.com"
+
+# Yeni bir proje başlatma
+mkdir odevim
+cd odevim
+git init                    # Bu klasörü Git deposu yap
+
+# Dosya ekleyip kaydetme
+echo "Merhaba" > README.md
+git add README.md           # Dosyayı sahneye al (stage)
+git commit -m "İlk commit" # Değişikliği kaydet
+
+# GitHub'a bağlama ve gönderme
+git remote add origin https://github.com/kullanici/odevim.git
+git push -u origin main     # GitHub'a gönder</code></pre>
+    </div>
+
+    <h3 id="git-temel-akis">📊 Temel Git İş Akışı</h3>
+
+    <div class="diagram-container">
+      <div class="diagram-box">
+        <div class="mermaid">
+graph LR
+    A["📂 Çalışma Alanı<br>(Working Directory)"] -->|git add| B["📋 Sahne<br>(Staging Area)"]
+    B -->|git commit| C["📦 Yerel Depo<br>(Local Repository)"]
+    C -->|git push| D["☁️ GitHub<br>(Remote Repository)"]
+    D -->|git pull| A
+    D -->|git clone| A
+        </div>
+      </div>
+      <div class="diagram-caption">Git iş akışı: dosya değişikliklerinin GitHub'a ulaşma süreci</div>
+    </div>
+
+    <h3 id="github-classroom">🏫 GitHub Classroom</h3>
+
+    <p><strong>GitHub Classroom</strong>, öğretmenlerin ödev dağıtması ve toplaması için kullanılan bir araçtır. Bu derste ödevleriniz GitHub Classroom üzerinden verilecek ve teslim edilecektir.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">1️⃣</div>
+        <div class="card-title">Davet Linkine Tıklayın</div>
+        <div class="card-desc">Hoca size bir ödev linki paylaşır. Tıklayınca sizin adınıza otomatik bir repo oluşturulur.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">2️⃣</div>
+        <div class="card-title">Repo'yu Klonlayın</div>
+        <div class="card-desc"><code>git clone &lt;repo-url&gt;</code> ile bilgisayarınıza indirin. Colab'da da açabilirsiniz.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">3️⃣</div>
+        <div class="card-title">Çalışıp Gönderin</div>
+        <div class="card-desc">Ödevi yapın, <code>git add</code>, <code>git commit</code>, <code>git push</code> ile gönderin. Son push tarihi teslim tarihidir!</div>
+      </div>
+    </div>
+
+    <h3 id="git-kaynaklar">📚 Git ve GitHub Kaynakları</h3>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Kaynak</th><th>Tür</th><th>Link</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Git Resmi Kitap (Pro Git)</td><td>📖 Kitap (Ücretsiz)</td><td><a href="https://git-scm.com/book/tr/v2" target="_blank">git-scm.com/book/tr</a></td></tr>
+          <tr><td>GitHub Skills</td><td>🎓 İnteraktif kurs</td><td><a href="https://skills.github.com" target="_blank">skills.github.com</a></td></tr>
+          <tr><td>Learn Git Branching</td><td>🎮 Oyunlaştırılmış öğrenme</td><td><a href="https://learngitbranching.js.org/?locale=tr" target="_blank">learngitbranching.js.org</a></td></tr>
+          <tr><td>GitHub Student Pack</td><td>🎁 Ücretsiz araçlar</td><td><a href="https://education.github.com/pack" target="_blank">education.github.com/pack</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr>
+
+    <h2 id="sunucu-kavrami">🖥️ Bölüm 3: Sunucu (Server) Kavramı</h2>
+
+    <p>Dağıtık sistemlere geçmeden önce, <strong>sunucu</strong> (server) kavramını iyi anlamak gerekiyor. "Sunucu" kelimesini duymuş olabilirsiniz ama tam olarak ne demek?</p>
+
+    <h3 id="sunucu-nedir">Sunucu (Server) Nedir?</h3>
+
+    <p>Bir <strong>sunucu</strong>, diğer bilgisayarlara (istemcilere / clients) hizmet sunan bir bilgisayardır. Aslında sizin kullandığınız bilgisayardan temelde farklı değildir — sadece görevi farklıdır.</p>
+
+    <div class="comparison">
+      <div class="side">
+        <div class="side-title">🖥️ Sunucu (Server)</div>
+        <ul>
+          <li>Diğer bilgisayarlara <strong>hizmet sunar</strong></li>
+          <li>7/24 açık kalır, kesintisiz çalışır</li>
+          <li>Genellikle monitörü/klavyesi yoktur</li>
+          <li>Çok güçlü RAM ve işlemcisi vardır</li>
+          <li>Veri merkezlerinde (data center) bulunur</li>
+        </ul>
+      </div>
+      <div class="side">
+        <div class="side-title">💻 İstemci (Client)</div>
+        <ul>
+          <li>Sunucudan <strong>hizmet ister</strong></li>
+          <li>Kullanıcı tarafından açılıp kapatılır</li>
+          <li>Monitör, klavye, fare ile kullanılır</li>
+          <li>Sizin bilgisayarınız, telefonunuz</li>
+          <li>Tarayıcınız bir "web client"tır</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 Günlük Hayattan Örnek</div>
+      Instagram'da bir fotoğrafa baktığınızda: <strong>telefonunuz</strong> (istemci/client) → Instagram'ın <strong>sunucularına</strong> (server) istek gönderir → sunucu fotoğrafı bulup size geri gönderir. Bu <strong>istemci-sunucu mimarisi</strong> (client-server architecture) denir.
+    </div>
+
+    <h3 id="sunucu-turleri">Sunucu Türleri</h3>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Sunucu Türü (TR)</th><th>İngilizce</th><th>Görevi</th><th>Örnek</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Web Sunucusu</strong></td><td>Web Server</td><td>Web sitelerini barındırır</td><td>Apache, Nginx</td></tr>
+          <tr><td><strong>Veritabanı Sunucusu</strong></td><td>Database Server</td><td>Verileri saklar ve sorgular</td><td>MySQL, PostgreSQL, MongoDB</td></tr>
+          <tr><td><strong>Dosya Sunucusu</strong></td><td>File Server</td><td>Dosyaları merkezi olarak depolar</td><td>NAS, HDFS</td></tr>
+          <tr><td><strong>Uygulama Sunucusu</strong></td><td>Application Server</td><td>Uygulamaları çalıştırır</td><td>Tomcat, Flask</td></tr>
+          <tr><td><strong>DNS Sunucusu</strong></td><td>DNS Server</td><td>Alan adlarını IP'ye çevirir</td><td>google.com → 142.250.x.x</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="temel-ag-terimleri">Temel Ağ Terimleri</h3>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Kavram (TR)</th><th>İngilizce</th><th>Açıklama</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>IP Adresi</strong></td><td>IP Address</td><td>Her bilgisayarın ağdaki benzersiz numarası (ör: 192.168.1.1)</td></tr>
+          <tr><td><strong>Port</strong></td><td>Port</td><td>Bir bilgisayardaki hizmetin kapı numarası (ör: 80 = web, 3306 = MySQL)</td></tr>
+          <tr><td><strong>Protokol</strong></td><td>Protocol</td><td>İletişim kuralları (HTTP, FTP, SSH)</td></tr>
+          <tr><td><strong>API</strong></td><td>Application Programming Interface</td><td>Programların birbirleriyle konuşma yöntemi</td></tr>
+          <tr><td><strong>Bulut</strong></td><td>Cloud</td><td>Başka şirketlerin (AWS, Google, Azure) sunucularını kiralamak</td></tr>
+          <tr><td><strong>Düğüm</strong></td><td>Node</td><td>Bir ağ/kümedeki tek bir bilgisayar</td></tr>
+          <tr><td><strong>Küme</strong></td><td>Cluster</td><td>Birlikte çalışan bilgisayar grubu</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">💜 Dağıtık Sistem = Küme (Cluster)</div>
+      Bir <strong>dağıtık sistem</strong>, aslında birden fazla sunucunun bir <strong>küme</strong> (cluster) oluşturmasıdır. Hadoop, Spark gibi araçlar bu kümelerde çalışır. Her sunucu bir <strong>düğüm</strong> (node) olarak adlandırılır.
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="dagitik-sistemler">🌐 Bölüm 4: Dağıtık Sistemler</h2>
+
+    <h3 id="dagitik-nedir">Dağıtık Sistem Nedir?</h3>
+
+    <p>Şunu hayal edin: Elinizde 1 TB (1000 GB) boyutunda bir veri dosyası var. Bir bilgisayarda bu dosyayı işlemek <strong>saatler</strong> sürebilir. Peki ya bu dosyayı 100 bilgisayara bölüp, her birine küçük bir parça verseniz? İşlem <strong>dakikalara</strong> iner!</p>
+
+    <p>İşte <strong>dağıtık sistem</strong> (distributed system) tam olarak budur: <em>birden fazla bilgisayarın (node/düğüm), bir ağ üzerinde birlikte çalışarak büyük bir görevi paylaşmasıdır.</em></p>
+
+    <div class="diagram-container">
+      <div class="diagram-box">
+        <div class="mermaid">
+graph LR
+    A["🖥️ Tek Bilgisayar<br>1 TB veri<br>⏱️ 10 saat"] -- Dağıtık Sistem --> B["🖥️ Bilgisayar 1<br>200 GB"]
+    A --> C["🖥️ Bilgisayar 2<br>200 GB"]
+    A --> D["🖥️ Bilgisayar 3<br>200 GB"]
+    A --> E["🖥️ Bilgisayar 4<br>200 GB"]
+    A --> F["🖥️ Bilgisayar 5<br>200 GB"]
+    B --> G["✅ Sonuç<br>⏱️ ~2 saat"]
+    C --> G
+    D --> G
+    E --> G
+    F --> G
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil 1: Tek bilgisayar vs dağıtık sistem — aynı işi parçalara bölerek çok daha hızlı bitirmek</div>
+    </div>
+
+    <h4 id="gercek-hayat-ornekleri">Günlük Hayattan Dağıtık Sistem Örnekleri</h4>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🔍</div>
+        <div class="card-title">Google Arama</div>
+        <div class="card-desc">Milyarlarca web sayfasını saniyeler içinde aramanız, binlerce sunucunun paralel çalışması sayesinde mümkündür.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📺</div>
+        <div class="card-title">Netflix / YouTube</div>
+        <div class="card-desc">Dünya genelinde milyonlarca kişi aynı anda video izleyebilir çünkü içerikler birçok sunucuya dağıtılmıştır.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">💬</div>
+        <div class="card-title">WhatsApp</div>
+        <div class="card-desc">2 milyardan fazla kullanıcının mesajları dağıtık sunucularda işlenir ve iletilir.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🛒</div>
+        <div class="card-title">E-Ticaret Siteleri</div>
+        <div class="card-desc">Black Friday gibi yoğun günlerde milyonlarca eşzamanlı kullanıcıyı karşılayabilirler.</div>
+      </div>
+    </div>
+
+    <h4 id="neden-dagitik">Neden Dağıtık Sistemlere İhtiyaç Duyarız?</h4>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Problem</th><th>Tek Bilgisayar</th><th>Dağıtık Sistem</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Kapasite</strong></td><td>RAM/disk sınırlı (ör. 16 GB RAM)</td><td>Düğüm ekleyerek sınırsız ölçeklenme</td></tr>
+          <tr><td><strong>Hız</strong></td><td>Tek işlemci ile sıralı işlem</td><td>Paralel işlem, çok daha hızlı</td></tr>
+          <tr><td><strong>Güvenilirlik</strong></td><td>Bilgisayar bozulursa her şey durur</td><td>Bir düğüm düşse, diğerleri devam eder</td></tr>
+          <tr><td><strong>Maliyet</strong></td><td>Süper bilgisayar → çok pahalı</td><td>Sıradan bilgisayarlardan küme → ucuz</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ─── Hadoop ─── -->
+    <h3 id="hadoop">🐘 Hadoop Ekosistemi</h3>
+
+    <p><strong>Apache Hadoop</strong>, büyük veri işleme dünyasının temel taşlarından biridir. 2006 yılında Yahoo!'da geliştirilmeye başlanmıştır. Adını, yaratıcısı Doug Cutting'in oğlunun oyuncak filinden alır! 🐘</p>
+
+    <h4 id="hadoop-bilesenleri">Hadoop'un 3 Temel Bileşeni</h4>
+
+    <div class="diagram-container">
+      <div class="diagram-box">
+        <div class="mermaid">
+graph TB
+    H["🐘 Apache Hadoop"] --> HDFS["📁 HDFS<br>Hadoop Distributed File System<br><i>Dağıtık Dosya Sistemi</i>"]
+    H --> MR["⚙️ MapReduce<br>Dağıtık İşleme Çerçevesi<br><i>Veriyi paralel işleme</i>"]
+    H --> YARN["🎯 YARN<br>Yet Another Resource Negotiator<br><i>Kaynak yönetimi</i>"]
+    HDFS --> D1["💾 Veriyi parçalara böler"]
+    HDFS --> D2["💾 Birden fazla kopyasını tutar"]
+    MR --> M1["🔄 Map: Veriyi parçala ve dönüştür"]
+    MR --> M2["🔄 Reduce: Sonuçları birleştir"]
+    YARN --> Y1["📊 Hangi iş nerede çalışsın?"]
+    YARN --> Y2["📊 Kaynak tahsisi"]
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil 2: Hadoop'un üç temel bileşeni</div>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 Not</div>
+      Bu derste Hadoop'u <strong>kurmayacağız</strong> — kurulumu karmaşık ve ağırdır. Bunun yerine, Hadoop'un <strong>MapReduce mantığını</strong> Python ile simüle ederek anlayacağız. Gerçek büyük veri ihtiyaçları için ileride <strong>Apache Spark</strong> kullanacağız (Hadoop'un modern ve daha hızlı alternatifi).
+    </div>
+
+    <!-- ─── MapReduce ─── -->
+    <h3 id="mapreduce">🗺️ MapReduce Kavramı</h3>
+
+    <p><strong>MapReduce</strong>, büyük verileri işlemek için kullanılan iki aşamalı bir yaklaşımdır:</p>
+
+    <div class="comparison">
+      <div class="side">
+        <div class="side-title">🗺️ MAP Aşaması</div>
+        <p>Veriyi <strong>parçalara ayırır</strong> ve her parça üzerinde bir <strong>dönüşüm</strong> uygular.</p>
+        <p>Örnek: "Her cümlede geçen kelimeleri say"</p>
+        <ul>
+          <li>Girdi: "elma armut elma"</li>
+          <li>Çıktı: [(elma, 1), (armut, 1), (elma, 1)]</li>
+        </ul>
+      </div>
+      <div class="side">
+        <div class="side-title">📊 REDUCE Aşaması</div>
+        <p>Map sonuçlarını <strong>birleştirir</strong> ve nihai sonucu üretir.</p>
+        <p>Örnek: "Aynı kelimelerin sayılarını topla"</p>
+        <ul>
+          <li>Girdi: [(elma, 1), (armut, 1), (elma, 1)]</li>
+          <li>Çıktı: {elma: 2, armut: 1}</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="diagram-container">
+      <div class="diagram-box">
+        <div class="mermaid">
+graph LR
+    A["📄 Girdi Verisi<br>'elma armut elma<br>armut portakal elma'"] --> B["🗺️ MAP<br>Parçala ve dönüştür"]
+    B --> C["(elma, 1)<br>(armut, 1)<br>(elma, 1)"]
+    B --> D["(armut, 1)<br>(portakal, 1)<br>(elma, 1)"]
+    C --> E["🔀 SHUFFLE<br>Grupla"]
+    D --> E
+    E --> F["📊 REDUCE<br>Birleştir"]
+    F --> G["✅ Sonuç<br>elma: 3<br>armut: 2<br>portakal: 1"]
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil 3: MapReduce işlem akışı — Word Count örneği</div>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="map-filter-reduce">🔧 Bölüm 5: Python'da map, filter, reduce</h2>
+
+    <p>Python'da <code>map()</code>, <code>filter()</code> ve <code>reduce()</code> fonksiyonları, MapReduce mantığının temellerini oluşturur. Bu fonksiyonlar, bir listedeki her eleman üzerinde işlem yapmamızı sağlar.</p>
+
+    <!-- ─── map() ─── -->
+    <h3 id="map-fonksiyonu">🗺️ map() Fonksiyonu</h3>
+
+    <p><code>map(fonksiyon, liste)</code> → Bir listedeki <strong>her elemanı</strong> verilen fonksiyondan geçirir ve yeni bir sonuç üretir.</p>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># Örnek 1: Sayıların karesini alma
+sayilar = [1, 2, 3, 4, 5]
+
+# Klasik yol (döngü ile)
+kareler_v1 = []
+for s in sayilar:
+    kareler_v1.append(s ** 2)
+print(kareler_v1)  # [1, 4, 9, 16, 25]
+
+# map() ile
+kareler_v2 = list(map(lambda x: x ** 2, sayilar))
+print(kareler_v2)  # [1, 4, 9, 16, 25]
+
+# Örnek 2: Sıcaklıkları Celsius'tan Fahrenheit'a çevirme
+celsius = [0, 20, 37, 100]
+fahrenheit = list(map(lambda c: (c * 9/5) + 32, celsius))
+print(fahrenheit)  # [32.0, 68.0, 98.6, 212.0]
+
+# Örnek 3: İsimlerin ilk harfini büyük yapma
+isimler = ["ahmet", "ayşe", "mehmet"]
+duzgun_isimler = list(map(str.capitalize, isimler))
+print(duzgun_isimler)  # ['Ahmet', 'Ayşe', 'Mehmet']
+
+# Örnek 4: Bir fonksiyon tanımlayıp map ile kullanma
+def not_degerlendirme(not_):
+    if not_ >= 90: return "AA"
+    elif not_ >= 80: return "BA"
+    elif not_ >= 70: return "BB"
+    elif not_ >= 60: return "CB"
+    else: return "FF"
+
+notlar = [95, 82, 67, 45, 78]
+harf_notlari = list(map(not_degerlendirme, notlar))
+print(harf_notlari)  # ['AA', 'BA', 'CB', 'FF', 'BB']</code></pre>
+    </div>
+
+    <!-- ─── filter() ─── -->
+    <h3 id="filter-fonksiyonu">🔍 filter() Fonksiyonu</h3>
+
+    <p><code>filter(fonksiyon, liste)</code> → Bir listedeki elemanları, verilen koşula göre <strong>süzer</strong>. Koşul <code>True</code> döndüren elemanlar kalır.</p>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># Örnek 1: Çift sayıları filtreleme
+sayilar = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+ciftler = list(filter(lambda x: x % 2 == 0, sayilar))
+print(ciftler)  # [2, 4, 6, 8, 10]
+
+# Örnek 2: Geçen öğrencileri filtreleme (50 ve üstü)
+notlar = [45, 82, 33, 91, 67, 28, 75]
+gecenler = list(filter(lambda n: n >= 50, notlar))
+print(f"Geçenler: {gecenler}")      # [82, 91, 67, 75]
+print(f"Geçen sayısı: {len(gecenler)}")
+
+# Örnek 3: Boş olmayan stringleri filtreleme
+veriler = ["Ahmet", "", "Ayşe", None, "Mehmet", "", "Fatma"]
+temiz = list(filter(None, veriler))  # None ve boş string'ler atılır
+print(temiz)  # ['Ahmet', 'Ayşe', 'Mehmet', 'Fatma']
+
+# Örnek 4: Sözlük listesinden filtreleme
+ogrenciler = [
+    {"isim": "Ahmet", "not": 85},
+    {"isim": "Ayşe", "not": 42},
+    {"isim": "Mehmet", "not": 91},
+    {"isim": "Fatma", "not": 38},
+]
+
+basarili = list(filter(lambda o: o["not"] >= 50, ogrenciler))
+for o in basarili:
+    print(f"  ✅ {o['isim']}: {o['not']}")</code></pre>
+    </div>
+
+    <!-- ─── reduce() ─── -->
+    <h3 id="reduce-fonksiyonu">📊 reduce() Fonksiyonu</h3>
+
+    <p><code>reduce(fonksiyon, liste)</code> → Bir listeyi tek bir değere <strong>indirger</strong>. Listedeki elemanları soldan sağa ikişer ikişer işler.</p>
+
+    <div class="alert alert-warning">
+      <div class="alert-title">⚠️ Önemli</div>
+      <code>reduce()</code> fonksiyonu Python 3'te <code>functools</code> modülünden import edilmelidir. Diğerleri gibi doğrudan kullanılamaz.
+    </div>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>from functools import reduce
+
+# Örnek 1: Toplam hesaplama
+sayilar = [1, 2, 3, 4, 5]
+toplam = reduce(lambda a, b: a + b, sayilar)
+print(f"Toplam: {toplam}")  # 15
+
+# Nasıl çalışır?
+# Adım 1: 1 + 2 = 3
+# Adım 2: 3 + 3 = 6
+# Adım 3: 6 + 4 = 10
+# Adım 4: 10 + 5 = 15
+
+# Örnek 2: Çarpım hesaplama (faktöriyel gibi)
+carpim = reduce(lambda a, b: a * b, sayilar)
+print(f"Çarpım: {carpim}")  # 120
+
+# Örnek 3: En büyük elemanı bulma
+en_buyuk = reduce(lambda a, b: a if a > b else b, sayilar)
+print(f"En büyük: {en_buyuk}")  # 5
+
+# Örnek 4: Kelime listesini birleştirme
+kelimeler = ["Büyük", "Veri", "Teknolojileri"]
+cumle = reduce(lambda a, b: a + " " + b, kelimeler)
+print(cumle)  # "Büyük Veri Teknolojileri"</code></pre>
+    </div>
+
+    <!-- ─── Üçünü Birlikte ─── -->
+    <h3 id="birlikte-kullanim">🔗 map + filter + reduce Birlikte</h3>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>from functools import reduce
+
+# Senaryo: Bir sınıftaki notlardan...
+# 1) 50'nin altını filtrele (kalanlar)
+# 2) Her notu 10 puan bonus ekle (map)
+# 3) Ortalamasını hesapla (reduce)
+
+notlar = [45, 82, 33, 91, 67, 28, 75, 88, 54, 39]
+
+# Adım 1: Geçenleri filtrele
+gecenler = list(filter(lambda n: n >= 50, notlar))
+print(f"Geçen notlar: {gecenler}")
+
+# Adım 2: 10 puan bonus ekle (max 100)
+bonuslu = list(map(lambda n: min(n + 10, 100), gecenler))
+print(f"Bonuslu notlar: {bonuslu}")
+
+# Adım 3: Ortalama hesapla
+toplam = reduce(lambda a, b: a + b, bonuslu)
+ortalama = toplam / len(bonuslu)
+print(f"Ortalama: {ortalama:.1f}")</code></pre>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="wordcount">📝 Bölüm 6: MapReduce Uygulaması — Word Count</h2>
+
+    <p><strong>Word Count</strong> (kelime sayma), dağıtık sistemlerin "Hello World" uygulamasıdır. Her büyük veri kursunda ilk yapılan örnektir. Bir metindeki her kelimenin kaç kez geçtiğini bulacağız.</p>
+
+    <h3 id="wc-basit">Basit Word Count</h3>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># Basit Word Count - Tek bilgisayar versiyonu
+
+metin = """
+Python büyük veri dünyasında çok popüler bir dildir
+Büyük veri teknolojileri ile veri analizi yapabiliriz
+Python ile veri işleme çok kolaydır
+"""
+
+# Metni küçük harfe çevir ve kelimelere ayır
+kelimeler = metin.lower().split()
+
+# Kelimeleri say
+kelime_sayilari = {}
+for kelime in kelimeler:
+    if kelime in kelime_sayilari:
+        kelime_sayilari[kelime] += 1
+    else:
+        kelime_sayilari[kelime] = 1
+
+# Sonuçları en çok geçenden en az geçene sırala
+sirali = sorted(kelime_sayilari.items(), key=lambda x: x[1], reverse=True)
+
+print("=== Kelime Sayıları ===")
+for kelime, sayi in sirali:
+    print(f"  {kelime:20s} → {sayi}")</code></pre>
+    </div>
+
+    <h3 id="wc-mapreduce">MapReduce Mantığıyla Word Count</h3>
+
+    <p>Şimdi aynı işlemi MapReduce mantığıyla yapalım. Bu yaklaşımda veriyi parçalara bölüp, <strong>her parçayı ayrı ayrı</strong> işleyeceğiz.</p>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>from functools import reduce
+
+# ─── Veri ───
+metin = """
+Python büyük veri dünyasında çok popüler bir dildir
+Büyük veri teknolojileri ile veri analizi yapabiliriz
+Python ile veri işleme çok kolaydır
+Dağıtık sistemler büyük veri için gereklidir
+"""
+
+# ─── ADIM 1: SPLIT (Veriyi parçalara böl) ───
+# Gerçek Hadoop'ta bu farklı bilgisayarlara gönderilir
+satirlar = metin.strip().lower().split('\n')
+print("📦 Parçalar (her satır ayrı bir düğümde işlenebilir):")
+for i, satir in enumerate(satirlar):
+    print(f"  Düğüm {i+1}: '{satir.strip()}'")
+
+# ─── ADIM 2: MAP (Her parçada kelimeleri say) ───
+def map_fonksiyonu(satir):
+    """Her kelime için (kelime, 1) çifti üret."""
+    kelimeler = satir.strip().split()
+    return [(kelime, 1) for kelime in kelimeler]
+
+# Her satırı map fonksiyonundan geçir
+map_sonuclari = list(map(map_fonksiyonu, satirlar))
+
+print("\n🗺️ MAP Sonuçları:")
+for i, sonuc in enumerate(map_sonuclari):
+    print(f"  Düğüm {i+1}: {sonuc}")
+
+# ─── ADIM 3: SHUFFLE (Düzleştir ve grupla) ───
+# Tüm (kelime, 1) çiftlerini tek listeye topla
+tum_ciftler = reduce(lambda a, b: a + b, map_sonuclari)
+print(f"\n🔀 SHUFFLE - Tüm çiftler: {len(tum_ciftler)} adet")
+
+# ─── ADIM 4: REDUCE (Aynı kelimelerin sayılarını topla) ───
+def reduce_fonksiyonu(ciftler):
+    """Aynı kelimelerin sayılarını topla."""
+    sonuc = {}
+    for kelime, sayi in ciftler:
+        sonuc[kelime] = sonuc.get(kelime, 0) + sayi
+    return sonuc
+
+nihai_sonuc = reduce_fonksiyonu(tum_ciftler)
+
+# Sonuçları sırala ve göster
+sirali = sorted(nihai_sonuc.items(), key=lambda x: x[1], reverse=True)
+
+print("\n📊 REDUCE - Nihai Sonuç:")
+print("=" * 35)
+for kelime, sayi in sirali:
+    bar = "█" * sayi
+    print(f"  {kelime:20s} {sayi:2d} {bar}")</code></pre>
+    </div>
+
+    <div class="alert alert-success">
+      <div class="alert-title">🎉 Tebrikler!</div>
+      Az önce <strong>MapReduce</strong> mantığını Python ile simüle ettiniz! Gerçek bir Hadoop kümesinde aynı mantık, yüzlerce bilgisayar üzerinde petabaytlarca veriyle çalışır. İleriki haftalarda bunu <strong>PySpark</strong> ile çok daha kolay ve verimli bir şekilde yapacağız.
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="kutuphane-modul">📦 Bölüm 7: Modül ve Kütüphane Kavramı</h2>
+
+    <p>Bu kavramları şimdiden öğrenmemiz önemli çünkü bundan sonra sürekli kütüphaneler kullanacağız (Pandas, PySpark, Matplotlib vb.).</p>
+
+    <h3 id="modul-nedir">Modül Nedir?</h3>
+
+    <p><strong>Modül</strong>, Python kodlarını içeren bir <code>.py</code> dosyasıdır. İçinde fonksiyonlar, sınıflar ve değişkenler bulunabilir. Başka bir dosyadan <code>import</code> ile çağırabilirsiniz.</p>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># Python'un yerleşik (built-in) modülleri
+import math
+print(math.pi)        # 3.141592653589793
+print(math.sqrt(16))  # 4.0
+
+import random
+print(random.randint(1, 100))  # 1-100 arası rastgele sayı
+
+import datetime
+simdi = datetime.datetime.now()
+print(simdi)  # 2026-02-16 14:30:00.123456
+
+# 'from' ile sadece istediğini al
+from math import pi, sqrt
+print(pi)       # 3.141592653589793
+print(sqrt(25)) # 5.0
+
+# Takma isim (alias)
+import datetime as dt
+print(dt.date.today())</code></pre>
+    </div>
+
+    <h3 id="kutuphane-nedir">Kütüphane (Library) Nedir?</h3>
+
+    <p><strong>Kütüphane</strong>, belirli bir amaca yönelik birden fazla modülün bir araya getirilmiş paketidir. Başkaları tarafından yazılmış hazır kodlardır — tekerleği yeniden icat etmenize gerek yok!</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Kütüphane</th><th>Ne İşe Yarar?</th><th>Bu Derste?</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>pandas</code></td><td>Tablo verilerini işleme ve analiz</td><td>✅ Çok kullanacağız</td></tr>
+          <tr><td><code>numpy</code></td><td>Sayısal hesaplama, matris işlemleri</td><td>✅ Pandas'ın altyapısı</td></tr>
+          <tr><td><code>matplotlib</code></td><td>Grafik ve görselleştirme</td><td>✅ Veri görselleştirme</td></tr>
+          <tr><td><code>seaborn</code></td><td>İstatistiksel görselleştirme</td><td>✅ Estetik grafikler</td></tr>
+          <tr><td><code>pyspark</code></td><td>Dağıtık veri işleme (Spark)</td><td>✅ Büyük veri işleme</td></tr>
+          <tr><td><code>scikit-learn</code></td><td>Makine öğrenmesi</td><td>✅ Temel ML</td></tr>
+          <tr><td><code>requests</code></td><td>HTTP istekleri, API'lerden veri çekme</td><td>✅ ETL süreçleri</td></tr>
+          <tr><td><code>pymongo</code></td><td>MongoDB veritabanı bağlantısı</td><td>✅ NoSQL</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4 id="pip-ile-kurulum">pip ile Kütüphane Kurulumu</h4>
+
+    <p><code>pip</code>, Python'un paket yöneticisidir. Kütüphaneleri internetten indirip kurmanızı sağlar.</p>
+
+    <div class="code-block" data-lang="bash">
+      <pre><code># Kütüphane kurma
+pip install pandas
+pip install numpy matplotlib seaborn
+
+# Kurulu kütüphaneleri listeleme
+pip list
+
+# Belirli bir versiyon kurma
+pip install pandas==2.1.0
+
+# Kütüphaneyi güncelleme
+pip install --upgrade pandas
+
+# requirements.txt ile toplu kurulum
+pip install -r requirements.txt</code></pre>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">💜 Google Colab'da</div>
+      Google Colab'da çoğu kütüphane zaten kurulu gelir. Kurulu olmayan bir kütüphaneyi kurmak için hücreye <code>!pip install kutuphane_adi</code> yazmanız yeterlidir (başındaki <code>!</code> işaretine dikkat).
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="jupyter-colab">💻 Bölüm 8: Jupyter Notebook ve Google Colab</h2>
+
+    <p>Bu derste kodlarımızı <strong>Jupyter Notebook</strong> veya <strong>Google Colab</strong> ortamında yazacağız. Bu ortamlar, kod yazmanızı, çalıştırmanızı ve sonuçları anında görmenizi sağlar.</p>
+
+    <h3 id="jupyter-nedir">Jupyter Notebook Nedir?</h3>
+
+    <p><strong>Jupyter Notebook</strong>, web tarayıcısında çalışan interaktif bir kodlama ortamıdır. Kod hücreleri, metin hücreleri ve görsel çıktıları bir arada barındırır. Veri bilimi ve büyük veri dünyasında en çok kullanılan araçtır.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📓</div>
+        <div class="card-title">Jupyter Notebook</div>
+        <div class="card-desc">Bilgisayarınıza kurulur. <code>pip install notebook</code> ile kurup, <code>jupyter notebook</code> ile başlatırsınız. Offline çalışır.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">☁️</div>
+        <div class="card-title">Google Colab</div>
+        <div class="card-desc">Google'ın ücretsiz bulut hizmeti. Kurulum gerektirmez, tarayıcıda çalışır. GPU bile ücretsiz! <a href="https://colab.research.google.com" target="_blank">colab.research.google.com</a></div>
+      </div>
+    </div>
+
+    <div class="alert alert-success">
+      <div class="alert-title">✅ Önerimiz</div>
+      Bu ders için <strong>Google Colab</strong> kullanmanızı öneriyoruz. Hiçbir kurulum gerektirmez, Google hesabınızla giriş yapıp hemen kodlamaya başlayabilirsiniz. Dosyalarınız Google Drive'da otomatik kaydedilir.
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="gunumuzde-dagitik">🚀 Bölüm 9: Günümüzde Dağıtık Sistemler</h2>
+
+    <p>Hadoop 2006'da çığır açtı ama bugün büyük veri dünyası çok değişti. Artık daha hızlı, daha kolay ve daha modern araçlar var.</p>
+
+    <h3 id="hadoop-vs-spark">Hadoop vs Spark</h3>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Özellik</th><th>Hadoop MapReduce</th><th>Apache Spark</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Hız</strong></td><td>Diske yazar (yavaş)</td><td>Bellekte işler (100x hızlı)</td></tr>
+          <tr><td><strong>Kullanım</strong></td><td>Java ağırlıklı, karmaşık</td><td>Python/Scala/Java, kolay API</td></tr>
+          <tr><td><strong>Gerçek zamanlı</strong></td><td>Zayıf</td><td>Spark Streaming ile güçlü</td></tr>
+          <tr><td><strong>ML desteği</strong></td><td>Mahout (eski)</td><td>MLlib (modern)</td></tr>
+          <tr><td><strong>Güncellik</strong></td><td>Azalıyor</td><td>Endüstri standardı</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 Dersin Gidişatı</div>
+      Bu derste Hadoop'u <strong>kavramsal</strong> olarak öğrendik. Bundan sonraki haftalarda <strong>Apache Spark</strong>'ı Python (PySpark) ile kullanacağız. Spark, Hadoop'un yaptığı her şeyi yapabilir — hem de çok daha hızlı ve kolay!
+    </div>
+
+    <h3 id="ekosistem-haritasi">Büyük Veri Ekosistemi Haritası</h3>
+
+    <p>Dönem boyunca bu araçların birçoğuna değineceğiz. Şimdilik "büyük resmi" görmek yeterli:</p>
+
+    <div class="diagram-container">
+      <div class="diagram-box">
+        <div class="mermaid">
+graph TB
+    subgraph Toplama ["📥 Veri Toplama"]
+        K["Kafka"] 
+        API["API'ler"]
+        WS["Web Scraping"]
+    end
+    subgraph Depolama ["💾 Depolama"]
+        HDFS["HDFS"]
+        SQL["SQL DB"]
+        NoSQL["MongoDB"]
+    end
+    subgraph Isleme ["⚙️ İşleme"]
+        Spark["Apache Spark"]
+        Pandas["Pandas"]
+    end
+    subgraph Analiz ["📊 Analiz & Görselleştirme"]
+        ML["Makine Öğrenmesi"]
+        Viz["Matplotlib / Seaborn"]
+    end
+    Toplama --> Depolama --> Isleme --> Analiz
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil 4: Büyük veri pipeline'ı — verinin yolculuğu</div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="ozet">📋 Bölüm Özeti</h2>
+
+    <div class="card">
+      <div class="card-title">Neler Öğrendik?</div>
+      <ul>
+        <li>✅ Python temellerini hatırladık: değişkenler, listeler, sözlükler, döngüler, fonksiyonlar, lambda</li>
+        <li>✅ OOP kavramını öğrendik: sınıf, nesne, metot, özellik</li>
+        <li>✅ Python ile dosya okuma/yazma yaptık</li>
+        <li>✅ Git ve GitHub temellerini, GitHub Classroom'u öğrendik</li>
+        <li>✅ Sunucu (server) kavramını ve istemci-sunucu mimarisini anladık</li>
+        <li>✅ Dağıtık sistemlerin ne olduğunu ve neden ihtiyaç duyulduğunu öğrendik</li>
+        <li>✅ Hadoop ekosistemini (HDFS, MapReduce, YARN) kavramsal olarak tanıdık</li>
+        <li>✅ MapReduce mantığını anladık: Map → Shuffle → Reduce</li>
+        <li>✅ Python'da <code>map()</code>, <code>filter()</code>, <code>reduce()</code> fonksiyonlarını kullandık</li>
+        <li>✅ Word Count uygulamasını hem klasik hem MapReduce yaklaşımıyla yazdık</li>
+        <li>✅ Modül ve kütüphane kavramlarını, pip kullanımını öğrendik</li>
+        <li>✅ Jupyter Notebook / Google Colab'ı tanıdık</li>
+      </ul>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">📝 Ev Ödevi</div>
+      <ol>
+        <li><a href="https://github.com" target="_blank"><strong>GitHub</strong></a> hesabı açın (profesyonel kullanıcı adı seçin!)</li>
+        <li><a href="https://colab.research.google.com" target="_blank"><strong>Google Colab</strong></a>'da bir hesap açın ve ilk notebook'unuzu oluşturun</li>
+        <li>Bu derste gördüğümüz kod örneklerini Colab'da çalıştırın</li>
+        <li>Kendi Word Count uygulamanızı yazın: Sevdiğiniz bir şarkının sözlerini bulun, en çok geçen 10 kelimeyi listeleyin</li>
+        <li>(Bonus) <code>collections.Counter</code> kütüphanesini araştırıp Word Count'u onunla da yazın</li>
+        <li>(Bonus) <a href="https://learngitbranching.js.org/?locale=tr" target="_blank">Learn Git Branching</a> sitesinde ilk 5 seviyeyi tamamlayın</li>
+      </ol>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="page-footer">
+  <p class="footer-text">Büyük Veri Teknolojileri Ders Notları — 2025-2026 Bahar Dönemi</p>
+</footer>
+
+<!-- Scroll to Top -->
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<!-- Pyodide Status -->
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python motoru yükleniyor...</span>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

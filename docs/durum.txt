@@ -1,0 +1,6 @@
+Ogrenciler temel duzeyde python biliyor.
+Programlama ile gecen donem yeni tanistilar.
+veritabani, iliskisel veritablanlari, sql bile bilmiyorlar.
+basic veri yapilari ve algoritmalar dersi gorduler gecen donem.
+Algoritma kurma mantigi hatta cogu ogrencide dongu, liste, fonksyion tanimlama, oop bile oturmus degil.
+
