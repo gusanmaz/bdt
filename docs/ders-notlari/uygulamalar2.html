@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uygulamalar: Dosya İşlemleri, CSV, JSON & Pandas | Büyük Veri Teknolojileri</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body>
+
+<!-- ═══════════ TOP NAV ═══════════ -->
+<header class="top-nav">
+  <a href="#" class="nav-brand">📊 Büyük Veri Teknolojileri</a>
+  <div class="nav-links">
+    <a href="hafta1.html">Dağıtık Sistemler & Python</a>
+    <a href="hafta2.html">Veri Modelleme & Pandas</a>
+    <a href="uygulamalar2.html" class="active">🧪 Uygulamalar</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero" style="background: linear-gradient(135deg, #0f2027 0%, #203a43 40%, #2c5364 100%);">
+  <span class="week-badge">🧪 UYGULAMALAR — BÖLÜM 2</span>
+  <h1>Dosya İşlemleri, CSV, JSON & Pandas Uygulamaları</h1>
+  <p class="subtitle">Kolaydan zora, adım adım pratik yaparak öğrenin. Gerçek veri setleriyle çalışın, dosya okuma/yazma ve Pandas becerilerinizi geliştirin.</p>
+  <div class="meta-info">
+    <span>🏋️ 15+ Uygulama</span>
+    <span>📈 Kolaydan Zora</span>
+    <span>🌍 Gerçek Veri Setleri</span>
+  </div>
+</section>
+
+<!-- ═══════════ MAIN LAYOUT ═══════════ -->
+<div class="main-container">
+
+  <!-- ─── Sidebar TOC ─── -->
+  <aside class="sidebar">
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list">
+      <a href="hafta1.html">📘 Dağıtık Sistemler & Python</a>
+      <a href="hafta2.html">📗 Veri Modelleme & Pandas</a>
+      <a href="uygulamalar2.html" class="current-page">🧪 Uygulamalar</a>
+    </div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <!-- ─── Content ─── -->
+  <main class="content">
+
+    <div class="alert alert-warning">
+      <div class="alert-title">⚠️ Uygulamalara Başlamadan</div>
+      <p>Bu sayfadaki uygulamaları <strong>Google Colab</strong> veya <strong>Jupyter Notebook</strong> üzerinde yapmanızı öneriyoruz. Tarayıcıdaki Python motoru (Pyodide) dosya sistemi işlemlerinde sınırlı kalabilir. Aşağıda bazı kodları tarayıcıda çalıştırabilirsiniz ama gerçek dosya I/O için <strong>Colab</strong> kullanın.</p>
+      <p>👉 <a href="https://colab.research.google.com/" target="_blank" style="color: var(--accent); font-weight: 600;">Google Colab'ı Aç</a></p>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <h2 id="seviye-1">🟢 Seviye 1: Temel Dosya Okuma & Yazma</h2>
+    <p>İlk adım olarak Python'un <strong>dahili dosya işleme</strong> fonksiyonlarını öğrenelim. Hiçbir ekstra kütüphaneye gerek yok — sadece <code>open()</code>, <code>read()</code>, <code>write()</code>.</p>
+
+    <!-- ─── Uygulama 1.1 ─── -->
+    <h3 id="uyg-1-1">📝 Uygulama 1.1 — İlk Dosyamızı Oluşturalım</h3>
+    <div class="alert alert-info">
+      <div class="alert-title">🎯 Görev</div>
+      <p>Bir <code>ogrenciler.txt</code> dosyası oluşturun. İçine 5 öğrenci adı ve notunu yazın (her satırda bir öğrenci). Sonra dosyayı okuyarak ekrana yazdırın.</p>
+    </div>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># 1. Dosya oluşturma ve yazma
+with open("ogrenciler.txt", "w", encoding="utf-8") as f:
+    f.write("Ahmet Yılmaz,85\n")
+    f.write("Zeynep Kaya,92\n")
+    f.write("Mehmet Demir,78\n")
+    f.write("Elif Çelik,95\n")
+    f.write("Can Öztürk,88\n")
+
+print("✅ Dosya oluşturuldu!")
+
+# 2. Dosyayı okuma
+with open("ogrenciler.txt", "r", encoding="utf-8") as f:
+    icerik = f.read()
+
+print("\n📄 Dosya içeriği:")
+print(icerik)</code></pre>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">💡 Deneme Sorusu</div>
+      <p><code>"w"</code> modu dosya varsa ne yapar? Mevcut içeriği korumak isteseydiniz hangi modu kullanırdınız? Dosyanın sonuna ekleme yapmak için hangi mod kullanılır?</p>
+    </div>
+
+    <!-- ─── Uygulama 1.2 ─── -->
+    <h3 id="uyg-1-2">📝 Uygulama 1.2 — Satır Satır Okuma vs read() Tuzağı</h3>
+    <div class="alert alert-info">
+      <div class="alert-title">🎯 Görev</div>
+      <p>Aşağıdaki kodu çalıştırın. <code>read()</code> ile tüm dosyayı RAM'e yüklemenin neden tehlikeli olabileceğini gözlemleyin. Sonra satır satır okuma ile karşılaştırın.</p>
+    </div>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># Önce büyükçe bir dosya oluşturalım (1 milyon satır!)
+import time
+
+print("📝 1 milyon satırlık dosya oluşturuluyor...")
+with open("buyuk_dosya.txt", "w") as f:
+    for i in range(1_000_000):
+        f.write(f"Satır {i}: Bu bir test satırıdır. " * 3 + "\n")
+
+import os
+boyut_mb = os.path.getsize("buyuk_dosya.txt") / (1024 * 1024)
+print(f"📦 Dosya boyutu: {boyut_mb:.1f} MB")
+
+# ❌ KÖTÜ YOL: Tamamını RAM'e yükle
+start = time.time()
+with open("buyuk_dosya.txt", "r") as f:
+    tumu = f.read()  # Tüm dosya RAM'de!
+sure_read = time.time() - start
+print(f"\n⏱️ read() ile okuma: {sure_read:.3f} saniye")
+print(f"📏 RAM'deki string uzunluğu: {len(tumu):,} karakter")
+
+# ✅ İYİ YOL: Satır satır oku (lazy / generator)
+start = time.time()
+satir_sayisi = 0
+with open("buyuk_dosya.txt", "r") as f:
+    for satir in f:  # Her seferinde sadece 1 satır RAM'de
+        satir_sayisi += 1
+sure_satir = time.time() - start
+print(f"\n⏱️ Satır satır okuma: {sure_satir:.3f} saniye")
+print(f"📊 Toplam satır: {satir_sayisi:,}")
+
+# Temizlik
+os.remove("buyuk_dosya.txt")
+print("\n🗑️ Dosya silindi.")</code></pre>
+    </div>
+
+    <div class="alert alert-danger">
+      <div class="alert-title">⚠️ Önemli Ders</div>
+      <p><code>f.read()</code> tüm dosyayı bir anda belleğe yükler. 1 GB'lık bir dosyada bu, bilgisayarınızın RAM'ini doldurabilir! <strong>Her zaman satır satır okumayı tercih edin</strong> — özellikle dosya boyutunu bilmediğinizde. Bu, <code>readlines()</code> için de geçerlidir.</p>
+    </div>
+
+    <!-- ─── Uygulama 1.3 ─── -->
+    <h3 id="uyg-1-3">📝 Uygulama 1.3 — Dosyaya Ekleme (append) ve seek()</h3>
+    <div class="alert alert-info">
+      <div class="alert-title">🎯 Görev</div>
+      <p>Var olan <code>ogrenciler.txt</code> dosyasına yeni öğrenciler ekleyin. Sonra <code>seek()</code> ile dosyanın başına gidip ilk 50 karakteri okuyun.</p>
+    </div>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># Dosyamızı tekrar oluşturalım
+with open("ogrenciler.txt", "w", encoding="utf-8") as f:
+    f.write("Ahmet Yılmaz,85\n")
+    f.write("Zeynep Kaya,92\n")
+
+# "a" modu ile ekleme (append)
+with open("ogrenciler.txt", "a", encoding="utf-8") as f:
+    f.write("Yeni Öğrenci 1,76\n")
+    f.write("Yeni Öğrenci 2,91\n")
+
+# Dosyayı oku ve kontrol et
+with open("ogrenciler.txt", "r", encoding="utf-8") as f:
+    print("📄 Tüm içerik:")
+    print(f.read())
+    
+    # seek(0) ile başa dön
+    f.seek(0)
+    ilk_50 = f.read(50)
+    print(f"\n🔍 İlk 50 karakter:\n'{ilk_50}'")
+    
+    # tell() ile pozisyonu öğren
+    print(f"\n📍 Şu anki pozisyon: {f.tell()}")</code></pre>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <h2 id="seviye-2">🟡 Seviye 2: CSV Dosyalarıyla Çalışma</h2>
+    <p>CSV (Comma-Separated Values), veri dünyasının en yaygın formatlarından biridir. Basit, okunabilir ve neredeyse her araçla uyumludur.</p>
+
+    <!-- ─── Uygulama 2.1 ─── -->
+    <h3 id="uyg-2-1">📝 Uygulama 2.1 — Elle CSV Oluşturma ve Okuma</h3>
+    <div class="alert alert-info">
+      <div class="alert-title">🎯 Görev</div>
+      <p>Python'un <code>csv</code> modülünü kullanarak bir film veritabanı CSV dosyası oluşturun ve okuyun.</p>
+    </div>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import csv
+
+# CSV dosyası oluştur
+filmler = [
+    ["Başlık", "Yıl", "Yönetmen", "IMDB", "Tür"],
+    ["Inception", 2010, "Christopher Nolan", 8.8, "Bilim Kurgu"],
+    ["Interstellar", 2014, "Christopher Nolan", 8.7, "Bilim Kurgu"],
+    ["Babam ve Oğlum", 2005, "Çağan Irmak", 8.2, "Dram"],
+    ["Kış Uykusu", 2014, "Nuri Bilge Ceylan", 8.0, "Dram"],
+    ["The Matrix", 1999, "Wachowski Kardeşler", 8.7, "Aksiyon"],
+    ["Pulp Fiction", 1994, "Quentin Tarantino", 8.9, "Suç"],
+    ["Yüzüklerin Efendisi: Kralın Dönüşü", 2003, "Peter Jackson", 9.0, "Fantezi"],
+    ["Hababam Sınıfı", 1975, "Ertem Eğilmez", 8.4, "Komedi"],
+]
+
+with open("filmler.csv", "w", newline="", encoding="utf-8") as f:
+    writer = csv.writer(f)
+    writer.writerows(filmler)
+
+print("✅ filmler.csv oluşturuldu!\n")
+
+# CSV dosyasını oku
+with open("filmler.csv", "r", encoding="utf-8") as f:
+    reader = csv.reader(f)
+    baslik = next(reader)  # İlk satır = başlık
+    print(f"📋 Sütunlar: {baslik}\n")
+    
+    for satir in reader:
+        film, yil, yonetmen, imdb, tur = satir
+        print(f"🎬 {film} ({yil}) — {yonetmen} — ⭐ {imdb} — [{tur}]")</code></pre>
+    </div>
+
+    <!-- ─── Uygulama 2.2 ─── -->
+    <h3 id="uyg-2-2">📝 Uygulama 2.2 — DictReader ile CSV Okuma</h3>
+    <div class="alert alert-info">
+      <div class="alert-title">🎯 Görev</div>
+      <p><code>csv.DictReader</code> kullanarak aynı dosyayı sözlük olarak okuyun. IMDB puanı 8.5'in üzerinde olan filmleri filtreleyin.</p>
+    </div>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import csv
+
+with open("filmler.csv", "r", encoding="utf-8") as f:
+    reader = csv.DictReader(f)
+    
+    print("⭐ IMDB puanı 8.5+ olan filmler:\n")
+    for film in reader:
+        if float(film["IMDB"]) >= 8.5:
+            print(f"  🎬 {film['Başlık']} ({film['Yıl']}) — ⭐ {film['IMDB']}")
+            print(f"     Yönetmen: {film['Yönetmen']} | Tür: {film['Tür']}\n")</code></pre>
+    </div>
+
+    <!-- ─── Uygulama 2.3 ─── -->
+    <h3 id="uyg-2-3">🔥 Uygulama 2.3 — Gerçek CSV: Dünya Ülkeleri Nüfus Verisi</h3>
+    <div class="alert alert-warning">
+      <div class="alert-title">📥 Veri Seti İndirme</div>
+      <p>Bu uygulama için gerçek bir veri seti kullanacağız. Aşağıdaki CSV'yi <strong>Google Colab</strong>'da kullanın:</p>
+      <p>📎 <a href="https://raw.githubusercontent.com/datasets/population/main/data/population.csv" target="_blank" style="color: var(--accent); font-weight: 600;">World Population Dataset (CSV)</a> — <em>Kaynak: World Bank / datasets.io</em></p>
+      <p>veya Colab'da direkt URL'den okuyabilirsiniz:</p>
+    </div>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import csv
+from urllib.request import urlopen
+from io import StringIO
+
+url = "https://raw.githubusercontent.com/datasets/population/main/data/population.csv"
+response = urlopen(url)
+data = response.read().decode("utf-8")
+
+reader = csv.DictReader(StringIO(data))
+rows = list(reader)
+
+print(f"📊 Toplam kayıt sayısı: {len(rows):,}")
+print(f"📋 Sütunlar: {list(rows[0].keys())}")
+print(f"\n🔍 İlk 3 kayıt:")
+for r in rows[:3]:
+    print(f"  {r}")
+
+# 2023 yılında en kalabalık 10 ülke
+print("\n🌍 2023 yılında en kalabalık 10 ülke:")
+yil_2023 = [r for r in rows if r.get("Year") == "2023"]
+yil_2023.sort(key=lambda x: int(x["Value"]), reverse=True)
+
+for i, r in enumerate(yil_2023[:10], 1):
+    nufus = int(r["Value"])
+    print(f"  {i:2}. {r['Country Name']:30s} — {nufus:>15,}")</code></pre>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">💪 Ekstra Görev</div>
+      <ol>
+        <li>Türkiye'nin 2000-2023 yılları arasındaki nüfus değişimini hesaplayın</li>
+        <li>2023'te nüfusu 100 milyonun üzerinde olan ülkeleri bulun</li>
+        <li>Sonuçları yeni bir CSV dosyasına kaydedin</li>
+      </ol>
+    </div>
+
+    <!-- ─── Uygulama 2.4 ─── -->
+    <h3 id="uyg-2-4">🔥 Uygulama 2.4 — Kaggle: Spotify Top Songs</h3>
+    <div class="alert alert-warning">
+      <div class="alert-title">📥 Veri Seti</div>
+      <p>Kaggle'dan bir Spotify veri seti kullanacağız. Aşağıdaki linkten indirin veya Colab'da <code>kagglehub</code> ile çekin:</p>
+      <p>📎 <a href="https://www.kaggle.com/datasets/nelgiriyewithana/top-spotify-songs-2023" target="_blank" style="color: var(--accent); font-weight: 600;">Top Spotify Songs 2023 — Kaggle</a></p>
+    </div>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># Google Colab'da çalıştırın:
+# Önce kagglehub'ı kurun (Colab'da genelde yüklü)
+# !pip install kagglehub
+
+import kagglehub
+import csv
+
+# Veri setini indir
+path = kagglehub.dataset_download("nelgiriyewithana/top-spotify-songs-2023")
+print(f"📂 İndirilen klasör: {path}")
+
+import os
+dosyalar = os.listdir(path)
+print(f"📄 Dosyalar: {dosyalar}")
+
+# CSV'yi oku
+csv_dosya = os.path.join(path, dosyalar[0])  # İlk CSV dosyası
+with open(csv_dosya, "r", encoding="latin-1") as f:
+    reader = csv.DictReader(f)
+    sarkilar = list(reader)
+
+print(f"\n🎵 Toplam şarkı sayısı: {len(sarkilar)}")
+print(f"📋 Sütunlar: {list(sarkilar[0].keys())[:8]}...")
+
+# En çok stream edilen 10 şarkı
+print("\n🏆 En çok stream edilen 10 şarkı:")
+# streams sütunundaki virgülleri kaldır ve integer yap
+for s in sarkilar:
+    try:
+        s["_streams"] = int(s.get("streams", "0").replace(",", ""))
+    except:
+        s["_streams"] = 0
+
+sarkilar.sort(key=lambda x: x["_streams"], reverse=True)
+for i, s in enumerate(sarkilar[:10], 1):
+    print(f"  {i:2}. {s['track_name'][:40]:40s} — {s['artist(s)_name'][:25]:25s} — 🎧 {s['_streams']:>15,}")</code></pre>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">💪 Ekstra Görevler</div>
+      <ol>
+        <li>Hangi yılda en çok şarkı yayınlanmış?</li>
+        <li>Ortalama BPM (tempo) nedir? En hızlı ve en yavaş şarkılar hangileri?</li>
+        <li>En çok şarkısı olan sanatçılar kimler? (Top 5)</li>
+        <li><code>danceability_%</code> en yüksek 10 şarkıyı bulun</li>
+      </ol>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <h2 id="seviye-3">🟠 Seviye 3: JSON Dosyalarıyla Çalışma</h2>
+    <p>JSON (JavaScript Object Notation), API'lerin ve web servislerinin "lingua franca"sıdır. Neredeyse tüm modern API'ler JSON döner.</p>
+
+    <!-- ─── Uygulama 3.1 ─── -->
+    <h3 id="uyg-3-1">📝 Uygulama 3.1 — JSON Temelleri: Sözlük ↔ Dosya</h3>
+    <div class="alert alert-info">
+      <div class="alert-title">🎯 Görev</div>
+      <p>Bir üniversite bölüm bilgisi JSON dosyası oluşturun, kaydedin ve tekrar okuyun.</p>
+    </div>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import json
+
+# Python sözlüğü → JSON dosyası
+bolum = {
+    "bolum_adi": "Bilgisayar Mühendisliği",
+    "universite": "Yozgat Bozok Üniversitesi",
+    "fakulte": "Mühendislik-Mimarlık Fakültesi",
+    "kurulis_yili": 2006,
+    "aktif_mi": True,
+    "ogrenci_sayisi": 320,
+    "akademik_kadro": [
+        {"unvan": "Prof. Dr.", "ad": "Ahmet Hoca", "alan": "Yapay Zeka"},
+        {"unvan": "Doç. Dr.", "ad": "Ayşe Hoca", "alan": "Veri Tabanı"},
+        {"unvan": "Dr. Öğr. Üyesi", "ad": "Güvenç Hoca", "alan": "Büyük Veri"},
+    ],
+    "dersler": {
+        "zorunlu": ["Algoritma", "Veri Yapıları", "İşletim Sistemleri", "Büyük Veri Teknolojileri"],
+        "secmeli": ["Derin Öğrenme", "Bulut Bilişim", "Siber Güvenlik"]
+    },
+    "iletisim": {
+        "telefon": "0354 242 10 01",
+        "web": "https://bilgisayar.bozok.edu.tr",
+        "adres": None  # null değer
+    }
+}
+
+# JSON dosyasına yaz (güzel formatlı)
+with open("bolum_bilgi.json", "w", encoding="utf-8") as f:
+    json.dump(bolum, f, ensure_ascii=False, indent=2)
+
+print("✅ bolum_bilgi.json oluşturuldu!\n")
+
+# JSON dosyasından oku
+with open("bolum_bilgi.json", "r", encoding="utf-8") as f:
+    veri = json.load(f)
+
+print(f"🏫 {veri['bolum_adi']} — {veri['universite']}")
+print(f"👨‍🎓 Öğrenci sayısı: {veri['ogrenci_sayisi']}")
+print(f"\n👩‍🏫 Akademik Kadro:")
+for hoca in veri["akademik_kadro"]:
+    print(f"  • {hoca['unvan']} {hoca['ad']} — {hoca['alan']}")
+
+print(f"\n📚 Zorunlu Dersler: {', '.join(veri['dersler']['zorunlu'])}")
+print(f"📖 Seçmeli Dersler: {', '.join(veri['dersler']['secmeli'])}")</code></pre>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 JSON vs Python Sözlük Farkları</div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>Özellik</th><th>Python dict</th><th>JSON</th></tr></thead>
+          <tbody>
+            <tr><td>Boş değer</td><td><code>None</code></td><td><code>null</code></td></tr>
+            <tr><td>Boolean</td><td><code>True</code> / <code>False</code></td><td><code>true</code> / <code>false</code></td></tr>
+            <tr><td>String tırnak</td><td>Tek veya çift</td><td><strong>Sadece çift</strong> tırnak</td></tr>
+            <tr><td>Tuple</td><td><code>(1, 2, 3)</code></td><td>❌ Yok (liste olur)</td></tr>
+            <tr><td>Anahtar tipi</td><td>Herhangi hashable</td><td><strong>Sadece string</strong></td></tr>
+            <tr><td>Yorum satırı</td><td><code># yorum</code></td><td>❌ Yok</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─── Uygulama 3.2 ─── -->
+    <h3 id="uyg-3-2">📝 Uygulama 3.2 — Elle JSON Yazma Pratiği</h3>
+    <div class="alert alert-info">
+      <div class="alert-title">🎯 Görev</div>
+      <p>Aşağıdaki bilgileri <strong>elle</strong> JSON formatında yazın (Python kodu kullanmadan, bir metin editöründe). Sonra Python ile okuyup doğrulayın. <strong>Bu önemli çünkü API'lerle çalışırken JSON'u elle yazmak gerekebiliyor.</strong></p>
+    </div>
+
+    <p>Şu bilgileri JSON formatında yazın:</p>
+    <ul>
+      <li>Bir kütüphane sistemi</li>
+      <li>3 kitap olsun, her kitapta: başlık, yazar, yıl, sayfa sayısı, türler (dizi olarak), mevcut mu (boolean)</li>
+      <li>Kütüphanenin adı, adresi ve üye sayısı olsun</li>
+    </ul>
+
+    <div class="code-block" data-lang="json">
+      <pre><code>{
+  "kutuphane_adi": "Yozgat İl Halk Kütüphanesi",
+  "adres": "Medrese Mahallesi, Yozgat",
+  "uye_sayisi": 4500,
+  "kitaplar": [
+    {
+      "baslik": "Suç ve Ceza",
+      "yazar": "Fyodor Dostoyevski",
+      "yil": 1866,
+      "sayfa": 671,
+      "turler": ["Roman", "Psikolojik", "Felsefi"],
+      "mevcut": true
+    },
+    {
+      "baslik": "Kürk Mantolu Madonna",
+      "yazar": "Sabahattin Ali",
+      "yil": 1943,
+      "sayfa": 160,
+      "turler": ["Roman", "Aşk"],
+      "mevcut": false
+    },
+    {
+      "baslik": "Sapiens: İnsan Türünün Kısa Tarihi",
+      "yazar": "Yuval Noah Harari",
+      "yil": 2011,
+      "sayfa": 464,
+      "turler": ["Tarih", "Bilim", "Felsefe"],
+      "mevcut": true
+    }
+  ]
+}</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import json
+
+# Yukarıdaki JSON'u bir string olarak tanımlayıp parse edelim
+json_str = '''
+{
+  "kutuphane_adi": "Yozgat İl Halk Kütüphanesi",
+  "adres": "Medrese Mahallesi, Yozgat",
+  "uye_sayisi": 4500,
+  "kitaplar": [
+    {
+      "baslik": "Suç ve Ceza",
+      "yazar": "Fyodor Dostoyevski",
+      "yil": 1866,
+      "sayfa": 671,
+      "turler": ["Roman", "Psikolojik", "Felsefi"],
+      "mevcut": true
+    },
+    {
+      "baslik": "Kürk Mantolu Madonna",
+      "yazar": "Sabahattin Ali",
+      "yil": 1943,
+      "sayfa": 160,
+      "turler": ["Roman", "Aşk"],
+      "mevcut": false
+    },
+    {
+      "baslik": "Sapiens",
+      "yazar": "Yuval Noah Harari",
+      "yil": 2011,
+      "sayfa": 464,
+      "turler": ["Tarih", "Bilim", "Felsefe"],
+      "mevcut": true
+    }
+  ]
+}
+'''
+
+veri = json.loads(json_str)
+print(f"📚 {veri['kutuphane_adi']}")
+print(f"📍 {veri['adres']}")
+print(f"👥 Üye sayısı: {veri['uye_sayisi']}\n")
+
+for kitap in veri["kitaplar"]:
+    durum = "✅ Mevcut" if kitap["mevcut"] else "❌ Ödünçte"
+    print(f"  📖 {kitap['baslik']} — {kitap['yazar']} ({kitap['yil']})")
+    print(f"     {kitap['sayfa']} sayfa | Türler: {', '.join(kitap['turler'])} | {durum}\n")</code></pre>
+    </div>
+
+    <!-- ─── Uygulama 3.3 ─── -->
+    <h3 id="uyg-3-3">🔥 Uygulama 3.3 — Gerçek JSON API: Dünya Ülkeleri</h3>
+    <div class="alert alert-info">
+      <div class="alert-title">🎯 Görev</div>
+      <p>Gerçek bir API'den JSON verisi çekin ve analiz edin. <strong>REST Countries API</strong> ücretsiz ve açık bir API'dir.</p>
+    </div>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import json
+from urllib.request import urlopen
+
+# REST Countries API'den tüm ülkeleri çek
+url = "https://restcountries.com/v3.1/all?fields=name,capital,population,region,area,languages"
+print("🌐 API'den veri çekiliyor...")
+response = urlopen(url)
+ulkeler = json.loads(response.read().decode("utf-8"))
+
+print(f"✅ {len(ulkeler)} ülke yüklendi!\n")
+
+# İlk ülkenin yapısını inceleyelim
+print("🔍 Örnek veri yapısı (ilk ülke):")
+print(json.dumps(ulkeler[0], indent=2, ensure_ascii=False)[:500])
+
+# Nüfusa göre sırala
+ulkeler.sort(key=lambda x: x.get("population", 0), reverse=True)
+
+print("\n🌍 Dünya'nın en kalabalık 15 ülkesi:")
+for i, u in enumerate(ulkeler[:15], 1):
+    ad = u["name"]["common"]
+    nufus = u.get("population", 0)
+    baskent = u.get("capital", ["?"])[0] if u.get("capital") else "?"
+    bolge = u.get("region", "?")
+    print(f"  {i:2}. {ad:30s} | 🏙️ {baskent:20s} | 👥 {nufus:>15,} | 🌏 {bolge}")
+
+# Bölgelere göre ülke sayısı
+print("\n📊 Bölgelere göre ülke sayısı:")
+bolgeler = {}
+for u in ulkeler:
+    b = u.get("region", "Bilinmiyor")
+    bolgeler[b] = bolgeler.get(b, 0) + 1
+
+for bolge, sayi in sorted(bolgeler.items(), key=lambda x: x[1], reverse=True):
+    print(f"  🌏 {bolge:20s}: {sayi} ülke")
+
+# Türkiye'yi bulalım
+turkiye = [u for u in ulkeler if "Turkey" in u["name"].get("common", "") or "Türkiye" in u["name"].get("common", "")]
+if turkiye:
+    t = turkiye[0]
+    print(f"\n🇹🇷 Türkiye Bilgileri:")
+    print(json.dumps(t, indent=2, ensure_ascii=False))</code></pre>
+    </div>
+
+    <!-- ─── Uygulama 3.4 ─── -->
+    <h3 id="uyg-3-4">🔥 Uygulama 3.4 — Büyük JSON: Nobel Ödülleri</h3>
+    <div class="alert alert-warning">
+      <div class="alert-title">📥 Veri Seti</div>
+      <p>Nobel Ödülü API'si açık bir JSON API'dir. Oldukça büyük ve zengin bir veri seti:</p>
+      <p>📎 <a href="https://api.nobelprize.org/v1/prize.json" target="_blank" style="color: var(--accent); font-weight: 600;">Nobel Prize API — prize.json</a></p>
+    </div>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import json
+from urllib.request import urlopen
+from collections import Counter
+
+url = "https://api.nobelprize.org/v1/prize.json"
+print("🏅 Nobel ödülleri verisi çekiliyor...")
+response = urlopen(url)
+data = json.loads(response.read().decode("utf-8"))
+oduller = data["prizes"]
+
+print(f"✅ Toplam {len(oduller)} ödül kaydı yüklendi!")
+
+# Yapıyı incele
+print("\n🔍 Örnek kayıt:")
+print(json.dumps(oduller[0], indent=2, ensure_ascii=False))
+
+# Kategorilere göre ödül sayısı
+kategoriler = Counter(o["category"] for o in oduller)
+print("\n📊 Kategorilere göre ödül sayısı:")
+for kat, sayi in kategoriler.most_common():
+    print(f"  🏅 {kat:20s}: {sayi}")
+
+# Çok ödüllü kişiler (birden fazla Nobel alanlar)
+kisiler = {}
+for odul in oduller:
+    for kazanan in odul.get("laureates", []):
+        ad = f"{kazanan.get('firstname', '')} {kazanan.get('surname', '')}".strip()
+        if ad:
+            kisiler[ad] = kisiler.get(ad, 0) + 1
+
+cok_odullu = {k: v for k, v in kisiler.items() if v > 1}
+print(f"\n🌟 Birden fazla Nobel ödülü alan kişiler ({len(cok_odullu)} kişi):")
+for ad, sayi in sorted(cok_odullu.items(), key=lambda x: x[1], reverse=True):
+    print(f"  ⭐ {ad}: {sayi} ödül")
+
+# Son 5 yılın fizik ödüllerini listele
+print("\n⚛️ Son 5 yılın Fizik Nobel ödülleri:")
+fizik = [o for o in oduller if o["category"] == "physics"]
+fizik.sort(key=lambda x: int(x["year"]), reverse=True)
+for o in fizik[:5]:
+    kazananlar = ", ".join(
+        f"{k.get('firstname', '')} {k.get('surname', '')}" 
+        for k in o.get("laureates", [])
+    )
+    motivasyon = o.get("laureates", [{}])[0].get("motivation", "")
+    print(f"  {o['year']}: {kazananlar}")
+    if motivasyon:
+        print(f"         📜 {motivasyon[:100]}...")</code></pre>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">💪 Ekstra Görevler</div>
+      <ol>
+        <li>Hangi ülkeler en çok Nobel ödülü almış? (laureates API: <code>https://api.nobelprize.org/v1/laureate.json</code>)</li>
+        <li>En genç Nobel ödülü alan kim? (doğum tarihi ve ödül yılını karşılaştırın)</li>
+        <li>Tüm Kimya ödüllerini bir JSON dosyasına kaydedin</li>
+      </ol>
+    </div>
+
+    <!-- ─── Uygulama 3.5 ─── -->
+    <h3 id="uyg-3-5">🔥 Uygulama 3.5 — JSON Lines (JSONL) Formatı</h3>
+    <div class="alert alert-info">
+      <div class="alert-title">🎯 Görev</div>
+      <p><strong>JSON Lines</strong> formatı büyük veri dünyasında çok kullanılır: her satır bağımsız bir JSON objesidir. Bu format büyük dosyaları satır satır okumaya olanak tanır (tüm dosyayı RAM'e yüklemek zorunda kalmazsınız).</p>
+    </div>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import json
+
+# JSONL dosyası oluştur: her satır bir JSON objesi
+log_kayitlari = [
+    {"timestamp": "2025-03-01T10:30:00", "user": "ahmet", "action": "login", "ip": "192.168.1.10"},
+    {"timestamp": "2025-03-01T10:31:15", "user": "ahmet", "action": "view_page", "page": "/dashboard"},
+    {"timestamp": "2025-03-01T10:32:00", "user": "zeynep", "action": "login", "ip": "192.168.1.42"},
+    {"timestamp": "2025-03-01T10:33:22", "user": "ahmet", "action": "download", "file": "rapor.pdf"},
+    {"timestamp": "2025-03-01T10:35:00", "user": "zeynep", "action": "upload", "file": "veri.csv", "size_mb": 15.2},
+    {"timestamp": "2025-03-01T10:36:10", "user": "mehmet", "action": "login", "ip": "10.0.0.5"},
+    {"timestamp": "2025-03-01T10:40:00", "user": "ahmet", "action": "logout"},
+    {"timestamp": "2025-03-01T10:45:30", "user": "zeynep", "action": "view_page", "page": "/analytics"},
+    {"timestamp": "2025-03-01T10:50:00", "user": "mehmet", "action": "error", "error": "PermissionDenied", "page": "/admin"},
+    {"timestamp": "2025-03-01T10:55:00", "user": "zeynep", "action": "logout"},
+]
+
+# JSONL dosyasına yaz
+with open("server_log.jsonl", "w", encoding="utf-8") as f:
+    for kayit in log_kayitlari:
+        f.write(json.dumps(kayit, ensure_ascii=False) + "\n")
+
+print("✅ server_log.jsonl oluşturuldu!\n")
+
+# JSONL dosyasını satır satır oku (bellek dostu!)
+print("📋 Log kayıtları:")
+with open("server_log.jsonl", "r", encoding="utf-8") as f:
+    for satir in f:
+        kayit = json.loads(satir.strip())
+        emoji = {"login": "🔑", "logout": "🚪", "view_page": "👁️", 
+                 "download": "⬇️", "upload": "⬆️", "error": "❌"}.get(kayit["action"], "📌")
+        print(f"  {emoji} [{kayit['timestamp'][11:]}] {kayit['user']:10s} → {kayit['action']}")
+
+# Kullanıcı başına aksiyon sayısı
+print("\n📊 Kullanıcı bazlı istatistikler:")
+with open("server_log.jsonl", "r") as f:
+    kullanici_aksiyonlar = {}
+    for satir in f:
+        k = json.loads(satir)
+        user = k["user"]
+        kullanici_aksiyonlar.setdefault(user, []).append(k["action"])
+
+for user, aksiyonlar in kullanici_aksiyonlar.items():
+    print(f"  👤 {user}: {len(aksiyonlar)} aksiyon — {', '.join(aksiyonlar)}")</code></pre>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <h2 id="seviye-4">🔴 Seviye 4: Pandas ile Veri Analizi</h2>
+    <p>Artık Pandas'ın gücünü keşfetme zamanı! Pandas, Python'un en popüler veri analizi kütüphanesidir. CSV, JSON, Excel ve daha pek çok formatı kolayca okuyabilir.</p>
+
+    <!-- ─── Uygulama 4.1 ─── -->
+    <h3 id="uyg-4-1">📝 Uygulama 4.1 — Pandas'a Giriş: DataFrame Temelleri</h3>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import pandas as pd
+
+# Sözlükten DataFrame oluşturma
+veri = {
+    "Öğrenci": ["Ahmet", "Zeynep", "Mehmet", "Elif", "Can", "Selin", "Burak", "Ayşe"],
+    "Matematik": [85, 92, 78, 95, 88, 72, 90, 84],
+    "Fizik": [80, 88, 75, 91, 85, 68, 87, 79],
+    "Kimya": [90, 95, 82, 88, 76, 85, 92, 88],
+    "Bölüm": ["BM", "BM", "EE", "BM", "EE", "EE", "BM", "EE"]
+}
+
+df = pd.DataFrame(veri)
+
+print("📊 DataFrame:")
+print(df)
+print(f"\n📐 Boyut (shape): {df.shape}")
+print(f"📋 Sütunlar: {list(df.columns)}")
+print(f"📊 Veri tipleri:\n{df.dtypes}")
+
+print("\n\n📈 İstatistikler:")
+print(df.describe())
+
+print("\n\n🔍 head(3):")
+print(df.head(3))
+
+print("\n\n🔍 tail(2):")
+print(df.tail(2))
+
+print("\n\n📊 info():")
+df.info()</code></pre>
+    </div>
+
+    <!-- ─── Uygulama 4.2 ─── -->
+    <h3 id="uyg-4-2">📝 Uygulama 4.2 — Filtreleme ve Sıralama</h3>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import pandas as pd
+
+veri = {
+    "Öğrenci": ["Ahmet", "Zeynep", "Mehmet", "Elif", "Can", "Selin", "Burak", "Ayşe"],
+    "Matematik": [85, 92, 78, 95, 88, 72, 90, 84],
+    "Fizik": [80, 88, 75, 91, 85, 68, 87, 79],
+    "Kimya": [90, 95, 82, 88, 76, 85, 92, 88],
+    "Bölüm": ["BM", "BM", "EE", "BM", "EE", "EE", "BM", "EE"]
+}
+df = pd.DataFrame(veri)
+
+# Ortalama sütunu ekle
+df["Ortalama"] = df[["Matematik", "Fizik", "Kimya"]].mean(axis=1)
+print("📊 Ortalama eklendi:")
+print(df)
+
+# Filtreleme: Ortalaması 85+ olan öğrenciler
+print("\n🌟 Ortalaması 85+ olan öğrenciler:")
+basarili = df[df["Ortalama"] >= 85]
+print(basarili)
+
+# Birden fazla koşul: BM bölümü VE Matematik 85+
+print("\n🎯 BM bölümü ve Matematik 85+:")
+filtre = df[(df["Bölüm"] == "BM") & (df["Matematik"] >= 85)]
+print(filtre)
+
+# Sıralama
+print("\n📈 Ortalamaya göre sıralama (azalan):")
+print(df.sort_values("Ortalama", ascending=False))
+
+# Bölüme göre gruplama
+print("\n📊 Bölüm bazlı ortalamalar:")
+print(df.groupby("Bölüm")[["Matematik", "Fizik", "Kimya", "Ortalama"]].mean().round(1))</code></pre>
+    </div>
+
+    <!-- ─── Uygulama 4.3 ─── -->
+    <h3 id="uyg-4-3">🔥 Uygulama 4.3 — Pandas ile Gerçek CSV: Titanic</h3>
+    <div class="alert alert-warning">
+      <div class="alert-title">📥 Veri Seti</div>
+      <p>Veri biliminin "Hello World"ü sayılan Titanic veri seti! Direkt URL'den okuyoruz:</p>
+      <p>📎 <a href="https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv" target="_blank" style="color: var(--accent); font-weight: 600;">Titanic Dataset (CSV)</a></p>
+    </div>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import pandas as pd
+
+# CSV'yi direkt URL'den oku
+url = "https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv"
+df = pd.read_csv(url)
+
+print("🚢 Titanic Veri Seti")
+print(f"📐 Boyut: {df.shape[0]} satır × {df.shape[1]} sütun\n")
+print(df.head())
+
+print("\n\n📊 Temel İstatistikler:")
+print(df.describe())
+
+print("\n\n📋 Eksik Veriler:")
+print(df.isnull().sum())
+
+# Hayatta kalma oranı
+print(f"\n\n🎯 Genel hayatta kalma oranı: {df['Survived'].mean():.1%}")
+
+# Cinsiyete göre hayatta kalma
+print("\n👥 Cinsiyete göre hayatta kalma oranı:")
+print(df.groupby("Sex")["Survived"].mean().apply(lambda x: f"{x:.1%}"))
+
+# Sınıfa göre hayatta kalma
+print("\n🎫 Bilet sınıfına göre hayatta kalma oranı:")
+print(df.groupby("Pclass")["Survived"].mean().apply(lambda x: f"{x:.1%}"))
+
+# Yaş dağılımı
+print(f"\n👶 En genç yolcu: {df['Age'].min()} yaş")
+print(f"👴 En yaşlı yolcu: {df['Age'].max()} yaş")
+print(f"📊 Ortalama yaş: {df['Age'].mean():.1f}")
+
+# Bilet ücreti analizi
+print("\n💰 Bilet ücreti analizi (sınıfa göre):")
+print(df.groupby("Pclass")["Fare"].agg(["mean", "median", "max"]).round(2))
+
+# Binme limanına göre yolcu sayısı
+print("\n🚢 Binme limanına göre yolcu sayısı:")
+print(df["Embarked"].value_counts())</code></pre>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">💪 Ekstra Görevler</div>
+      <ol>
+        <li>Ailesiyle (SibSp > 0 veya Parch > 0) gelen yolcuların hayatta kalma oranı, yalnız gelenlere göre nasıl?</li>
+        <li>Bilet ücretine göre 4 gruba ayırın (pd.qcut): Ucuz, Orta, Pahalı, Çok Pahalı. Hangisi daha çok hayatta kaldı?</li>
+        <li>İsimlerden (Name sütunu) "Mr", "Mrs", "Miss" gibi unvanları çıkarın ve unvana göre hayatta kalma oranını hesaplayın</li>
+        <li>Sonuçları yeni bir CSV ve JSON dosyasına kaydedin (<code>df.to_csv()</code>, <code>df.to_json()</code>)</li>
+      </ol>
+    </div>
+
+    <!-- ─── Uygulama 4.4 ─── -->
+    <h3 id="uyg-4-4">🔥 Uygulama 4.4 — Pandas ile JSON: Deprem Verisi</h3>
+    <div class="alert alert-warning">
+      <div class="alert-title">📥 Veri Seti</div>
+      <p>USGS (ABD Jeolojik Araştırma Kurumu) deprem verilerini canlı JSON API olarak sunuyor:</p>
+      <p>📎 <a href="https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson" target="_blank" style="color: var(--accent); font-weight: 600;">USGS Earthquake API — Son 30 gün, tüm depremler (GeoJSON)</a></p>
+    </div>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import pandas as pd
+import json
+from urllib.request import urlopen
+
+# Son 30 günün 4.5+ büyüklüğündeki depremleri (daha hızlı yüklenir)
+url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_month.geojson"
+print("🌍 Deprem verisi çekiliyor...")
+response = urlopen(url)
+data = json.loads(response.read().decode("utf-8"))
+
+# GeoJSON yapısını incele
+print(f"📋 Üst düzey anahtarlar: {list(data.keys())}")
+print(f"📊 Toplam deprem sayısı: {data['metadata']['count']}")
+
+# Features listesini DataFrame'e çevir
+depremler = []
+for feature in data["features"]:
+    props = feature["properties"]
+    coords = feature["geometry"]["coordinates"]
+    depremler.append({
+        "yer": props.get("place", ""),
+        "buyukluk": props.get("mag", 0),
+        "zaman": pd.to_datetime(props.get("time", 0), unit="ms"),
+        "derinlik_km": coords[2] if len(coords) > 2 else None,
+        "boylam": coords[0],
+        "enlem": coords[1],
+        "tsunami": props.get("tsunami", 0),
+    })
+
+df = pd.DataFrame(depremler)
+
+print("\n🔍 İlk 5 deprem:")
+print(df.head())
+
+print(f"\n📊 Büyüklük istatistikleri:")
+print(df["buyukluk"].describe())
+
+# En büyük 10 deprem
+print("\n💥 Son 30 günün en büyük 10 depremi:")
+en_buyukler = df.nlargest(10, "buyukluk")
+for _, d in en_buyukler.iterrows():
+    tsunami = "🌊" if d["tsunami"] else ""
+    print(f"  🔴 {d['buyukluk']:.1f} — {d['yer']} — {d['zaman'].strftime('%Y-%m-%d %H:%M')} {tsunami}")
+
+# Tsunami uyarısı olan depremler
+tsunami_var = df[df["tsunami"] == 1]
+print(f"\n🌊 Tsunami uyarılı deprem sayısı: {len(tsunami_var)}")
+
+# Derinlik analizi
+print(f"\n📏 Derinlik analizi:")
+print(f"  En sığ: {df['derinlik_km'].min():.1f} km")
+print(f"  En derin: {df['derinlik_km'].max():.1f} km")
+print(f"  Ortalama: {df['derinlik_km'].mean():.1f} km")
+
+# Sonuçları CSV'ye kaydet
+df.to_csv("depremler_son30gun.csv", index=False, encoding="utf-8")
+print("\n✅ depremler_son30gun.csv kaydedildi!")</code></pre>
+    </div>
+
+    <!-- ─── Uygulama 4.5 ─── -->
+    <h3 id="uyg-4-5">🔥 Uygulama 4.5 — Kaggle: Dünya Üniversiteleri Sıralaması</h3>
+    <div class="alert alert-warning">
+      <div class="alert-title">📥 Veri Seti</div>
+      <p>Kaggle'dan dünya üniversiteleri sıralaması veri setini kullanacağız:</p>
+      <p>📎 <a href="https://www.kaggle.com/datasets/mylesoneill/world-university-rankings" target="_blank" style="color: var(--accent); font-weight: 600;">World University Rankings — Kaggle</a></p>
+      <p>Alternatif olarak doğrudan erişilebilen bu CSV'yi kullanın:</p>
+      <p>📎 <a href="https://raw.githubusercontent.com/datasets/world-cities/master/data/world-cities.csv" target="_blank" style="color: var(--accent); font-weight: 600;">World Cities Dataset (CSV)</a></p>
+    </div>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import pandas as pd
+
+# Dünya şehirleri veri seti (direkt URL'den)
+url = "https://raw.githubusercontent.com/datasets/world-cities/master/data/world-cities.csv"
+df = pd.read_csv(url)
+
+print("🌍 Dünya Şehirleri Veri Seti")
+print(f"📐 Boyut: {df.shape}")
+print(f"📋 Sütunlar: {list(df.columns)}")
+print(df.head(10))
+
+# Ülke bazlı şehir sayısı
+print("\n🏙️ En çok şehre sahip 15 ülke:")
+ulke_sehir = df["country"].value_counts().head(15)
+for ulke, sayi in ulke_sehir.items():
+    print(f"  🏳️ {ulke:25s}: {sayi:5,} şehir")
+
+# Türkiye'nin şehirleri
+turkiye = df[df["country"] == "Turkey"]
+print(f"\n🇹🇷 Türkiye'deki şehir sayısı: {len(turkiye)}")
+print("\nİlk 10 şehir:")
+print(turkiye.head(10))
+
+# Aynı isimli şehirler (farklı ülkelerde)
+print("\n🔄 Farklı ülkelerde aynı isme sahip şehirler:")
+sehir_sayilari = df.groupby("name")["country"].nunique()
+coklu = sehir_sayilari[sehir_sayilari > 5].sort_values(ascending=False)
+for sehir, ulke_sayisi in coklu.head(10).items():
+    ulkeler = df[df["name"] == sehir]["country"].tolist()[:5]
+    print(f"  📍 {sehir}: {ulke_sayisi} ülkede — {', '.join(ulkeler)}...")
+
+# CSV ve JSON olarak kaydet
+turkiye.to_csv("turkiye_sehirleri.csv", index=False, encoding="utf-8")
+turkiye.to_json("turkiye_sehirleri.json", orient="records", force_ascii=False, indent=2)
+print("\n✅ turkiye_sehirleri.csv ve turkiye_sehirleri.json kaydedildi!")</code></pre>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <h2 id="seviye-5">⚫ Seviye 5: İleri Uygulamalar & Zorlayıcı Görevler</h2>
+    <p>Bu seviyedeki görevler daha açık uçlu ve zorlayıcı. Birden fazla beceriyi bir arada kullanmanız gerekiyor.</p>
+
+    <!-- ─── Uygulama 5.1 ─── -->
+    <h3 id="uyg-5-1">🏆 Uygulama 5.1 — CSV ↔ JSON Dönüştürücü</h3>
+    <div class="alert alert-info">
+      <div class="alert-title">🎯 Görev</div>
+      <p>İki fonksiyon yazın: biri CSV'yi JSON'a, diğeri JSON'u CSV'ye dönüştürsün. Her iki yönde de çalışmalı.</p>
+    </div>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import csv
+import json
+
+def csv_to_json(csv_dosya, json_dosya):
+    """CSV dosyasını JSON'a dönüştürür."""
+    with open(csv_dosya, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        satirlar = list(reader)
+    
+    with open(json_dosya, "w", encoding="utf-8") as f:
+        json.dump(satirlar, f, ensure_ascii=False, indent=2)
+    
+    print(f"✅ {csv_dosya} → {json_dosya} ({len(satirlar)} kayıt)")
+    return satirlar
+
+def json_to_csv(json_dosya, csv_dosya):
+    """JSON dosyasını CSV'ye dönüştürür."""
+    with open(json_dosya, "r", encoding="utf-8") as f:
+        veri = json.load(f)
+    
+    if not veri:
+        print("❌ Boş veri!")
+        return
+    
+    with open(csv_dosya, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=veri[0].keys())
+        writer.writeheader()
+        writer.writerows(veri)
+    
+    print(f"✅ {json_dosya} → {csv_dosya} ({len(veri)} kayıt)")
+    return veri
+
+# Test: Önce CSV oluştur
+with open("test_veri.csv", "w", newline="", encoding="utf-8") as f:
+    writer = csv.writer(f)
+    writer.writerow(["sehir", "ulke", "nufus", "alan_km2"])
+    writer.writerow(["İstanbul", "Türkiye", 15840900, 5461])
+    writer.writerow(["Tokyo", "Japonya", 13960000, 2194])
+    writer.writerow(["New York", "ABD", 8336817, 783])
+    writer.writerow(["Londra", "İngiltere", 8982000, 1572])
+    writer.writerow(["Paris", "Fransa", 2161000, 105])
+
+# CSV → JSON
+csv_to_json("test_veri.csv", "test_veri.json")
+
+# Oluşan JSON'u oku ve göster
+with open("test_veri.json", "r", encoding="utf-8") as f:
+    print("\n📄 Oluşan JSON:")
+    print(f.read())
+
+# JSON → CSV (geri dönüştür)
+json_to_csv("test_veri.json", "test_veri_geri.csv")
+
+# Dosya boyutlarını karşılaştır
+import os
+csv_boyut = os.path.getsize("test_veri.csv")
+json_boyut = os.path.getsize("test_veri.json")
+print(f"\n📦 Boyut karşılaştırması:")
+print(f"  CSV:  {csv_boyut:,} byte")
+print(f"  JSON: {json_boyut:,} byte")
+print(f"  JSON, CSV'den {json_boyut/csv_boyut:.1f}x daha büyük!")</code></pre>
+    </div>
+
+    <!-- ─── Uygulama 5.2 ─── -->
+    <h3 id="uyg-5-2">🏆 Uygulama 5.2 — HuggingFace Dataset Keşfi</h3>
+    <div class="alert alert-warning">
+      <div class="alert-title">📥 Veri Seti</div>
+      <p>HuggingFace'in <code>datasets</code> kütüphanesiyle binlerce veri setine erişebilirsiniz. Bu örnekte Türkçe bir sentiment analysis veri seti kullanacağız:</p>
+      <p>📎 <a href="https://huggingface.co/datasets" target="_blank" style="color: var(--accent); font-weight: 600;">HuggingFace Datasets Hub</a></p>
+    </div>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># Google Colab'da çalıştırın!
+# !pip install datasets pandas
+
+from datasets import load_dataset
+import pandas as pd
+
+# IMDB film yorumları veri seti
+print("📥 IMDB veri seti yükleniyor...")
+dataset = load_dataset("imdb", split="train[:1000]")  # İlk 1000 kayıt
+
+# Pandas DataFrame'e çevir
+df = pd.DataFrame(dataset)
+print(f"📐 Boyut: {df.shape}")
+print(f"📋 Sütunlar: {list(df.columns)}")
+print(df.head())
+
+# Label dağılımı
+print("\n📊 Duygu analizi dağılımı:")
+print(df["label"].value_counts().rename({0: "Olumsuz", 1: "Olumlu"}))
+
+# Yorum uzunlukları
+df["uzunluk"] = df["text"].str.len()
+print(f"\n📏 Yorum uzunlukları:")
+print(df.groupby("label")["uzunluk"].describe().round(0))
+
+# En kısa ve en uzun yorumlar
+print(f"\n📝 En kısa yorum ({df['uzunluk'].min()} karakter):")
+print(df.loc[df["uzunluk"].idxmin(), "text"][:200] + "...")
+print(f"\n📝 En uzun yorum ({df['uzunluk'].max()} karakter):")
+print(df.loc[df["uzunluk"].idxmax(), "text"][:200] + "...")
+
+# JSON olarak kaydet
+df.head(100).to_json("imdb_sample.json", orient="records", force_ascii=False, indent=2)
+print("\n✅ imdb_sample.json kaydedildi (100 kayıt)")</code></pre>
+    </div>
+
+    <!-- ─── Uygulama 5.3 ─── -->
+    <h3 id="uyg-5-3">🏆 Uygulama 5.3 — Mega Challenge: Veri Pipeline'ı</h3>
+    <div class="alert alert-danger">
+      <div class="alert-title">🔥 Zorlayıcı Görev</div>
+      <p>Bu görev tüm öğrendiklerinizi birleştirir. Baştan sona bir veri pipeline'ı oluşturun:</p>
+    </div>
+
+    <ol>
+      <li><strong>Veri Toplama:</strong> REST Countries API'den tüm ülkeleri JSON olarak çekin</li>
+      <li><strong>Veri Temizleme:</strong> Sadece şu sütunları alın: isim, başkent, nüfus, bölge, alan (km²), diller</li>
+      <li><strong>Dönüştürme:</strong> Nüfus yoğunluğunu hesaplayın (nüfus / alan)</li>
+      <li><strong>Filtreleme:</strong> Nüfusu 1 milyonun altında olan ülkeleri çıkarın</li>
+      <li><strong>Analiz:</strong> Bölge bazlı ortalama nüfus yoğunluğunu hesaplayın</li>
+      <li><strong>Kaydetme:</strong> Sonuçları 3 farklı formatta kaydedin: CSV, JSON ve JSONL</li>
+      <li><strong>Doğrulama:</strong> Kaydedilen 3 dosyayı tekrar okuyup satır sayılarının eşit olduğunu kontrol edin</li>
+    </ol>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import json
+import csv
+import pandas as pd
+from urllib.request import urlopen
+
+# ═══ 1. VERİ TOPLAMA ═══
+print("🌐 1. Veri toplama...")
+url = "https://restcountries.com/v3.1/all"
+response = urlopen(url)
+raw = json.loads(response.read().decode("utf-8"))
+print(f"   ✅ {len(raw)} ülke çekildi")
+
+# ═══ 2. VERİ TEMİZLEME ═══
+print("🧹 2. Veri temizleme...")
+temiz = []
+for u in raw:
+    try:
+        temiz.append({
+            "ulke": u["name"]["common"],
+            "baskent": u.get("capital", ["?"])[0] if u.get("capital") else "?",
+            "nufus": u.get("population", 0),
+            "bolge": u.get("region", "Bilinmiyor"),
+            "alan_km2": u.get("area", 0),
+            "diller": ", ".join(u.get("languages", {}).values()) if u.get("languages") else "?"
+        })
+    except:
+        pass
+
+df = pd.DataFrame(temiz)
+print(f"   ✅ {len(df)} kayıt temizlendi")
+
+# ═══ 3. DÖNÜŞTÜRME ═══
+print("🔄 3. Nüfus yoğunluğu hesaplanıyor...")
+df["yogunluk"] = (df["nufus"] / df["alan_km2"]).round(1)
+df["yogunluk"] = df["yogunluk"].fillna(0)
+
+# ═══ 4. FİLTRELEME ═══
+print("🔍 4. Nüfusu 1M+ olan ülkeler filtreleniyor...")
+df = df[df["nufus"] >= 1_000_000].copy()
+df = df.sort_values("nufus", ascending=False).reset_index(drop=True)
+print(f"   ✅ {len(df)} ülke kaldı")
+
+# ═══ 5. ANALİZ ═══
+print("\n📊 5. Bölge bazlı analiz:")
+analiz = df.groupby("bolge").agg(
+    ulke_sayisi=("ulke", "count"),
+    toplam_nufus=("nufus", "sum"),
+    ort_yogunluk=("yogunluk", "mean")
+).round(1)
+print(analiz)
+
+print("\n🏙️ En yoğun 10 ülke:")
+for _, r in df.nlargest(10, "yogunluk").iterrows():
+    print(f"  {r['ulke']:25s} — {r['yogunluk']:>10,.1f} kişi/km²")
+
+# ═══ 6. KAYDETME ═══
+print("\n💾 6. Dosyalara kaydediliyor...")
+
+# CSV
+df.to_csv("ulkeler_analiz.csv", index=False, encoding="utf-8")
+print("   ✅ ulkeler_analiz.csv")
+
+# JSON
+df.to_json("ulkeler_analiz.json", orient="records", force_ascii=False, indent=2)
+print("   ✅ ulkeler_analiz.json")
+
+# JSONL
+with open("ulkeler_analiz.jsonl", "w", encoding="utf-8") as f:
+    for _, row in df.iterrows():
+        f.write(json.dumps(row.to_dict(), ensure_ascii=False) + "\n")
+print("   ✅ ulkeler_analiz.jsonl")
+
+# ═══ 7. DOĞRULAMA ═══
+print("\n✔️ 7. Doğrulama...")
+df_csv = pd.read_csv("ulkeler_analiz.csv")
+df_json = pd.read_json("ulkeler_analiz.json")
+with open("ulkeler_analiz.jsonl", "r") as f:
+    jsonl_satirlar = [json.loads(line) for line in f]
+
+print(f"   CSV:   {len(df_csv)} satır")
+print(f"   JSON:  {len(df_json)} satır")
+print(f"   JSONL: {len(jsonl_satirlar)} satır")
+
+import os
+for dosya in ["ulkeler_analiz.csv", "ulkeler_analiz.json", "ulkeler_analiz.jsonl"]:
+    boyut = os.path.getsize(dosya)
+    print(f"   📦 {dosya}: {boyut:,} byte")
+
+if len(df_csv) == len(df_json) == len(jsonl_satirlar):
+    print("\n🎉 Tüm dosyalar tutarlı! Pipeline başarılı!")</code></pre>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <h2 id="veri-setleri">📦 Kullanabileceğiniz Veri Setleri</h2>
+    <p>Uygulamalar için kullanabileceğiniz açık veri setleri. Bunları indirip kendi analizlerinizi yapın!</p>
+
+    <h3 id="csv-datasets">📊 CSV Veri Setleri</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Veri Seti</th><th>Açıklama</th><th>Boyut</th><th>Kaynak</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>🚢 Titanic Passengers</strong></td>
+            <td>891 yolcunun hayatta kalma, yaş, cinsiyet, bilet bilgileri</td>
+            <td>~60 KB</td>
+            <td><a href="https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv" target="_blank">GitHub (CSV)</a></td>
+          </tr>
+          <tr>
+            <td><strong>🌍 World Population</strong></td>
+            <td>Ülke bazlı yıllık nüfus verileri (1960-2023)</td>
+            <td>~6 MB</td>
+            <td><a href="https://raw.githubusercontent.com/datasets/population/main/data/population.csv" target="_blank">GitHub (CSV)</a></td>
+          </tr>
+          <tr>
+            <td><strong>🎵 Spotify Top Songs 2023</strong></td>
+            <td>En popüler şarkılar, stream sayısı, BPM, danceability</td>
+            <td>~250 KB</td>
+            <td><a href="https://www.kaggle.com/datasets/nelgiriyewithana/top-spotify-songs-2023" target="_blank">Kaggle</a></td>
+          </tr>
+          <tr>
+            <td><strong>🎬 IMDB Top 1000</strong></td>
+            <td>En yüksek puanlı 1000 film, yönetmen, gelir, süre</td>
+            <td>~200 KB</td>
+            <td><a href="https://www.kaggle.com/datasets/harshitshankhdhar/imdb-dataset-of-top-1000-movies-and-tv-shows" target="_blank">Kaggle</a></td>
+          </tr>
+          <tr>
+            <td><strong>🏙️ World Cities</strong></td>
+            <td>Dünya şehirleri: isim, ülke, alt bölge</td>
+            <td>~1.3 MB</td>
+            <td><a href="https://raw.githubusercontent.com/datasets/world-cities/master/data/world-cities.csv" target="_blank">GitHub (CSV)</a></td>
+          </tr>
+          <tr>
+            <td><strong>🌡️ Global Temperature</strong></td>
+            <td>1750'den bugüne küresel sıcaklık anomalileri</td>
+            <td>~50 KB</td>
+            <td><a href="https://raw.githubusercontent.com/datasets/global-temp/master/data/monthly.csv" target="_blank">GitHub (CSV)</a></td>
+          </tr>
+          <tr>
+            <td><strong>☕ Starbucks Locations</strong></td>
+            <td>Dünya genelinde 25.000+ Starbucks şubesi, konum verileri</td>
+            <td>~5 MB</td>
+            <td><a href="https://www.kaggle.com/datasets/starbucks/store-locations" target="_blank">Kaggle</a></td>
+          </tr>
+          <tr>
+            <td><strong>🎮 Video Game Sales</strong></td>
+            <td>16.000+ oyun: platform, tür, yayıncı, küresel satışlar</td>
+            <td>~1 MB</td>
+            <td><a href="https://www.kaggle.com/datasets/gregorut/videogamesales" target="_blank">Kaggle</a></td>
+          </tr>
+          <tr>
+            <td><strong>✈️ Airline Passengers</strong></td>
+            <td>1949-1960 aylık uçak yolcu sayıları (time series klasiği)</td>
+            <td>~1 KB</td>
+            <td><a href="https://raw.githubusercontent.com/jbrownlee/Datasets/master/airline-passengers.csv" target="_blank">GitHub (CSV)</a></td>
+          </tr>
+          <tr>
+            <td><strong>🏠 California Housing</strong></td>
+            <td>Kaliforniya ev fiyatları, gelir, nüfus, koordinatlar (20.000+ kayıt)</td>
+            <td>~1.4 MB</td>
+            <td><a href="https://www.kaggle.com/datasets/camnugent/california-housing-prices" target="_blank">Kaggle</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="json-apis">🌐 JSON API'leri (Canlı Veri)</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>API</th><th>Açıklama</th><th>URL</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>🌍 REST Countries</strong></td>
+            <td>Tüm ülke bilgileri: nüfus, başkent, diller, bayrak</td>
+            <td><a href="https://restcountries.com/v3.1/all" target="_blank"><code>restcountries.com/v3.1/all</code></a></td>
+          </tr>
+          <tr>
+            <td><strong>🏅 Nobel Prize</strong></td>
+            <td>Tüm Nobel ödülleri ve kazananlar</td>
+            <td><a href="https://api.nobelprize.org/v1/prize.json" target="_blank"><code>api.nobelprize.org/v1/prize.json</code></a></td>
+          </tr>
+          <tr>
+            <td><strong>🌍 Depremler (USGS)</strong></td>
+            <td>Son 30 günün depremleri (canlı veri)</td>
+            <td><a href="https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_month.geojson" target="_blank"><code>earthquake.usgs.gov/...</code></a></td>
+          </tr>
+          <tr>
+            <td><strong>🚀 SpaceX</strong></td>
+            <td>Tüm SpaceX fırlatmaları, roketler, kapsüller</td>
+            <td><a href="https://api.spacexdata.com/v4/launches" target="_blank"><code>api.spacexdata.com/v4/launches</code></a></td>
+          </tr>
+          <tr>
+            <td><strong>🐱 Cat Facts</strong></td>
+            <td>Rastgele kedi gerçekleri (eğlenceli, kolay API)</td>
+            <td><a href="https://catfact.ninja/facts?limit=50" target="_blank"><code>catfact.ninja/facts</code></a></td>
+          </tr>
+          <tr>
+            <td><strong>🎲 Random User</strong></td>
+            <td>Rastgele sahte kullanıcı verisi (test için harika)</td>
+            <td><a href="https://randomuser.me/api/?results=50" target="_blank"><code>randomuser.me/api/?results=50</code></a></td>
+          </tr>
+          <tr>
+            <td><strong>📰 Hacker News</strong></td>
+            <td>En popüler haberler ve hikayeler</td>
+            <td><a href="https://hacker-news.firebaseio.com/v0/topstories.json" target="_blank"><code>hacker-news.firebaseio.com/...</code></a></td>
+          </tr>
+          <tr>
+            <td><strong>🪙 CoinGecko</strong></td>
+            <td>Kripto para fiyatları (ücretsiz, API key gerekmez)</td>
+            <td><a href="https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&per_page=50" target="_blank"><code>api.coingecko.com/...</code></a></td>
+          </tr>
+          <tr>
+            <td><strong>🌤️ Open-Meteo Hava</strong></td>
+            <td>Hava durumu verisi (API key gerekmez)</td>
+            <td><a href="https://api.open-meteo.com/v1/forecast?latitude=39.82&longitude=34.81&hourly=temperature_2m" target="_blank"><code>api.open-meteo.com/...</code></a> (Yozgat)</td>
+          </tr>
+          <tr>
+            <td><strong>🎬 OMDb</strong></td>
+            <td>Film bilgileri (ücretsiz API key gerekir)</td>
+            <td><a href="https://www.omdbapi.com/" target="_blank"><code>omdbapi.com</code></a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="buyuk-veri-setleri">📦 Büyük Veri Setleri (read() Tuzağını Görmek İçin)</h3>
+    <div class="alert alert-warning">
+      <div class="alert-title">⚠️ Dikkat</div>
+      <p>Bu veri setleri büyüktür. <code>f.read()</code> veya <code>f.readlines()</code> ile açmaya çalışırsanız bilgisayarınız yavaşlayabilir — bu da dersin amacı! Satır satır okuyun veya Pandas ile chunked okuma yapın.</p>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Veri Seti</th><th>Boyut</th><th>Açıklama</th><th>Kaynak</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>🚕 NYC Taxi Trips</strong></td>
+            <td>~2 GB+</td>
+            <td>New York taksi yolculukları, GPS, ücret, süre</td>
+            <td><a href="https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page" target="_blank">NYC Open Data</a></td>
+          </tr>
+          <tr>
+            <td><strong>📦 Amazon Reviews</strong></td>
+            <td>~3 GB</td>
+            <td>Milyonlarca Amazon ürün yorumu</td>
+            <td><a href="https://www.kaggle.com/datasets/bittlingmayer/amazonreviews" target="_blank">Kaggle</a></td>
+          </tr>
+          <tr>
+            <td><strong>🎬 MovieLens 25M</strong></td>
+            <td>~250 MB</td>
+            <td>25 milyon film değerlendirmesi</td>
+            <td><a href="https://grouplens.org/datasets/movielens/25m/" target="_blank">GroupLens</a></td>
+          </tr>
+          <tr>
+            <td><strong>📊 Stack Overflow Survey</strong></td>
+            <td>~250 MB</td>
+            <td>Yıllık geliştirici anketi (70.000+ yanıt)</td>
+            <td><a href="https://survey.stackoverflow.co/" target="_blank">Stack Overflow</a></td>
+          </tr>
+          <tr>
+            <td><strong>🏋️ Pandas ile Büyük Dosya Okuma</strong></td>
+            <td>—</td>
+            <td>Chunk chunk okuma örneği</td>
+            <td>Aşağıdaki kodu kullanın ↓</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># Pandas ile büyük dosyaları chunk chunk okuma
+import pandas as pd
+
+# chunksize parametresi ile büyük dosyayı parça parça oku
+# Her seferinde sadece 10.000 satır RAM'e yüklenir
+chunk_sayisi = 0
+toplam_satir = 0
+
+for chunk in pd.read_csv("buyuk_dosya.csv", chunksize=10_000):
+    chunk_sayisi += 1
+    toplam_satir += len(chunk)
+    
+    # Her chunk bir DataFrame — istediğiniz işlemi yapın
+    # Örnek: sadece belirli sütunlardaki ortalamayı hesapla
+    # ortalama = chunk["fiyat"].mean()
+    
+    if chunk_sayisi <= 3:
+        print(f"  Chunk {chunk_sayisi}: {len(chunk)} satır — Bellek dostu! ✅")
+
+print(f"\n📊 Toplam: {chunk_sayisi} chunk, {toplam_satir:,} satır")
+print("🧠 RAM'de hiçbir zaman 10.000'den fazla satır tutulmadı!")</code></pre>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <h2 id="python-kaynaklar">🐍 Python Öğrenme Kaynakları: Notebook & Colab</h2>
+    <p>Python ve veri bilimi becerilerinizi geliştirmek için aşağıdaki <strong>ücretsiz</strong> GitHub repolarına göz atın. Bunların çoğu interaktif Jupyter Notebook veya Google Colab formatındadır — hemen açıp çalıştırabilirsiniz!</p>
+
+    <h3 id="python-ogrenme-repolari">📚 Popüler Python & Veri Bilimi Repoları</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🌟</div>
+        <div class="card-title">30 Days of Python</div>
+        <div class="card-desc">
+          <p><strong>⭐ 45k+ GitHub Stars</strong></p>
+          <p>Asabeneh Yetayeh'in hazırladığı, 30 günde Python öğreten devasa kaynak. Her gün bir konu, bol örnek ve alıştırma.</p>
+          <p>📌 Dosya I/O, JSON, CSV konuları: Gün 19-20</p>
+          <p>👉 <a href="https://github.com/Asabeneh/30-Days-Of-Python" target="_blank">GitHub Repo</a></p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📖</div>
+        <div class="card-title">Python Data Science Handbook</div>
+        <div class="card-desc">
+          <p><strong>⭐ 43k+ GitHub Stars</strong></p>
+          <p>Jake VanderPlas'ın yazdığı, Pandas, NumPy, Matplotlib ve Scikit-Learn kapsayan tam bir el kitabı. Tüm içerik Jupyter Notebook olarak açık.</p>
+          <p>📌 Pandas bölümü: Chapter 3</p>
+          <p>👉 <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank">GitHub Repo</a> | <a href="https://jakevdp.github.io/PythonDataScienceHandbook/" target="_blank">Online Kitap</a></p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧑‍💻</div>
+        <div class="card-title">Learn Python 3 — Jerry Pussinen</div>
+        <div class="card-desc">
+          <p><strong>⭐ 6k+ GitHub Stars</strong></p>
+          <p>Jupyter Notebook tabanlı, interaktif Python 3 kursu. Dosya işlemleri, JSON, standart kütüphane konuları mükemmel anlatılmış.</p>
+          <p>📌 İlgili notebooklar: <code>files</code>, <code>std-lib</code></p>
+          <p>👉 <a href="https://github.com/jerry-git/learn-python3" target="_blank">GitHub Repo</a></p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🚀</div>
+        <div class="card-title">Python for Everybody (PY4E)</div>
+        <div class="card-desc">
+          <p><strong>⭐ Coursera'da 5M+ öğrenci</strong></p>
+          <p>Dr. Charles Severance'ın (Dr. Chuck) ünlü Python kursu. Dosya okuma, web scraping, JSON/XML, veritabanları.</p>
+          <p>📌 Bölüm 7: Dosyalar, Bölüm 13: JSON</p>
+          <p>👉 <a href="https://www.py4e.com/" target="_blank">py4e.com</a> | <a href="https://www.py4e.com/materials" target="_blank">Tüm Materyaller</a></p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🐼</div>
+        <div class="card-title">Pandas Exercises</div>
+        <div class="card-desc">
+          <p><strong>⭐ 10k+ GitHub Stars</strong></p>
+          <p>Pandas'ı pratik yaparak öğrenmek için en iyi kaynak. Kolaydan zora sıralanmış 20+ alıştırma seti.</p>
+          <p>📌 Getting & Knowing, Filtering, Groupby, Merge</p>
+          <p>👉 <a href="https://github.com/guipsamora/pandas_exercises" target="_blank">GitHub Repo</a></p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔥</div>
+        <div class="card-title">Kaggle Learn — Pandas Micro-Course</div>
+        <div class="card-desc">
+          <p><strong>⭐ Kaggle'ın resmi kursu</strong></p>
+          <p>4 saatlik interaktif Pandas kursu. Tarayıcıda direkt çalıştırabilirsiniz. Sertifika da verilir!</p>
+          <p>📌 DataFrame, indexing, groupby, data types</p>
+          <p>👉 <a href="https://www.kaggle.com/learn/pandas" target="_blank">Kaggle — Learn Pandas</a></p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎓</div>
+        <div class="card-title">Google's Python Class</div>
+        <div class="card-desc">
+          <p><strong>⭐ Google'ın resmi kursu</strong></p>
+          <p>Google mühendislerinin hazırladığı, ücretsiz Python kursu. String, list, dosya işlemleri mükemmel.</p>
+          <p>📌 Basic Exercises, Baby Names, Copy Special</p>
+          <p>👉 <a href="https://developers.google.com/edu/python" target="_blank">Google — Python Class</a></p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <div class="card-title">Practical Python Programming — David Beazley</div>
+        <div class="card-desc">
+          <p><strong>⭐ 10k+ GitHub Stars</strong></p>
+          <p>Python gurusu David Beazley'in kursu. Özellikle dosya I/O, CSV işleme, veri manipülasyonu konularında derinlemesine.</p>
+          <p>📌 Bölüm 3: Program Organization (dosyalar, CSV)</p>
+          <p>👉 <a href="https://github.com/dabeaz-course/practical-python" target="_blank">GitHub Repo</a></p>
+        </div>
+      </div>
+    </div>
+
+    <h3 id="colab-notebooklar">📓 Hemen Açılabilir Google Colab Notebooklar</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Notebook</th><th>Konu</th><th>Açma Linki</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Python Dosya İşlemleri</strong></td>
+            <td>open, read, write, with, dosya modları</td>
+            <td><a href="https://colab.research.google.com/github/Asabeneh/30-Days-Of-Python/blob/master/19_Day_File_handling/19_file_handling.ipynb" target="_blank">📓 Colab'da Aç</a></td>
+          </tr>
+          <tr>
+            <td><strong>Python CSV & JSON</strong></td>
+            <td>csv modülü, json modülü, API'den veri çekme</td>
+            <td><a href="https://colab.research.google.com/github/cs109/2015/blob/master/Lectures/01-Introduction.ipynb" target="_blank">📓 Colab'da Aç</a></td>
+          </tr>
+          <tr>
+            <td><strong>Pandas Quick Start</strong></td>
+            <td>DataFrame, Series, filtreleme, gruplama</td>
+            <td><a href="https://colab.research.google.com/github/jakevdp/PythonDataScienceHandbook/blob/master/notebooks/03.00-Introduction-to-Pandas.ipynb" target="_blank">📓 Colab'da Aç</a></td>
+          </tr>
+          <tr>
+            <td><strong>Pandas Data Indexing</strong></td>
+            <td>loc, iloc, koşullu seçim, fancy indexing</td>
+            <td><a href="https://colab.research.google.com/github/jakevdp/PythonDataScienceHandbook/blob/master/notebooks/03.02-Data-Indexing-and-Selection.ipynb" target="_blank">📓 Colab'da Aç</a></td>
+          </tr>
+          <tr>
+            <td><strong>Pandas GroupBy & Aggregation</strong></td>
+            <td>Split-apply-combine, pivot, agg</td>
+            <td><a href="https://colab.research.google.com/github/jakevdp/PythonDataScienceHandbook/blob/master/notebooks/03.08-Aggregation-and-Grouping.ipynb" target="_blank">📓 Colab'da Aç</a></td>
+          </tr>
+          <tr>
+            <td><strong>Kaggle Pandas Course — Notebook 1</strong></td>
+            <td>Creating, Reading, Writing DataFrames</td>
+            <td><a href="https://www.kaggle.com/learn/pandas" target="_blank">📓 Kaggle'da Aç</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="platformlar">🌐 Veri Platformları</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <div class="card-title">Kaggle</div>
+        <div class="card-desc">
+          <p>50.000+ veri seti, yarışmalar, ücretsiz GPU/TPU, Notebook ortamı.</p>
+          <p>👉 <a href="https://www.kaggle.com/datasets" target="_blank">kaggle.com/datasets</a></p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤗</div>
+        <div class="card-title">HuggingFace Datasets</div>
+        <div class="card-desc">
+          <p>100.000+ veri seti. NLP, görüntü, ses. <code>datasets</code> kütüphanesi ile kolay erişim.</p>
+          <p>👉 <a href="https://huggingface.co/datasets" target="_blank">huggingface.co/datasets</a></p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏛️</div>
+        <div class="card-title">UCI ML Repository</div>
+        <div class="card-desc">
+          <p>Akademinin klasik veri seti deposu. Iris, Wine, Mushroom gibi ünlü setler.</p>
+          <p>👉 <a href="https://archive.ics.uci.edu/" target="_blank">archive.ics.uci.edu</a></p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔍</div>
+        <div class="card-title">Google Dataset Search</div>
+        <div class="card-desc">
+          <p>Google'ın veri seti arama motoru. İnternetteki tüm açık veri setlerini arayın.</p>
+          <p>👉 <a href="https://datasetsearch.research.google.com/" target="_blank">datasetsearch.research.google.com</a></p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🇹🇷</div>
+        <div class="card-title">TÜİK</div>
+        <div class="card-desc">
+          <p>Türkiye İstatistik Kurumu. Nüfus, ekonomi, eğitim, sağlık verileri.</p>
+          <p>👉 <a href="https://data.tuik.gov.tr/" target="_blank">data.tuik.gov.tr</a></p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌍</div>
+        <div class="card-title">World Bank Open Data</div>
+        <div class="card-desc">
+          <p>Dünya Bankası açık veri portalı. 200+ ülke, 1.000+ gösterge.</p>
+          <p>👉 <a href="https://data.worldbank.org/" target="_blank">data.worldbank.org</a></p>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <h2 id="ozet-cheatsheet">📋 Hızlı Başvuru (Cheatsheet)</h2>
+
+    <h3>📁 Dosya Okuma/Yazma</h3>
+    <div class="code-block" data-lang="python">
+      <pre><code># Yazma
+with open("dosya.txt", "w", encoding="utf-8") as f:
+    f.write("merhaba\n")
+
+# Okuma (tamamı — dikkat: büyük dosyalarda RAM sorunu!)
+with open("dosya.txt", "r", encoding="utf-8") as f:
+    icerik = f.read()
+
+# Satır satır okuma (bellek dostu ✅)
+with open("dosya.txt", "r") as f:
+    for satir in f:
+        print(satir.strip())
+
+# Ekleme (append)
+with open("dosya.txt", "a") as f:
+    f.write("yeni satir\n")
+
+# Dosya modları: "r" oku, "w" yaz (sil+yaz), "a" ekle, "rb"/"wb" binary</code></pre>
+    </div>
+
+    <h3>📊 CSV İşlemleri</h3>
+    <div class="code-block" data-lang="python">
+      <pre><code>import csv
+
+# CSV yazma
+with open("veri.csv", "w", newline="", encoding="utf-8") as f:
+    writer = csv.writer(f)
+    writer.writerow(["ad", "yas"])   # başlık
+    writer.writerow(["Ahmet", 25])   # veri
+
+# CSV okuma
+with open("veri.csv", "r", encoding="utf-8") as f:
+    reader = csv.reader(f)
+    for satir in reader:
+        print(satir)
+
+# DictReader (sözlük olarak oku)
+with open("veri.csv", "r", encoding="utf-8") as f:
+    reader = csv.DictReader(f)
+    for kayit in reader:
+        print(kayit["ad"], kayit["yas"])</code></pre>
+    </div>
+
+    <h3>📦 JSON İşlemleri</h3>
+    <div class="code-block" data-lang="python">
+      <pre><code>import json
+
+# Python → JSON dosya
+veri = {"ad": "Ahmet", "yas": 25, "dersler": ["BDT", "YBS"]}
+with open("veri.json", "w", encoding="utf-8") as f:
+    json.dump(veri, f, ensure_ascii=False, indent=2)
+
+# JSON dosya → Python
+with open("veri.json", "r", encoding="utf-8") as f:
+    veri = json.load(f)
+
+# String ↔ JSON
+json_str = json.dumps(veri, ensure_ascii=False)  # dict → string
+veri = json.loads(json_str)                        # string → dict
+
+# API'den JSON okuma
+from urllib.request import urlopen
+response = urlopen("https://api.example.com/data")
+data = json.loads(response.read().decode("utf-8"))</code></pre>
+    </div>
+
+    <h3>🐼 Pandas Temelleri</h3>
+    <div class="code-block" data-lang="python">
+      <pre><code>import pandas as pd
+
+# Okuma
+df = pd.read_csv("veri.csv")
+df = pd.read_json("veri.json")
+df = pd.read_csv("https://url.com/veri.csv")  # URL'den
+
+# Keşif
+df.head()           # İlk 5 satır
+df.tail()           # Son 5 satır
+df.shape            # (satır, sütun)
+df.columns          # Sütun isimleri
+df.dtypes           # Veri tipleri
+df.info()           # Genel bilgi
+df.describe()       # İstatistikler
+df.isnull().sum()   # Eksik veri sayısı
+
+# Filtreleme
+df[df["yas"] > 25]                              # Tek koşul
+df[(df["yas"] > 25) & (df["sehir"] == "İst")]   # Çoklu koşul
+
+# Sıralama
+df.sort_values("yas", ascending=False)
+
+# Gruplama
+df.groupby("sehir")["maas"].mean()
+
+# Kaydetme
+df.to_csv("sonuc.csv", index=False)
+df.to_json("sonuc.json", orient="records", force_ascii=False)</code></pre>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="hafta2.html">← Ders Notları: Veri Modelleme & Pandas</a>
+    <a href="hafta1.html">← Ders Notları: Dağıtık Sistemler & Python</a>
+  </div>
+  <p class="footer-text">Büyük Veri Teknolojileri Ders Notları — 2025-2026 Bahar Dönemi</p>
+</footer>
+
+<!-- Scroll to Top -->
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<!-- Pyodide Status -->
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python motoru yükleniyor...</span>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
