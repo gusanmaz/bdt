@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ödev 1: Büyük Veride İlginç Keşifler | Büyük Veri Teknolojileri</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Ödev sayfasına özel stiller */
+    .deadline-banner {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      color: #fff;
+      text-align: center;
+      padding: 1rem 2rem;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: 0.3px;
+      position: sticky;
+      top: 56px;
+      z-index: 999;
+      box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+    }
+    .deadline-banner .deadline-date {
+      background: rgba(255,255,255,0.2);
+      padding: 0.2rem 0.8rem;
+      border-radius: 50px;
+      margin-left: 0.5rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .github-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: linear-gradient(135deg, #24292e 0%, #1a1e22 100%);
+      color: #fff !important;
+      padding: 0.85rem 1.8rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      text-decoration: none !important;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      margin: 1rem 0;
+    }
+    .github-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      text-decoration: none !important;
+    }
+    .github-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+    }
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      font-weight: 700;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin: 1rem 0;
+      padding: 1rem;
+      background: var(--bg-secondary);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+    }
+    .step-item .step-content h4 {
+      margin: 0 0 0.3rem 0;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+    .step-item .step-content p {
+      margin: 0;
+      font-size: 0.88rem;
+    }
+    .story-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin: 1rem 0;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.3s;
+      border-left: 4px solid var(--accent);
+    }
+    .story-card:hover {
+      box-shadow: var(--shadow-md);
+    }
+    .story-card h4 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.05rem;
+      color: var(--text-primary);
+    }
+    .story-card p {
+      margin: 0.3rem 0;
+      font-size: 0.88rem;
+    }
+    .story-card .story-source {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+    }
+    .story-card .story-python {
+      font-size: 0.82rem;
+      color: var(--accent);
+      font-weight: 600;
+      margin-top: 0.4rem;
+    }
+    .story-card .story-detail {
+      font-size: 0.84rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+      padding: 0.6rem 0.8rem;
+      background: var(--bg-secondary);
+      border-radius: 6px;
+      border-left: 3px solid var(--accent);
+      line-height: 1.55;
+    }
+    .story-card .story-detail strong {
+      color: var(--text-primary);
+    }
+    .story-category {
+      margin-top: 2rem;
+      margin-bottom: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      border-left: 4px solid var(--accent);
+    }
+    .group-badge {
+      display: inline-block;
+      background: var(--accent-light);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 0.3rem 0.8rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    .resource-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      margin: 1.25rem 0;
+    }
+    .resource-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      text-align: center;
+      transition: all 0.3s;
+    }
+    .resource-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--accent);
+    }
+    .resource-card .resource-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    .resource-card .resource-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      margin-bottom: 0.3rem;
+    }
+    .resource-card .resource-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .tweet-img-container {
+      text-align: center;
+      margin: 1.5rem 0;
+      padding: 1.25rem;
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+    .tweet-img-container img {
+      max-width: 560px;
+      width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .tweet-img-container .img-caption {
+      margin-top: 0.6rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+    .checklist {
+      list-style: none;
+      padding: 0;
+    }
+    .checklist li {
+      padding: 0.5rem 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      font-size: 0.9rem;
+    }
+    .checklist li::before {
+      content: "☐";
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════ TOP NAV ═══════════ -->
+<header class="top-nav">
+  <a href="#" class="nav-brand">📊 Büyük Veri Teknolojileri</a>
+  <div class="nav-links">
+    <a href="hafta1.html">Dağıtık Sistemler & Python</a>
+    <a href="hafta2.html">Veri Modelleme & Pandas</a>
+    <a href="uygulamalar2.html">🧪 Uygulamalar</a>
+    <a href="odev1.html" class="active">📝 Ödev 1</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<!-- ═══════════ DEADLINE BANNER ═══════════ -->
+<div class="deadline-banner">
+  ⏰ Son Teslim Tarihi: <span class="deadline-date">12 Nisan 2026, Pazar — 23:59</span>
+</div>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero">
+  <span class="week-badge">📝 ÖDEV 1</span>
+  <h1>Büyük Veride İlginç Keşifler</h1>
+  <p class="subtitle">Açık veri platformlarını keşfedin, bir hipotez oluşturun, Python ile test edin ve şaşırtıcı bir veri hikayesi ortaya çıkarın.</p>
+  <div class="meta-info">
+    <span>👥 2–5 Kişilik Gruplar</span>
+    <span>📅 Son Teslim: 12 Nisan 2026</span>
+    <span>🎤 Sınıf Sunumu Yapılacak</span>
+  </div>
+</section>
+
+<!-- ═══════════ MAIN LAYOUT ═══════════ -->
+<div class="main-container">
+
+  <!-- ─── Sidebar TOC ─── -->
+  <aside class="sidebar">
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list">
+      <a href="hafta1.html">📘 Dağıtık Sistemler & Python</a>
+      <a href="hafta2.html">📗 Veri Modelleme & Pandas</a>
+      <a href="uygulamalar2.html">🧪 Uygulamalar</a>
+      <a href="odev1.html" class="current-page">📝 Ödev 1</a>
+    </div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav>
+      <a href="#amac">Ödevin Amacı</a>
+      <a href="#github-classroom">GitHub Classroom</a>
+      <a href="#kurallar">Kurallar ve Detaylar</a>
+      <a href="#adimlar">Nasıl Yapılacak?</a>
+      <a href="#teslim">Teslim Edilecekler</a>
+      <a href="#ilham">İlham Verici Veri Hikayeleri</a>
+      <a href="#platformlar">Veri Platformları</a>
+      <a href="#ipuclari">İpuçları ve Araçlar</a>
+      <a href="#degerlendirme">Değerlendirme Kriterleri</a>
+    </nav>
+  </aside>
+
+  <!-- ─── Content ─── -->
+  <main class="content">
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="amac">🎯 Ödevin Amacı</h2>
+
+    <p>Bu ödevin temel amacı, büyük veri setlerinden <strong>ilginç ve beklenmedik bir gözlem (insight)</strong> keşfetmenizdir. Tıpkı bir araştırmacının milyonlarca veri noktasını inceleyerek herkesin gözünden kaçan bir örüntüyü yakalaması gibi, sizin de açık veri platformlarındaki veri setlerini tarayarak şaşırtıcı bir bulgu ortaya koymanız bekleniyor.</p>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🤖 Yapay Zeka Kullanımı Serbesttir!</div>
+      <p>Kod yazarken ChatGPT, GitHub Copilot, Claude gibi yapay zeka araçlarından yardım alabilirsiniz. Önemli olan <strong>soruyu doğru sormak</strong>, <strong>veriyi doğru yorumlamak</strong> ve <strong>ilginç bir hipotez geliştirmektir</strong>. Yapay zeka size kodu yazmada yardımcı olabilir, ancak "hangi soruyu sormalıyım?" ve "bu bulgu neden ilginç?" kısmı tamamen size ait.</p>
+    </div>
+
+    <p>Kısacası yapmanız gereken:</p>
+    <ol>
+      <li><strong>Kaggle, HuggingFace, GitHub</strong> gibi platformlardaki açık veri setlerini keşfedin</li>
+      <li>İlginç bir <strong>hipotez/teori</strong> oluşturun ("Acaba X ile Y arasında bir ilişki var mı?")</li>
+      <li>Python kodu yazarak hipotezinizi <strong>test edin</strong></li>
+      <li>Bulgunuzu <strong>görselleştirin</strong> ve yorumlayın</li>
+      <li>Sonuçlarınızı sınıfta <strong>sunun</strong></li>
+    </ol>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="github-classroom">🔗 GitHub Classroom</h2>
+
+    <p>Ödevinizi GitHub Classroom üzerinden teslim edeceksiniz. Aşağıdaki davetiye linkine tıklayarak ödev reposunu oluşturun. Yazdığınız kodları, raporunuzu ve sunum dosyanızı bu repoya yükleyin.</p>
+
+    <div style="text-align: center; margin: 1.5rem 0;">
+      <a href="https://classroom.github.com/a/FODBhjUj" target="_blank" class="github-btn">
+        <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub Classroom — Daveti Kabul Et
+      </a>
+    </div>
+
+    <div class="alert alert-warning">
+      <div class="alert-title">⚠️ Önemli</div>
+      <p>Davetiye linkine tıkladığınızda bir GitHub reposu sizin için otomatik oluşturulacak.  Tüm çalışmalarınızı bu repoya <strong>commit</strong> ve <strong>push</strong> ederek yükleyin. Son teslim tarihinden sonraki commit'ler değerlendirmeye <strong>alınmayacaktır</strong>.</p>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="kurallar">📋 Kurallar ve Detaylar</h2>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">👥</div>
+        <div class="card-title">Grup Çalışması</div>
+        <div class="card-desc"><strong>2 ile 5 kişilik</strong> gruplar halinde çalışabilirsiniz. Grup üyelerini repo'nun README dosyasında belirtin.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📅</div>
+        <div class="card-title">Son Teslim</div>
+        <div class="card-desc"><strong>12 Nisan 2026, Pazar — 23:59</strong><br>Bu tarihten sonraki commit'ler kabul edilmez.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎤</div>
+        <div class="card-title">Sınıf Sunumu</div>
+        <div class="card-desc">Ödev tesliminden sonra bulgularınızı sınıfta <strong>5–10 dakikalık</strong> bir sunumla paylaşacaksınız.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <div class="card-title">Yapay Zeka Serbest</div>
+        <div class="card-desc">ChatGPT, Copilot vb. araçları kullanabilirsiniz. Ancak bulguyu <strong>yorumlama</strong> ve <strong>hipotezi oluşturma</strong> size ait olmalı.</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="adimlar">🚀 Nasıl Yapılacak?</h2>
+
+    <div class="step-item">
+      <span class="step-number">1</span>
+      <div class="step-content">
+        <h4>Veri Platformlarını Keşfedin</h4>
+        <p>Kaggle, HuggingFace Datasets, GitHub üzerindeki açık veri setlerini tarayın. Hangi konular ilginizi çekiyor? Spor, müzik, sosyal medya, sağlık, ekonomi, oyunlar? İlgi alanınıza göre bir veri seti seçin.</p>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <span class="step-number">2</span>
+      <div class="step-content">
+        <h4>Bir Hipotez / Soru Oluşturun</h4>
+        <p>Bir ön beklenti belirleyin: <em>"Acaba pahalı Airbnb'ler daha iyi puan alır mı?"</em>, <em>"Hangi programlama dilleri Stack Overflow'da en hızlı büyüyor?"</em>, <em>"Reddit'te olumsuz başlıklar daha fazla etkileşim alır mı?"</em> gibi. Hipoteziniz ne kadar spesifik olursa analiz o kadar güçlü olur.</p>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <span class="step-number">3</span>
+      <div class="step-content">
+        <h4>Python ile Analiz Edin</h4>
+        <p>Veri setini indirin veya API ile çekin. <code>pandas</code>, <code>matplotlib</code>, <code>seaborn</code> gibi kütüphanelerle veriyi işleyin, analiz edin ve görselleştirin. Jupyter Notebook veya Google Colab kullanmanız önerilir.</p>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <span class="step-number">4</span>
+      <div class="step-content">
+        <h4>Bulgularınızı Yorumlayın</h4>
+        <p>Sadece grafik çizmek yetmez! Bulgularınızı <strong>yorumlayın</strong>: Neden bu sonuç çıkmış olabilir? Beklentinizle uyuşuyor mu? Şaşırtıcı olan ne? Bir "veri hikayesi" anlatın.</p>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <span class="step-number">5</span>
+      <div class="step-content">
+        <h4>Rapor ve Sunum Hazırlayın</h4>
+        <p>Bulgularınızı bir rapor (Markdown veya PDF) ve sunum dosyası (PowerPoint, PDF veya Google Slides linki) ile belgelendirin. Her ikisini de GitHub reposuna yükleyin.</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="teslim">📦 Teslim Edilecekler</h2>
+
+    <p>GitHub Classroom reponuzda aşağıdaki dosyalar bulunmalıdır:</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Dosya/Klasör</th><th>Açıklama</th><th>Zorunlu?</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>README.md</code></td><td>Grup üyeleri, hipotez, kısa özet, çalıştırma talimatları</td><td>✅ Evet</td></tr>
+          <tr><td><code>analiz.ipynb</code> veya <code>.py</code></td><td>Veri analizi Python kodu (Jupyter Notebook tercih edilir)</td><td>✅ Evet</td></tr>
+          <tr><td><code>rapor.md</code> veya <code>rapor.pdf</code></td><td>Bulgular, yorumlar, grafikler, veri kaynakları</td><td>✅ Evet</td></tr>
+          <tr><td><code>sunum.pptx</code> veya <code>sunum.pdf</code></td><td>Sınıf sunumu için hazırlanan sunum dosyası</td><td>✅ Evet</td></tr>
+          <tr><td><code>data/</code></td><td>Kullandığınız veri seti (çok büyükse link verin)</td><td>⭐ Önerilir</td></tr>
+          <tr><td><code>requirements.txt</code></td><td>Kullandığınız Python kütüphaneleri</td><td>⭐ Önerilir</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">💡 İpucu</div>
+      <p>Veri seti çok büyükse (100 MB+), dosyayı repoya yüklemek yerine <code>README.md</code> dosyasında indirme linkini paylaşın. Git LFS de kullanabilirsiniz.</p>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="ilham">💡 İlham Verici Veri Hikayeleri</h2>
+
+    <p>Aşağıdaki örnekler, büyük veri setlerinden çıkarılmış gerçek ve şaşırtıcı bulgulardır. Bunlar size "nasıl bir keşif yapabilirim?" sorusuna ilham verebilir. Benzer bir yaklaşımla siz de kendi veri hikayenizi ortaya koyabilirsiniz! Her hikayede analizin <strong>nasıl yapıldığı</strong>, hangi yöntemin kullanıldığı ve bulgunun neden şaşırtıcı olduğu açıklanmıştır.</p>
+
+    <!-- Tweet görseli -->
+    <div class="tweet-img-container">
+      <img src="tweet.jpg" alt="Reddit İlişki Tavsiyesi Trend Analizi — 52 milyon yorum, 15 yıllık veri">
+      <div class="img-caption">Reddit r/relationship_advice analizi: 15 yılda "Ayrıl" tavsiyesi %30'dan %50'ye yükseldi. Sabır gerektiren her kategori geriledi. (Kaynak: <a href="https://x.com/aakashgupta/status/2033389891602502057" target="_blank">@aakashgupta</a>)</div>
+    </div>
+
+    <div class="story-category">🗣️ Sosyal Medya ve Topluluk Verileri</div>
+
+    <!-- Hikaye 1 -->
+    <div class="story-card">
+      <h4>📊 1. Reddit İlişki Tavsiyesi: "Ayrıl" Giderek Normalleşiyor</h4>
+      <p>r/relationship_advice'daki 52 milyon yorum ve 15 yıllık veri analiz edildiğinde, "ilişkiyi bitir" tavsiyesi 2010'da %30 iken 2025'te %50'ye yaklaştı. "İletişim kur" %22→%14, "Uzlaş" %7→%3, "Zaman ver" %25→%13'e düştü. "Terapiye git" ise %1→%6'ya çıktı.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> Araştırmacı, Pushshift Reddit arşivinden r/relationship_advice alt dizisinin tüm yorumlarını çekip 1.166.592 "kaliteli" yoruma filtreledi. Her yorum NLP tabanlı metin sınıflandırmasıyla ("ayrıl", "iletişim kur", "uzlaş", "zaman ver", "terapiye git") kategorilere ayrıldı, ardından yıllık oran trendi çizildi. Sonuç: sabır gerektiren her kategori düşüşte, tek büyüyen "bırak" ve "profesyonel yardım al".</div>
+      <div class="story-python">🐍 Python: <code>praw</code> veya Pushshift API ile veri çekme → <code>transformers</code> / <code>nltk</code> ile metin sınıflandırma → <code>matplotlib</code> ile yıllık trend grafiği</div>
+      <div class="story-source">📎 Kaynak: Pushshift.io Reddit arşivi, Kaggle <a href="https://www.kaggle.com/datasets" target="_blank">r/relationship_advice veri setleri</a></div>
+    </div>
+
+    <!-- Hikaye 2 -->
+    <div class="story-card">
+      <h4>📰 2. Hacker News: Olumsuz İçerik 2x Daha Fazla Etkileşim</h4>
+      <p>40 milyon Hacker News gönderisi analiz edildiğinde, %65'inin olumsuz duygu taşıdığı ve bu gönderilerin olumlu içeriklere göre <strong>iki kat</strong> daha fazla yorum aldığı tespit edildi. "Çöküş", "Başarısızlık", "Neden X Çalışmıyor?" başlıkları platformda dominant.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> HN API'den çekilen 340 bin+ gönderinin başlıkları VADER (Valence Aware Dictionary and sEntiment Reasoner) duygu analizi algoritmasıyla puanlandı. Compound skor &lt; -0.05 olumsuz, &gt; 0.05 olumlu kabul edildi. Sonuç: yapay zeka ve açık kaynak konuları olumlu duygu taşırken, gözetim, veri ihlalleri ve şirket politikaları en yüksek olumsuzluk skorlarına sahip. Olumsuz başlıkların medyan yorum sayısı olumluların 2.1 katı.</div>
+      <div class="story-python">🐍 Python: <code>requests</code> ile HN Firebase API → <code>vaderSentiment</code> ile duygu skoru → <code>seaborn</code> ile duygu-etkileşim scatter plot</div>
+      <div class="story-source">📎 Kaynak: BigQuery public datasets — Hacker News</div>
+    </div>
+
+    <!-- Hikaye 3 -->
+    <div class="story-card">
+      <h4>🤝 3. Facebook: Duygusal Bulaşma — 689.000 Kişilik Deney</h4>
+      <p>Facebook, 2012'de 689.003 kullanıcının haber akışını gizlice manipüle etti: bir grubun akışından olumlu, diğerinin akışından olumsuz paylaşımlar filtrelendi. Sonuç: olumsuz içerik görenler daha olumsuz paylaşım yaptı; duygusal bulaşma fiziksel teması bile gerektirmiyordu. Çalışma <em>PNAS</em> dergisinde yayımlandı ve büyük etik tartışma başlattı.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> A/B testi formatında — kullanıcılar haberleri olmadan gruplara ayrıldı. LIWC (Linguistic Inquiry and Word Count) metin analizi ile kullanıcıların kendi paylaşımlarındaki olumlu/olumsuz kelime oranları ölçüldü. Etki küçük ama istatistiksel olarak anlamlıydı (d=0.001–0.02). Asıl şaşırtıcı olan: kullanıcı onayı alınmadan yapılan bu deney, platformların veri gücünü somutlaştırdı.</div>
+      <div class="story-python">🐍 Python: <code>pandas</code> ile A/B test analizi → LIWC veya <code>transformers</code> duygu analizi → <code>scipy.stats</code> ile t-test</div>
+      <div class="story-source">📎 Kaynak: <a href="https://www.pnas.org/doi/10.1073/pnas.1320040111" target="_blank">Kramer et al. (2014), PNAS</a>, <a href="https://datafloq.com/read/4-surprising-discoveries-from-big-data-insights/" target="_blank">Datafloq</a></div>
+    </div>
+
+    <!-- Hikaye 4 -->
+    <div class="story-card">
+      <h4>😞 4. Sosyal Medya Yalnızlaştırıyor — Kullanım Türü Fark Etmiyor</h4>
+      <p>7.000 Hollandalı yetişkinin ~10 yıl boyunca takip edildiği boylamsal çalışmada, hem aktif (paylaşım, yorum) hem de pasif (sadece bakma) sosyal medya kullanımının yalnızlık hissini artırdığı gösterildi. Bir feedback döngüsü var: yalnız kişiler sosyal medyaya yöneliyor, bu yalnızlığı daha da pekiştiriyor.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> Boylamsal panel veri — aynı kişiler yıllar içinde tekrar tekrar anket doldurdu. Yalnızlık UCLA Loneliness Scale ile ölçüldü. 589 mobil kullanıcının detaylı analizi, yalnız bireylerin daha kısa ama daha sık oturumlar gerçekleştirdiğini, görsel paylaşım platformlarını orantısız kullandığını ortaya koydu. Araştırmacılar: <em>"Sosyal ilaç olarak sosyal medya işe yaramıyor."</em></div>
+      <div class="story-python">🐍 Python: Panel veri analizi → <code>statsmodels</code> ile fixed-effects regresyon → <code>matplotlib</code> ile zaman trendi</div>
+      <div class="story-source">📎 Kaynak: Hollanda boylamsal çalışma (7000 yetişkin), mobil kullanım log analizi (n=589)</div>
+    </div>
+
+    <div class="story-category">🏢 Ticaret ve Tüketici Davranışı</div>
+
+    <!-- Hikaye 5 -->
+    <div class="story-card">
+      <h4>🛒 5. Walmart: Kasırga Öncesi Çilek Pop-Tart Patlaması</h4>
+      <p>Walmart'ın CIO'su Linda Dillman'ın ifadesiyle: şirket <strong>"trilyonlarca bayt"</strong> müşteri alışveriş geçmişi tutuyor. Hurricane Charley öncesindeki satış verilerini analiz ettiklerinde bira satışlarının zaten lider olmasını bekliyorlardı — ancak en büyük sürpriz, çilek aromalı Pop-Tart satışlarının kasırga öncesinde <strong>7 kat</strong> artmasıydı.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> Walmart'ın iç Retail Link sistemi, 460 terabaytlık (2004 rakamıyla) işlem veritabanıyla ABD'nin en büyük özel veri ambarlarından biriydi. New York Times'ın haberine göre, kasırga öncesi dönemlerdeki satış spike'ları otomatik anomali tespiti ile bulundu. Pop-Tart'lar pişirme gerektirmeyen, uzun raf ömürlü tatlı gıda olarak mantıklıydı — ama hiçbir insan analist bunu tahmin etmemişti. Bu keşif, Walmart'ın fırtına öncesi stok stratejisini kalıcı olarak değiştirdi.</div>
+      <div class="story-python">🐍 Python: Kaggle <a href="https://www.kaggle.com/datasets/aslanahmedov/walmart-sales-forecast" target="_blank">Walmart satış veri seti</a> + mevsimsel/olay bazlı spike tespiti (<code>scipy.signal.find_peaks</code>)</div>
+      <div class="story-source">📎 Kaynak: <a href="https://datafloq.com/read/4-surprising-discoveries-from-big-data-insights/" target="_blank">Datafloq</a>, <a href="https://www.nytimes.com/2004/11/14/business/yourmoney/what-walmart-knows-about-customers-habits.html" target="_blank">New York Times (2004)</a></div>
+    </div>
+
+    <!-- Hikaye 6 -->
+    <div class="story-card">
+      <h4>🛒 6. Craigslist: "Kaçırılmış Bağlantıların" Çoğu Walmart'ta</h4>
+      <p>Craigslist'in "Missed Connections" (Kaçırılmış Bağlantılar) bölümündeki binlerce ilan analiz edildiğinde, en çok bahsedilen mekanın <strong>Walmart mağazaları</strong> olduğu ortaya çıktı. İnsanlar en çok market kasasında, otoparkta ve elektronik reyonunda "keşke konuşsaydım" diyor.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> Craigslist Missed Connections ilanları web scraping ile toplandı, metin içindeki mekan referansları NER (Named Entity Recognition) ve regex ile çıkarıldı. Walmart'ın ABD genelinde 4.700+ mağazası olması frekansı açıklıyor olsa da ziyaretçi başına "kaçırılmış bağlantı" oranı da ortalamanın üstünde. Sonuç: gündelik alışveriş mekanları, insanların en çok sosyal fırsat kaçırdığını hissettiği yerler.</div>
+      <div class="story-python">🐍 Python: <code>beautifulsoup4</code> ile web scraping → <code>spacy</code> ile NER → mekan frekans analizi</div>
+      <div class="story-source">📎 Kaynak: <a href="https://datafloq.com/read/4-surprising-discoveries-from-big-data-insights/" target="_blank">Datafloq</a></div>
+    </div>
+
+    <!-- Hikaye 7 -->
+    <div class="story-card">
+      <h4>⭐ 7. Amazon: Teşvikli Yorumlar Puanları Şişiriyor</h4>
+      <p>Florida Üniversitesi'nden araştırmacılar 5.000+ Amazon ürünü üzerinde yaptıkları analizde, ücretsiz ürün karşılığı yazılan teşvikli yorumların puanları <strong>anlamlı biçimde şişirdiğini</strong> buldu. Daha da ilginci: <em>"Bu ürünü indirimli aldım"</em> notu bile eklense, şişirme etkisi kalıcıydı. Amazon'un teşvikli yorum programını sonlandırmasının ardından bile eski şişirilmiş puanlar satışları etkilemeye devam etti.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> Teşvikli ve organik yorumlar ayrıştırıldı ("I received this product for free/at a discount" gibi ifadeler filtrelendi). İki grup arasındaki puan dağılımı Mann-Whitney U testi ve bootstrapping ile karşılaştırıldı. Amazon'un kendi algoritmik ağırlıklandırması, standart ortalama yerine yorumların güncelliğine ve "verified purchase" etiketine öncelik veriyor ama bu bile şişirmeyi tam olarak gideremiyor.</div>
+      <div class="story-python">🐍 Python: <code>pandas</code> ile yorum verisi analizi → <code>scipy.stats</code> ile grup karşılaştırma → <code>seaborn</code> ile puan dağılımı histogramı</div>
+      <div class="story-source">📎 Kaynak: Florida Üniversitesi Amazon yorum çalışması</div>
+    </div>
+
+    <!-- Hikaye 8 -->
+    <div class="story-card">
+      <h4>🏠 8. Airbnb: Fiyat ile Puan Arasında Neredeyse Sıfır Korelasyon</h4>
+      <p>45.000+ Airbnb ilanı üzerinde yapılan analizde fiyat ile misafir puanı arasındaki korelasyon yalnızca <strong>0.05</strong> çıktı. Medyan puan 4.91 — piyasa, gerçek kaliteden bağımsız biçimde mükemmelliğe şişirilmiş durumda. "Tüm Ev/Daire" kategorisi ilanların %73'ünü oluşturup aynı zamanda en yüksek medyan puana sahip.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> Inside Airbnb projesinin açık verisi kullanılarak her şehir için <code>listings.csv</code> dosyasından fiyat ve puan sütunları çekildi. Pearson korelasyon katsayısı r=0.05 civarında — istatistiksel olarak anlamlı olsa da pratik açıdan etkisiz. Araştırmacılar "puan şişirmesi"nin nedenini sosyal baskıya bağlıyor: misafirler ev sahibinden kötü yorum almaktan korkuyor. Bu, platform ekonomilerinde karşılıklı değerlendirme sistemlerinin güvenilirlik sorununa işaret ediyor.</div>
+      <div class="story-python">🐍 Python: <code>pandas</code> ile Inside Airbnb CSV → <code>scipy.stats.pearsonr</code> ile korelasyon → <code>seaborn.scatterplot</code> + regresyon çizgisi</div>
+      <div class="story-source">📎 Kaynak: <a href="http://insideairbnb.com/" target="_blank">Inside Airbnb</a>, Kaggle Airbnb Open Data</div>
+    </div>
+
+    <!-- Hikaye 9 -->
+    <div class="story-card">
+      <h4>🚗 9. Turuncu Araçlar: En İyi Fiyat/Performans Renk</h4>
+      <p>Kaggle'daki kullanılmış araç satış veri setlerinde yapılan analizde, <strong>turuncu renkli araçların</strong> diğer renklere kıyasla en düşük fiyat-kalite oranına sahip olduğu — yani en az değer kaybeden araçlar olduğu ortaya çıktı. Sezgisel olarak "kimse turuncu araba istemez" diye düşünülse de, veriler turuncu aracın ikinci el piyasasında beklentilerin aksine iyi performans gösterdiğini kanıtlıyor.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> Aracın rengi, yaşı, kilometresi, marka/model bilgisiyle çoklu regresyon modeli kuruldu. Renk değişkeni dummy-coded edilerek diğer tüm faktörler kontrol altında tutuldu. Turuncu (ve diğer nadir renkler), kalabalık pazarda düşük talep algısı yüzünden düşük fiyata satılıyor ama mekanik kalite açısından farklılık yok — dolayısıyla alıcı için "gizli fırsat".</div>
+      <div class="story-python">🐍 Python: Kaggle <a href="https://www.kaggle.com/datasets/austinreese/craigslist-carstrucks-data" target="_blank">Used Cars veri seti</a> → renk bazlı <code>groupby</code> + <code>statsmodels</code> OLS regresyon</div>
+      <div class="story-source">📎 Kaynak: <a href="https://datafloq.com/read/4-surprising-discoveries-from-big-data-insights/" target="_blank">Datafloq</a>, Kaggle araç satış veri setleri</div>
+    </div>
+
+    <div class="story-category">🔬 Bilim, Sağlık ve Psikoloji</div>
+
+    <!-- Hikaye 10 -->
+    <div class="story-card">
+      <h4>🌪️ 10. Kadın İsimli Kasırgalar Daha Ölümcül</h4>
+      <p>60 yıllık ABD kasırga verisi incelendiğinde, kadın isimli kasırgalar ortalama <strong>42 ölüme</strong>, erkek isimli kasırgalar ise yalnızca <strong>15 ölüme</strong> yol açmış. Sebebi: insanlar feminen isimli kasırgaları daha az tehlikeli algılayıp daha az hazırlık yapıyor.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> NOAA (National Oceanic and Atmospheric Administration) kasırga veritabanından 1950-2012 arası tüm kasırgalar çekildi. Her kasırganın ismi cinsiyet tahmini algoritmasıyla sınıflandırıldı. Negatif binomial regresyon modeli ile kasırga şiddeti kontrol altında tutularak isim cinsiyetinin ölüm sayısına etkisi ölçüldü. Çalışma <em>PNAS</em>'da yayımlandı. Laboratuvar deneyleri de "feminen isimli kasırgayı daha az ciddi algılama" davranışını doğruladı.</div>
+      <div class="story-python">🐍 Python: NOAA kasırga verisi → <code>gender_guesser</code> ile isim sınıflandırma → <code>statsmodels</code> negatif binomial regresyon</div>
+      <div class="story-source">📎 Kaynak: <a href="https://opendatascience.com/9-bizarre-and-surprising-insights-from-data-science/" target="_blank">Open Data Science</a>, Jung et al. (2014) PNAS</div>
+    </div>
+
+    <!-- Hikaye 11 -->
+    <div class="story-card">
+      <h4>🍳 11. Kahvaltı Atlama ve Kalp Krizi: Harvard 16 Yıllık Takip</h4>
+      <p>Harvard Üniversitesi'nde 26.902 erkek sağlık çalışanının 16 yıl boyunca takip edildiği çalışmada, düzenli olarak kahvaltı atlayanların kalp krizi geçirme riskinin <strong>%27 daha yüksek</strong> olduğu bulundu. Sigara, egzersiz, diyet ve BMI gibi faktörler kontrol altındayken bile ilişki devam etti.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> Prospektif kohort çalışma — katılımcılar 1992'de beslenme alışkanlıkları anketi doldurdu, ardından 2008'e kadar kardiyovasküler olaylar takip edildi. Cox proportional hazards modeli ile kahvaltı atlama alışkanlığının koroner kalp hastalığı riski üzerindeki etkisi, yaş, sigara, alkol, fiziksel aktivite, BMI ve diyet kalitesi kontrol edilerek hesaplandı. Çalışma <em>Circulation</em> dergisinde yayımlandı.</div>
+      <div class="story-python">🐍 Python: <code>lifelines</code> ile survival analizi → Cox modeli → <code>matplotlib</code> ile Kaplan-Meier eğrisi</div>
+      <div class="story-source">📎 Kaynak: <a href="https://opendatascience.com/9-bizarre-and-surprising-insights-from-data-science/" target="_blank">Open Data Science</a>, Cahill et al. (2013) Circulation</div>
+    </div>
+
+    <!-- Hikaye 12 -->
+    <div class="story-card">
+      <h4>🎂 12. Doğum Tarihleri: Eylül Avantajı ve Hafta Sonu Etkisi</h4>
+      <p>İngiltere ve ABD doğum kayıtları (1994-2014) analiz edildiğinde, <strong>Eylül ayının</strong> en sık doğum ayı olduğu görüldü. Daha da ilginç olan: hafta sonu doğumları haftanın en düşük oranına sahip — sezaryen ve indüklenmiş doğumların hafta içine planlanması günlük dağılımı yapay olarak şekillendiriyor. 35 yaş üstü annelerin doğumları hafta içi günlere orantısız biçimde yoğunlaşıyor.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> 20 yıllık nüfus doğum kayıtları tarih bazlı gruplandı. Hafta içi/sonu ayrımı <code>dayofweek</code> ile yapıldı, aylık dağılım için chi-square testi uygulandı. Eylül'ün lider olması Noel/Yılbaşı dönemindeki gebe kalma oranına dayanıyor. "The Pudding" da bu veriyi interaktif olarak görselleştirdi — doğum gününüzde ölme olasılığınız normal günlere göre daha yüksek (birthday effect).</div>
+      <div class="story-python">🐍 Python: CDC/ONS doğum verisi → <code>pandas</code> tarih gruplama → <code>plotly</code> ile ısı haritası (heatmap)</div>
+      <div class="story-source">📎 Kaynak: İngiltere ONS / ABD CDC doğum istatistikleri, The Pudding interaktif analizi</div>
+    </div>
+
+    <!-- Hikaye 13 -->
+    <div class="story-card">
+      <h4>😴 13. Fitbit: Sosyal Jet Lag ve Uyku Kaybı</h4>
+      <p>6.5 milyon gecelik Fitbit uyku verisinden (6.700+ kullanıcı), hafta içi-sonu yatış saatleri 2+ saat farklılaşan kişilerin, 30 dakikadan az farklılaşanlara kıyasla geceleri ortalama <strong>yarım saat daha az</strong> uyuduğu bulundu. Ayrıca her ek uyku saatinin obezite ve uyku apnesi ihtimalini anlamlı düzeyde düşürdüğü, ancak <em>fazla</em> uyumanın da sağlık sorunlarıyla ilişkili olduğu gösterildi.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> NIH All of Us araştırma programı kapsamında katılımcıların Fitbit cihazlarından toplanan uyku-uyanıklık logları analiz edildi. "Sosyal jet lag" = |hafta sonu uyku ortanoktası − hafta içi uyku ortanoktası| formülüyle hesaplandı. Lineer regresyon ile jet lag büyüklüğünün toplam uyku süresine etkisi ölçüldü. U-şekilli risk eğrisi: çok az uyku da çok fazla uyku da riskliydi.</div>
+      <div class="story-python">🐍 Python: Fitbit/uyku CSV → <code>pandas</code> ile hafta içi/sonu ayrımı → <code>scipy.stats</code> ile regresyon → <code>seaborn</code> ile U-eğrisi grafiği</div>
+      <div class="story-source">📎 Kaynak: NIH All of Us araştırma programı, Fitbit uyku çalışması</div>
+    </div>
+
+    <div class="story-category">💻 Teknoloji ve Geliştirici Dünyası</div>
+
+    <!-- Hikaye 14 -->
+    <div class="story-card">
+      <h4>🌐 14. Chrome Kullananlar Daha İyi Çalışan</h4>
+      <p>HR firması Xerox'un çalışan verilerini inceleyen araştırmacılar, Chrome veya Firefox ile iş başvurusu yapanların varsayılan tarayıcı (IE/Safari) kullananlara göre daha uzun süre işte kaldığını ve daha iyi performans sergilediğini keşfetti. Chrome'u kurmak bilinçli bir tercih — bu proaktifliğin genel göstergesi.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> Xerox'un iş başvuru sisteminin HTTP log'larından User-Agent başlıkları çekildi ve bunlar çalışan performans metrikleriyle (işten ayrılma süresi, müşteri memnuniyeti puanı) eşleştirildi. Lojistik regresyon ile tarayıcı seçiminin diğer demografik değişkenlerden bağımsız bir öngörücü olup olmadığı test edildi. Sonuç: varsayılan tarayıcıyı değiştirmek, iş hayatında da "varsayılanları kabul etmeme" eğiliminin bir göstergesi.</div>
+      <div class="story-python">🐍 Python: Kaggle HR Analytics veri seti + <code>user-agents</code> kütüphanesi ile User-Agent parse → lojistik regresyon</div>
+      <div class="story-source">📎 Kaynak: <a href="https://opendatascience.com/9-bizarre-and-surprising-insights-from-data-science/" target="_blank">Open Data Science</a></div>
+    </div>
+
+    <!-- Hikaye 15 -->
+    <div class="story-card">
+      <h4>✏️ 15. Büyük Harf Kullanımı = Kredi Güvenilirliği</h4>
+      <p>Online kredi başvuru formlarını <strong>doğru büyük harf kullanarak dolduranlar</strong>, tümü küçük ya da tümü büyük harfle yazanlara göre daha güvenilir borçlular çıktı. Bir fintek girişiminin keşfi: gramer kurallarına uymak, genel kurallara uyma eğiliminin bir proxy göstergesi.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> Kredi başvuru formundaki serbest metin alanları (isim, adres, iş yeri) üzerinde metin özelliği mühendisliği (feature engineering) yapıldı: büyük harf tutarlılığı skoru, noktalama kullanımı, kısaltma tercihleri gibi özellikler çıkarıldı. Bunlar, kredi geri ödeme performansıyla (default/non-default) karşılaştırıldığında, büyük harf tutarlılığının bağımsız bir öngörücü olduğu bulundu. Benzer analiz Kaggle'daki Lending Club veri setiyle tekrarlanabilir.</div>
+      <div class="story-python">🐍 Python: Lending Club / UCI kredi veri seti → <code>re</code> ile metin özelliği çıkarma → <code>sklearn</code> ile lojistik regresyon feature importance</div>
+      <div class="story-source">📎 Kaynak: <a href="https://opendatascience.com/9-bizarre-and-surprising-insights-from-data-science/" target="_blank">Open Data Science</a></div>
+    </div>
+
+    <!-- Hikaye 16 -->
+    <div class="story-card">
+      <h4>💻 16. Stack Overflow: AI Kullanımı Artıyor, Güven Azalıyor</h4>
+      <p>49.000+ geliştiricinin katıldığı 2025 Stack Overflow anketine göre yapay zeka araçlarını kullanan oran %76→%84'e çıkarken, yapay zekaya güven %43'ten %33'e düştü. Geliştiricilerin %66'sı "neredeyse doğru ama tam değil" çözümlerden şikayet ediyor — AI kodu yazmayı hızlandırıyor ama hata ayıklama yükünü artırıyor.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> Stack Overflow her yıl açık veri olarak yayımladığı anket CSV'lerini survey.stackoverflow.co adresinde sunuyor. 2023, 2024 ve 2025 anketlerindeki AI güven soruları yıllık olarak karşılaştırıldı. Ayrıca rol bazında analiz yapıldığında: front-end geliştiriciler AI'dan en memnun, embedded/systems geliştiriciler en az memnun grup. Paradoks: daha çok kullanıyoruz ama daha az güveniyoruz.</div>
+      <div class="story-python">🐍 Python: <code>pandas</code> ile SO Survey CSV yükleme → yıllık güven trendi → <code>plotly</code> ile role-bazlı bar chart</div>
+      <div class="story-source">📎 Kaynak: <a href="https://survey.stackoverflow.co" target="_blank">Stack Overflow Developer Survey</a></div>
+    </div>
+
+    <!-- Hikaye 17 -->
+    <div class="story-card">
+      <h4>📊 17. Stack Overflow: "Full Stack" Efsanesi ve Veri Mühendisliğinin Doğuşu</h4>
+      <p>Stack Overflow'un 10 yıllık geliştirici anketi analiz edildiğinde, tam uzmanlaşma azalırken "full-stack geliştirici" oranı sürekli artış gösterdi. Veri mühendisliği rolü ise anket seçeneklerinde <strong>yalnızca 2019'dan itibaren</strong> belirdi — daha önce bu iş "back-end geliştirici" olarak tanımlanıyordu.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> Boot.dev blogunun analizinde, SO Survey CSV dosyalarındaki "DevType" sütunu yıllık olarak pivot edildi. 2013'te back-end/front-end oranı 15/85 civarındayken 2023'te full-stack dominant pozisyona geçti. Python ile yapılan analiz, her yılın DevType dağılımını stacked bar chart olarak gösteriyor. Özellikle "Data Engineer" kategorisinin ilk kez 2019'da ortaya çıkması dikkat çekici — o zamana kadar bu kişiler kendilerini back-end veya DBA olarak tanımlıyordu.</div>
+      <div class="story-python">🐍 Python: SO Survey CSV → <code>pandas</code> DevType pivot → <code>matplotlib</code> stacked area chart</div>
+      <div class="story-source">📎 Kaynak: <a href="https://blog.boot.dev/jobs/trends-in-developer-jobs-stackoverflow/" target="_blank">Boot.dev SO Analizi</a>, <a href="https://survey.stackoverflow.co" target="_blank">Stack Overflow Survey</a></div>
+    </div>
+
+    <!-- Hikaye 18 -->
+    <div class="story-card">
+      <h4>📝 18. Wikipedia: Kibarlık Tuzağı — Güç Ele Geçirince Nezaket Düşüyor</h4>
+      <p>Wikipedia editörlerinin davranışını inceleyen araştırmacılar, <strong>kibar editörlerin "admin" statüsüne daha kolay seçildiğini</strong>, ancak seçildikten sonra kibarlık puanlarının dramatik biçimde düştüğünü buldu. Güç ele geçirince nezaket azalıyor — ve bu veriyle kanıtlandı.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> Wikipedia'nın edit history dump'ından admin adaylarının seçim öncesi ve sonrası tartışma sayfası mesajları çekildi. Stanford Politeness Classifier ile her mesaja kibarlık skoru verildi. Eşleştirilmiş karşılaştırma (paired comparison): aynı kişinin admin olmadan önceki ve sonraki ortalama kibarlık skorları t-test ile karşılaştırıldığında istatistiksel olarak anlamlı düşüş bulundu. Bulgular, sosyal psikolojideki "power corrupts" hipotezini dijital ortamda doğruladı.</div>
+      <div class="story-python">🐍 Python: Wikimedia dumps → <code>convokit</code> (Cornell) politeness classifier → <code>scipy.stats.ttest_rel</code> ile paired t-test</div>
+      <div class="story-source">📎 Kaynak: <a href="https://opendatascience.com/9-bizarre-and-surprising-insights-from-data-science/" target="_blank">Open Data Science</a>, Stanford NLP çalışması</div>
+    </div>
+
+    <!-- Hikaye 19 -->
+    <div class="story-card">
+      <h4>📝 19. Wikipedia Vandalizmi: Mesai Saatlerinde Zirve Yapıyor</h4>
+      <p>Wikipedia düzenleme verisi analiz edildiğinde, vandalizm ve yıkıcı düzenlemelerin gece yarısı veya hafta sonlarında değil, <strong>mesai saatlerinde ve hafta içi</strong> gerçekleştiği ortaya çıktı. "İşten kaçma aracı" olarak Wikipedia kullanımı veride net biçimde görülüyor.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> Wikimedia'nın açık düzenleme dump'larından vandalik düzenlemeler (geri alınmış düzenlemeler, "reverted" etiketi taşıyanlar) filtrelendi. Her düzenlemenin UTC zaman damgası yerel zaman dilimine dönüştürülerek saat ve gün bazlı ısı haritası (heatmap) oluşturuldu. Pazartesi-Cuma 09:00-17:00 aralığı en yüksek vandalizm yoğunluğuna sahip. Sirkadiyen ritim sadece uyku ile değil, internet davranışıyla da derin biçimde bağlantılı.</div>
+      <div class="story-python">🐍 Python: Wikimedia dumps → <code>pandas</code> ile timestamp gruplama → <code>seaborn.heatmap</code> ile gün×saat ısı haritası</div>
+      <div class="story-source">📎 Kaynak: NIH/PMC Wikipedia editör aktivitesi çalışması</div>
+    </div>
+
+    <div class="story-category">🎮 Oyun, Müzik ve Kültür</div>
+
+    <!-- Hikaye 20 -->
+    <div class="story-card">
+      <h4>🎵 20. Spotify: Platformun Kendi Listeleri Süperstarları Geçiyor</h4>
+      <p>34.000+ Spotify playlist ve ~2 milyon parça analiz edildiğinde, Spotify'ın kendi oluşturduğu playlist'lerin öne çıkarılmasının, bir süperstar eklenmesinden <strong>iki kat</strong> daha fazla takipçi getirdiği bulundu. Bir efsane sanatçı eklendiğinde günlük takipçi artışı yalnızca %0.5 civarında kalıyor.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> Chartmetric.com'un API'sinden 34.483 playlist'in günlük takipçi değişimleri çekildi. Olay analizi (event study) yöntemiyle, süperstar eklenmesi gününün ve Spotify Search öne çıkarma gününün etkileri ayrıştırıldı. Regresyon discontinuity tasarımıyla takipçi artışlarının istatistiksel anlamlılığı test edildi. Sonuç: müzik keşfini artık sanatçılar değil, algoritmik platform tasarımı şekillendiriyor.</div>
+      <div class="story-python">🐍 Python: Spotify API (<code>spotipy</code>) + playlist takipçi zaman serisi → event study analizi</div>
+      <div class="story-source">📎 Kaynak: Chartmetric.com araştırması</div>
+    </div>
+
+    <!-- Hikaye 21 -->
+    <div class="story-card">
+      <h4>♟️ 21. Lichess: ELO'ya Göre Açılış Tercihleri ve Gece Hataları</h4>
+      <p>6.25 milyon Lichess oyunu analiz edildiğinde, orta seviye oyuncuların belirli açılışlara saplanırken üst düzey oyuncuların çok daha geniş bir repertuvar kullandığı görüldü. Gece saatlerinde (00:00-02:00) hata oranları belirgin biçimde artıyor — "vandalizm benzeri" anlamsız hamleler bu saatlerde zirve yapıyor.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> Lichess'in açık veritabanından PGN formatında milyonlarca oyun indirildi. <code>python-chess</code> kütüphanesiyle her oyunun ilk 10 hamlesi ECO (Encyclopaedia of Chess Openings) koduna eşlendi. ELO aralığına göre açılış çeşitliliği Shannon entropy ile ölçüldü. Zaman analizi için UTC zaman damgaları kullanılarak saat bazlı blunder (büyük hata) oranları hesaplandı. Sonuç: ELO arttıkça açılış entropisi artıyor; gece 2'de oynayan herkesin hata oranı %40+ yükseliyor.</div>
+      <div class="story-python">🐍 Python: <code>python-chess</code> ile PGN parse → ECO kodlama → <code>scipy.stats.entropy</code> ile çeşitlilik ölçümü → saat bazlı heatmap</div>
+      <div class="story-source">📎 Kaynak: <a href="https://database.lichess.org/" target="_blank">Lichess Açık Veritabanı</a></div>
+    </div>
+
+    <!-- Hikaye 22 -->
+    <div class="story-card">
+      <h4>💕 22. OkCupid: 4 Mesaj Sonrası Görünüş Etkisi Siliniyor</h4>
+      <p>OkCupid'in kendi veri blogunda ve CEO Christian Rudder'ın "Dataclysm" kitabında yayımlanan analiz: erkekler kadınlara 4'e 1 oranında daha fazla ilk mesaj atıyor. Ama eşleşme gerçekleşip <strong>4 mesaj gidip geldikten sonra</strong>, karşı tarafın fiziksel çekiciliğinin etkisi dramatik biçimde azalıyor — kişilik öne geçiyor.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> OkCupid'in milyonlarca mesaj log'u ve profil verileri birleştirilerek mesajlaşma derinliği (kaç mesaj gidip geldi) ile profil çekicilik puanı arasındaki ilişki ölçüldü. İlk mesaj aşamasında çekicilik puanı etkileşimi %90 oranında belirliyorken, 4+ mesaj sonrası bu oran %20'ye düşüyor. Ayrıca Tinder verisi: erkek kullanıcılar platformun %75'ini oluşturuyor ve çok daha fazla "like" atıyor — bu yapısal cinsiyet dengesizliği "eşleşme kıtlığı"nı doğrudan platforma kazıyor.</div>
+      <div class="story-python">🐍 Python: OkCupid Kaggle veri seti → mesajlaşma derinliği analizi → <code>seaborn</code> ile interaction decay grafiği</div>
+      <div class="story-source">📎 Kaynak: OkCupid Blog, Christian Rudder — <em>Dataclysm</em> (2014)</div>
+    </div>
+
+    <div class="story-category">📈 İstatistik ve Veri Okuryazarlığı</div>
+
+    <!-- Hikaye 23 -->
+    <div class="story-card">
+      <h4>🎭 23. Nicolas Cage Filmleri ve Havuz Boğulmaları — Sahte Korelasyonlar</h4>
+      <p>Tyler Vigen'in 25.237 değişkenli veritabanında 636 milyondan fazla korelasyon hesaplandı. Nicolas Cage'in yıllık film sayısı ile ABD'deki havuz boğulmaları arasında neredeyse mükemmel korelasyon, margarin tüketimi ile Maine eyaletindeki boşanma oranı arasında r=0.99 bulundu. Bu, "korelasyon ≠ nedensellik" ve "data dredging" tehlikesinin en güzel örneği.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> Vigen, CDC, USDA, Census Bureau gibi kaynaklardan yıllık zaman serisi verilerini topladı ve tüm olası çiftlerin Pearson korelasyonunu hesapladı. 25.237 değişkenle 636.906.169 korelasyon hesabı yapıldığında, sırf şans eseri yüksek korelasyon gösteren yüzlerce çift bulunması istatistiksel olarak kaçınılmaz. Vigen'in sitesi her korelasyon için Python kodu ve grafik sağlıyor (CC BY 4.0 lisansı). Bu örnek, p-hacking ve çoklu karşılaştırma probleminin mükemmel bir öğretim aracı.</div>
+      <div class="story-python">🐍 Python: <code>pandas</code> ile zaman serisi verisi → <code>itertools.combinations</code> ile tüm çiftler → <code>scipy.stats.pearsonr</code> → en yüksek korelasyonları sıralama</div>
+      <div class="story-source">📎 Kaynak: <a href="https://www.tylervigen.com/spurious-correlations" target="_blank">Spurious Correlations</a> (CC BY 4.0)</div>
+    </div>
+
+    <!-- Hikaye 24 -->
+    <div class="story-card">
+      <h4>🚕 24. Uber: Yüksek Suç Oranı = Daha Fazla Yolculuk</h4>
+      <p>San Francisco'daki Uber yolculuk verileriyle suç verileri karşılaştırıldığında, fuhuş, alkol ve hırsızlık oranlarının en yüksek olduğu semtlerin aynı zamanda en çok Uber çağrısı alan yerler olduğu ortaya çıktı. Neden? "Sabit olmayan nüfus yoğunluğu" — gece hayatı olan bölgelerde hem suç hem ulaşım talebi artıyor.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> SF Open Data portalından suç raporları ve Uber'in kamuya açtığı yolculuk başlangıç/bitiş koordinatları çekildi. Her iki veri seti census tract bazında mekânsal birleştirme (spatial join) ile eşleştirildi ve suç türü bazında Uber yolculuk yoğunluğuyla <code>pearsonr</code> korelasyon hesaplandı. Simpson paradoksu: mahalle bazında suç artışı gibi görünen şey, aslında gece nüfusu / gündüz nüfusu oranının bir sonucu. Confounding variable kontrolü yapıldığında doğrudan bir nedensellik bulunamadı.</div>
+      <div class="story-python">🐍 Python: SF Open Data CSV → <code>geopandas</code> ile spatial join → suç türü × yolculuk yoğunluğu korelasyon matrisi</div>
+      <div class="story-source">📎 Kaynak: <a href="https://opendatascience.com/9-bizarre-and-surprising-insights-from-data-science/" target="_blank">Open Data Science</a>, SF Open Data portalı</div>
+    </div>
+
+    <!-- Hikaye 25 -->
+    <div class="story-card">
+      <h4>🔍 25. Google Arama Verisi: Kolektif Anksiyetenin Barometresi</h4>
+      <p>"İklim anksiyetesi" ve "eko-anksiyete" aramaları 2018-2023 arasında <strong>%4.590</strong> arttı. Pandemi ilan edildiğinde panik atak aramalarında anlık bir spike gözlemlendi. Arama verisi, anketlerden çok daha hızlı kolektif ruh halini yansıtıyor.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> <code>pytrends</code> kütüphanesi ile Google Trends API'den anahtar kelime bazlı arama hacmi zaman serileri çekildi. 2004-2023 arası 50 ülke verisi birleştirilerek küresel trend hesaplandı. İlginç ayrıntı: iklim anksiyetesi aramaları iklim olaylarına değil, <em>medyatik kişilere</em> tepki gösteriyor — Greta Thunberg'in BM konuşması anlık zirve yaratırken, gerçek iklim felaketlerinin etkisi daha kısa süreli. Arama verisi anketlerden ortalama 3-6 ay önce trend değişikliğini yakalar.</div>
+      <div class="story-python">🐍 Python: <code>pytrends</code> ile Google Trends API → <code>pandas</code> zaman serisi → <code>plotly</code> ile interaktif olay etiketli grafik</div>
+      <div class="story-source">📎 Kaynak: Google Trends açık veri, ilgili akademik çalışmalar (50 ülke, 2004-2023)</div>
+    </div>
+
+    <!-- Hikaye 26 -->
+    <div class="story-card">
+      <h4>🏴‍☠️ 26. GitHub: Açık Kaynak Projelerde Tek Kişi Dominansı</h4>
+      <p>GitHub'daki 10 milyon commit incelendiğinde, büyük "açık kaynak projelerin" commit'lerinin büyük çoğunluğunun <strong>tek bir geliştiriciden</strong> geldiği ortaya çıktı. "Topluluk projesi" olarak bilinen pek çok repo aslında tek kişilik çaba.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> GitHub Archive (GHArchive.org) projesinin BigQuery üzerindeki veri setinden popüler repolar (100+ yıldız) filtrelendi. Her repo için commit yazarlarının dağılımı hesaplandı ve <strong>Gini katsayısı</strong> ile eşitsizlik ölçüldü. Gini = 1.0 ise tüm commitler tek kişiden gelir; 0.0 ise tam eşit dağılım. Ortalama Gini ~0.85 — yani çoğu projede contributorların ezici çoğunluğu tek seferlik katkı yapıyor, gerçek iş yükü 1-2 kişide. Çalışma IEEE'de yayımlandı.</div>
+      <div class="story-python">🐍 Python: BigQuery / Kaggle GitHub Archive → <code>pandas</code> ile commit groupby → Gini katsayısı hesaplama → <code>matplotlib</code> ile Lorenz eğrisi</div>
+      <div class="story-source">📎 Kaynak: <a href="https://ieeexplore.ieee.org/document/8595226/" target="_blank">IEEE Xplore</a>, GHArchive.org</div>
+    </div>
+
+    <!-- Hikaye 27 -->
+    <div class="story-card">
+      <h4>🍟 27. Facebook Beğenileri: Kıvırcık Patates = Yüksek Zeka</h4>
+      <p>Cambridge Üniversitesi ve Microsoft'un ortaklaşa 58.000 Facebook kullanıcısı üzerinde yaptığı araştırmada, "Curly Fries" (kıvırcık patates kızartması) sayfasını beğenmenin <strong>yüksek zeka</strong> ile en güçlü ilişkiye sahip beğenilerden biri olduğu ortaya çıktı. Sebebi dolaylı: viral bir "zeki insanlar bunu beğenir" paylaşımı nedeniyle belirli bir ağ yapısı oluşmuş.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> Facebook beğenileri ile kişilik testleri (Big Five, IQ testi sonuçları) eşleştirildi. Singular Value Decomposition (SVD) ile beğeni matrisinden boyut indirgeme yapılarak lojistik/lineer regresyon modelleri kuruldu. Model, sadece beğenilerden cinsiyet (%93), etnik köken (%95) ve zeka seviyesini tahmin edebildi. "Curly Fries" bulgusu, homofilinin (benzer insanların birbirleriyle bağlanması) veri madenciliğinde nasıl dolaylı korelasyonlar yarattığını gösteriyor.</div>
+      <div class="story-python">🐍 Python: Kullanıcı-beğeni matrisi → <code>sklearn.decomposition.TruncatedSVD</code> → beğeni tabanlı tahmin modeli</div>
+      <div class="story-source">📎 Kaynak: <a href="https://opendatascience.com/9-bizarre-and-surprising-insights-from-data-science/" target="_blank">Open Data Science</a>, Kosinski et al. (2013) PNAS</div>
+    </div>
+
+    <!-- Hikaye 28 -->
+    <div class="story-card">
+      <h4>🚢 28. Titanic: 3. Sınıf Erkekler 2. Sınıfı Geçti</h4>
+      <p>Veri biliminin en çok çalışılan veri seti olan Titanic'te hâlâ şaşırtıcı bulgular var. Kadınların hayatta kalma oranı %74, erkeklerin %19 — bunu bekliyorsunuz. Ama beklemediğiniz: <strong>3. sınıftaki yetişkin erkekler, 2. sınıftaki yetişkin erkeklerden iki kat daha fazla hayatta kaldı.</strong> Ayrıca yalnız seyahat eden 3. sınıf kadınlar, grupla seyahattan daha yüksek hayatta kalma oranına sahip — çünkü bazı kadınlar erkek eşlerinin yanında kalmayı tercih etti.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> Kaggle Titanic veri seti (891 yolcu) üzerinde çapraz tablo (cross-tabulation) analizi: Pclass × Sex × Survived. Chi-square testi ile sınıf ve cinsiyetin hayatta kalma üzerindeki bağımsız etkileri test edildi. Güverte yakınlığı (3. sınıf alt güvertelerde ama bazı merdiven çıkışlarına daha yakın) sınıf-hayatta kalma ilişkisini doğrusal olmayan hale getiriyor. Aile büyüklüğü (SibSp + Parch) ile hayatta kalma arasındaki U-eğrisi: yalnızlar ve çok büyük aileler dezavantajlı.</div>
+      <div class="story-python">🐍 Python: Kaggle Titanic CSV → <code>pandas.crosstab</code> → <code>scipy.stats.chi2_contingency</code> → <code>seaborn</code> ile survival heatmap</div>
+      <div class="story-source">📎 Kaynak: <a href="https://www.kaggle.com/c/titanic" target="_blank">Kaggle Titanic</a></div>
+    </div>
+
+    <!-- Hikaye 29 -->
+    <div class="story-card">
+      <h4>⛑️ 29. Shell: Çalışan Bağlılığı %1 Artınca İş Kazaları %4 Düşüyor</h4>
+      <p>Petrol devi Shell'in iç verilerini analiz eden araştırmacılar, çalışan bağlılık (engagement) skorlarındaki <strong>her %1'lik artışın</strong>, iş kazası oranını <strong>%4 düşürdüğünü</strong> buldu. İşe bağlı çalışanlar güvenlik protokollerine daha sıkı uyuyor — motivasyon güvenliği direkt etkiliyor.</p>
+      <div class="story-detail"><strong>Nasıl yapıldı?</strong> Shell'in yıllık çalışan bağlılık anketi (engagement survey) sonuçları, tesis bazında iş kazası kayıtları (OSHA recordable incidents) ile eşleştirildi. Panel veri regresyonu ile zaman ve tesis sabit etkileri kontrol altında tutularak bağlılık skorunun kaza oranına etkisi ölçüldü. Bu tür analiz, İK verisi ile operasyonel verilerin birleştirilmesine güzel bir örnek.</div>
+      <div class="story-python">🐍 Python: <code>statsmodels</code> ile panel veri fixed-effects regresyon → engagement skoru × kaza oranı scatter + trend</div>
+      <div class="story-source">📎 Kaynak: <a href="https://opendatascience.com/9-bizarre-and-surprising-insights-from-data-science/" target="_blank">Open Data Science</a></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="platformlar">🌐 Veri Platformları ve Kaynaklar</h2>
+
+    <p>Aşağıdaki platformlarda binlerce açık veri seti bulabilirsiniz. Keşfetmeye başlayın!</p>
+
+    <div class="resource-grid">
+      <a href="https://www.kaggle.com/datasets" target="_blank" class="resource-card" style="text-decoration:none;">
+        <div class="resource-icon">📊</div>
+        <div class="resource-name">Kaggle Datasets</div>
+        <div class="resource-desc">200.000+ açık veri seti. Reddit, Spotify, Netflix, spor, sağlık ve daha fazlası.</div>
+      </a>
+      <a href="https://huggingface.co/datasets" target="_blank" class="resource-card" style="text-decoration:none;">
+        <div class="resource-icon">🤗</div>
+        <div class="resource-name">HuggingFace Datasets</div>
+        <div class="resource-desc">NLP, görüntü, ses veri setleri. Duygu analizi ve metin madenciliği için ideal.</div>
+      </a>
+      <a href="https://github.com/awesomedata/awesome-public-datasets" target="_blank" class="resource-card" style="text-decoration:none;">
+        <div class="resource-icon">🐙</div>
+        <div class="resource-name">GitHub Awesome Datasets</div>
+        <div class="resource-desc">Kategorilere ayrılmış yüzlerce açık veri seti koleksiyonu.</div>
+      </a>
+      <a href="https://datasetsearch.research.google.com/" target="_blank" class="resource-card" style="text-decoration:none;">
+        <div class="resource-icon">🔍</div>
+        <div class="resource-name">Google Dataset Search</div>
+        <div class="resource-desc">Google'ın veri seti arama motoru. Akademik ve kamusal veriler.</div>
+      </a>
+      <a href="https://www.tylervigen.com/spurious-correlations" target="_blank" class="resource-card" style="text-decoration:none;">
+        <div class="resource-icon">📈</div>
+        <div class="resource-name">Spurious Correlations</div>
+        <div class="resource-desc">Sahte korelasyonlar galerisi — korelasyon ≠ nedensellik dersi.</div>
+      </a>
+      <a href="http://insideairbnb.com/" target="_blank" class="resource-card" style="text-decoration:none;">
+        <div class="resource-icon">🏠</div>
+        <div class="resource-name">Inside Airbnb</div>
+        <div class="resource-desc">Dünya genelinde Airbnb ilan ve yorum verileri.</div>
+      </a>
+      <a href="https://database.lichess.org/" target="_blank" class="resource-card" style="text-decoration:none;">
+        <div class="resource-icon">♟️</div>
+        <div class="resource-name">Lichess Database</div>
+        <div class="resource-desc">Milyarlarca satranç oyunu — açılış, zaman analizi için.</div>
+      </a>
+      <a href="https://survey.stackoverflow.co" target="_blank" class="resource-card" style="text-decoration:none;">
+        <div class="resource-icon">💻</div>
+        <div class="resource-name">Stack Overflow Survey</div>
+        <div class="resource-desc">Yıllık geliştirici anketleri — teknoloji trendleri ve maaş verileri.</div>
+      </a>
+      <a href="https://pudding.cool/" target="_blank" class="resource-card" style="text-decoration:none;">
+        <div class="resource-icon">🍮</div>
+        <div class="resource-name">The Pudding</div>
+        <div class="resource-desc">Görsel veri hikayeleri — kültür, müzik, spor ve daha fazlası. İlham kaynağı!</div>
+      </a>
+      <a href="https://data.gov/" target="_blank" class="resource-card" style="text-decoration:none;">
+        <div class="resource-icon">🏛️</div>
+        <div class="resource-name">Data.gov</div>
+        <div class="resource-desc">ABD hükümeti açık verileri — sağlık, eğitim, çevre, ulaşım.</div>
+      </a>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="ipuclari">🛠️ İpuçları ve Araçlar</h2>
+
+    <h3>Önerilen Python Kütüphaneleri</h3>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Kütüphane</th><th>Kullanım Alanı</th><th>Kurulum</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>pandas</code></td><td>Veri işleme, temizleme, analiz</td><td><code>pip install pandas</code></td></tr>
+          <tr><td><code>matplotlib</code></td><td>Temel grafik ve görselleştirme</td><td><code>pip install matplotlib</code></td></tr>
+          <tr><td><code>seaborn</code></td><td>İstatistiksel görselleştirme</td><td><code>pip install seaborn</code></td></tr>
+          <tr><td><code>plotly</code></td><td>İnteraktif grafikler</td><td><code>pip install plotly</code></td></tr>
+          <tr><td><code>scipy</code></td><td>İstatistiksel testler, korelasyon</td><td><code>pip install scipy</code></td></tr>
+          <tr><td><code>nltk</code> / <code>transformers</code></td><td>Doğal dil işleme, duygu analizi</td><td><code>pip install nltk</code></td></tr>
+          <tr><td><code>praw</code></td><td>Reddit API ile veri çekme</td><td><code>pip install praw</code></td></tr>
+          <tr><td><code>pytrends</code></td><td>Google Trends verisi çekme</td><td><code>pip install pytrends</code></td></tr>
+          <tr><td><code>chess</code></td><td>Satranç oyunu (PGN) analizi</td><td><code>pip install python-chess</code></td></tr>
+          <tr><td><code>datasets</code></td><td>HuggingFace veri setleri</td><td><code>pip install datasets</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Örnek Analiz Yaklaşımı</h3>
+
+    <div class="code-block" data-lang="python">
+      <pre><code># Genel metodoloji şablonu
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# 1. Veri yükle
+df = pd.read_csv('veri_seti.csv')
+
+# 2. İlk bakış
+print(df.shape)
+print(df.describe())
+print(df.head())
+
+# 3. Hipotez: "X ile Y arasında bir ilişki var mı?"
+# Örnek: fiyat ile puan arasındaki korelasyon
+korelasyon = df['fiyat'].corr(df['puan'])
+print(f"Korelasyon: {korelasyon:.3f}")
+
+# 4. Görselleştirme
+fig, ax = plt.subplots(figsize=(10, 6))
+sns.scatterplot(data=df, x='fiyat', y='puan', alpha=0.3, ax=ax)
+ax.set_title('Fiyat vs Puan — Beklenmedik Sonuç!')
+ax.set_xlabel('Fiyat (₺)')
+ax.set_ylabel('Puan')
+plt.tight_layout()
+plt.savefig('bulgu_grafik.png', dpi=150)
+plt.show()
+
+# 5. Yorum: "Korelasyon 0.05 — neredeyse sıfır!
+# Pahalı olmak daha iyi puan garantisi değil."</code></pre>
+    </div>
+
+    <div class="alert alert-success">
+      <div class="alert-title">✅ İyi Bir Hipotez Nasıl Olur?</div>
+      <ul>
+        <li><strong>Spesifik:</strong> "Reddit'te olumsuz başlıklar daha fazla yorum alır" ✅ vs "Reddit ilginç" ❌</li>
+        <li><strong>Test edilebilir:</strong> Veri ile doğrulanabilir veya çürütülebilir olmalı</li>
+        <li><strong>Şaşırtıcı potansiyeli olan:</strong> Sezgisel beklentiye aykırı bir sonuç çıkabilecek konular tercih edin</li>
+        <li><strong>Veri erişilebilir:</strong> Hipotezinizi test edecek veri setine erişiminiz olmalı</li>
+      </ul>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="degerlendirme">⚖️ Değerlendirme Kriterleri</h2>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Kriter</th><th>Ağırlık</th><th>Açıklama</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Hipotezin Özgünlüğü</strong></td><td>%25</td><td>Sorulan soru ilginç ve özgün mü? Sezgisel beklentiye aykırı bir bulgu var mı?</td></tr>
+          <tr><td><strong>Teknik Uygulama</strong></td><td>%25</td><td>Python kodu çalışıyor mu? Veri doğru işlenmiş mi? Analiz yöntemi uygun mu?</td></tr>
+          <tr><td><strong>Görselleştirme</strong></td><td>%15</td><td>Grafikler anlamlı ve okunabilir mi? Bulguyu iyi ifade ediyor mu?</td></tr>
+          <tr><td><strong>Yorum ve Analiz</strong></td><td>%20</td><td>Bulgular sadece sayı değil, anlamlı bir hikaye olarak yorumlanmış mı?</td></tr>
+          <tr><td><strong>Sunum</strong></td><td>%15</td><td>Sınıf sunumu açık, anlaşılır ve ikna edici mi?</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-danger">
+      <div class="alert-title">⚠️ Dikkat</div>
+      <ul>
+        <li>Başka bir grubun çalışmasını kopyalamak <strong>akademik sahtekarlık</strong> sayılır ve tüm gruba <strong>0 (sıfır)</strong> puan verilir.</li>
+        <li>Yapay zeka çıktısını olduğu gibi kopyala-yapıştır yapmak yeterli değildir — veriyi ve bulguyu <strong>anladığınızı gösterin</strong>.</li>
+        <li>Son teslim tarihinden (<strong>12 Nisan 2026, 23:59</strong>) sonraki commit'ler değerlendirmeye alınmaz.</li>
+      </ul>
+    </div>
+
+    <!-- Özet -->
+    <div class="alert alert-tip">
+      <div class="alert-title">🎯 Özet: Teslim Kontrol Listesi</div>
+      <ul class="checklist">
+        <li>GitHub Classroom davetini kabul ettim, repo oluşturuldu</li>
+        <li>README.md: grup üyeleri, hipotez, çalıştırma talimatları yazıldı</li>
+        <li>Python kodu (analiz.ipynb / .py) çalışır durumda repoda</li>
+        <li>Rapor (rapor.md veya rapor.pdf) yazılıp repoya yüklendi</li>
+        <li>Sunum dosyası (sunum.pptx veya .pdf) repoya yüklendi</li>
+        <li>Tüm dosyalar 12 Nisan 2026, 23:59'dan önce push edildi</li>
+      </ul>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="page-footer">
+  <p class="footer-text">Büyük Veri Teknolojileri Ders Notları — 2025-2026 Bahar Dönemi</p>
+</footer>
+
+<!-- Scroll to Top -->
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<script src="script.js"></script>
+</body>
+</html>
