@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerçek Zamanlı Veri Akışı ve Büyük Veri Güvenliği | Büyük Veri Teknolojileri</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body>
+
+<!-- ═══════════ TOP NAV ═══════════ -->
+<header class="top-nav">
+  <a href="#" class="nav-brand">📊 Büyük Veri Teknolojileri</a>
+  <div class="nav-links">
+    <a href="hafta1.html">Dağıtık Sistemler & Python</a>
+    <a href="hafta2.html">Veri Modelleme & Pandas</a>
+    <a href="hafta3.html">ETL & PySpark</a>
+    <a href="hafta4.html" class="active">Streaming & Güvenlik</a>
+    <a href="uygulamalar2.html">🧪 Uygulamalar</a>
+    <a href="odev1.html">📝 Ödev 1</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero">
+  <span class="week-badge">📅 BÖLÜM 4</span>
+  <h1>Gerçek Zamanlı Veri Akışı ve Büyük Veri Güvenliği</h1>
+  <p class="subtitle">Saniyeler içinde karar vermek için Kafka ve stream processing; veriyi sorumlu kullanmak için CIA üçgeni, KVKK/GDPR ve anonimleştirme teknikleri.</p>
+  <div class="meta-info">
+    <span>📖 Teori: 3 saat</span>
+    <span>💻 Uygulama: 2 saat</span>
+    <span>📊 Seviye: Orta</span>
+  </div>
+</section>
+
+<!-- ═══════════ MAIN LAYOUT ═══════════ -->
+<div class="main-container">
+
+  <!-- ─── Sidebar TOC ─── -->
+  <aside class="sidebar">
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list">
+      <a href="hafta1.html">📘 Dağıtık Sistemler & Python</a>
+      <a href="hafta2.html">📗 Veri Modelleme & Pandas</a>
+      <a href="hafta3.html">📙 ETL & PySpark</a>
+      <a href="hafta4.html" class="current-page">📕 Streaming & Güvenlik</a>
+      <a href="uygulamalar2.html">🧪 Uygulamalar</a>
+      <a href="odev1.html">📝 Ödev 1</a>
+    </div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav>
+      <ul>
+        <li><a href="#kazanimlar">🎯 Kazanımlar</a></li>
+        <li><a href="#hikaye">🗺️ Hikaye Haritası</a></li>
+        <li><a href="#on-bilgi">🧭 Ön Bilgi: Kavramlar</a></li>
+        <li><a href="#batch-vs-stream">⏱️ Batch vs Stream</a></li>
+        <li><a href="#streaming-kavram">🌊 Streaming Temelleri</a></li>
+        <li><a href="#kafka">🟦 Apache Kafka</a></li>
+        <li><a href="#kafka-kod">🐍 Python ile Kafka</a></li>
+        <li><a href="#spark-streaming">⚡ Spark Structured Streaming</a></li>
+        <li><a href="#guvenlik-giris">🛡️ Büyük Veri Güvenliği</a></li>
+        <li><a href="#cia">🔺 CIA Üçgeni</a></li>
+        <li><a href="#kvkk-gdpr">⚖️ KVKK & GDPR</a></li>
+        <li><a href="#anonim">🎭 Anonimleştirme</a></li>
+        <li><a href="#ozet">📝 Özet</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- ─── Content ─── -->
+  <main class="content">
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="kazanimlar">🎯 Bu Haftanın Kazanımları</h2>
+
+    <ul class="objectives-list">
+      <li><span class="obj-icon">✅</span> Batch (toplu) ve stream (akış) işleme arasındaki farkı somut örneklerle açıklayabilir</li>
+      <li><span class="obj-icon">✅</span> Event, producer, consumer, topic, partition kavramlarını tanımlar</li>
+      <li><span class="obj-icon">✅</span> Apache Kafka'nın mimarisini ve neden bu kadar yaygın olduğunu bilir</li>
+      <li><span class="obj-icon">✅</span> Python ile basit bir Kafka producer ve consumer yazabilir</li>
+      <li><span class="obj-icon">✅</span> Spark Structured Streaming ile bir akış uygulamasının iskeletini kurabilir</li>
+      <li><span class="obj-icon">✅</span> Pencereleme (windowing) ve watermark kavramlarını anlar</li>
+      <li><span class="obj-icon">✅</span> Bilgi güvenliğinin <strong>CIA</strong> (Confidentiality, Integrity, Availability) üçgenini açıklayabilir</li>
+      <li><span class="obj-icon">✅</span> KVKK ve GDPR'ın temel ilkelerini, veri sorumlusu/işleyen rollerini bilir</li>
+      <li><span class="obj-icon">✅</span> Anonimleştirme, pseudonymization, k-anonymity ve differential privacy kavramlarını ayırt eder</li>
+      <li><span class="obj-icon">✅</span> Scikit-learn ile basit bir hash-tabanlı pseudonymization uygulayabilir</li>
+    </ul>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="hikaye">🗺️ Hikaye Haritası — Bu Bölümün İki Yarısı</h2>
+
+    <p>Bu bölüm aslında iki ayrı hikayeyi birleştiriyor; ama her ikisi de aynı gerçeğin parçası: <em>modern veri sistemleri hızla çalışmak zorunda, ama bu hız güvenliği de hızla zorluyor</em>. Önce "verinin hızlandığı" dünyaya bakacağız (streaming), sonra bu hızlı dünyada veriyi nasıl koruyacağımızı (güvenlik + KVKK/GDPR) çalışacağız.</p>
+
+    <div class="diagram-container">
+      <div class="diagram-box">
+        <div class="mermaid">
+flowchart TB
+    A["3. bölümden hatırla:<br/>ETL gece 02:00'de çalışıyor"] -->|"Sorun: 12 saat geçti!<br/>Dolandırıcı çoktan kartı çekti"| B["Adım 1: Batch yetmez<br/>Stream gerek"]
+    B --> C["Adım 2: Olay olur olmaz<br/>işlemek istiyoruz"]
+    C --> D["Streaming kavramları<br/>(Bölüm 1-2)"]
+    D --> E["Adım 3: Olayları nasıl taşırız?<br/>Kim üretir, kim tüketir?"]
+    E --> F["Apache Kafka<br/>(Bölüm 3-4)"]
+    F --> G["Adım 4: Akıp giden veri üzerinde<br/>analiz nasıl yapılır?"]
+    G --> H["Spark Structured Streaming<br/>(Bölüm 5)"]
+    H --> I["Adım 5: Bu kadar veri akıyor…<br/>Ya çalınırsa? Ya kanun?"]
+    I --> J["Bilgi Güvenliği + CIA<br/>(Bölüm 6-7)"]
+    J --> K["Adım 6: Hukuk ne diyor?"]
+    K --> L["KVKK ve GDPR<br/>(Bölüm 8)"]
+    L --> M["Adım 7: Kişisel veriyi tanınamaz<br/>yapabilir miyiz?"]
+    M --> N["Anonimleştirme + k-anonymity<br/>(Bölüm 9)"]
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil 0: Bölüm haritası — "hız" ve "güvenlik" hikayeleri yan yana</div>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="on-bilgi">🧭 Ön Bilgi: Bu Bölümde Sık Geçecek Kavramlar</h2>
+
+    <p>Bu bölüm iki ayrı dünyayı birleştiriyor: <strong>gerçek zamanlı sistemler</strong> (Kafka, streaming) ve <strong>siber güvenlik / hukuk</strong> (KVKK, GDPR). İkisinde de yeni terimler çok. İlk kez duyuyorsanız aşağıdaki kısa sezgisel açıklamalar size yardımcı olacak.</p>
+
+    <div class="glossary">
+      <div class="glossary-title">🌊 Streaming dünyasından terimler</div>
+      <dl>
+        <dt>⏱️ Latency (Gecikme)</dt><dd>Bir olayın oluşması ile sonucunun görülmesi arasında geçen süre. "100 ms gecikme" = saniyenin onda biri.</dd>
+        <dt>⚡ Real-time (Gerçek Zamanlı)</dt><dd>Olaya karşı saniyeler/milisaniyeler içinde tepki vermek. "Gerçek zamanlı dolandırıcılık tespiti" = kart çekildiği anda karar.</dd>
+        <dt>📨 Event (Olay)</dt><dd>Olmuş bir şeyin kaydı: "kullanıcı X 14:32:01'de ürün Y'ye tıkladı". Geçmişte olduğu için <em>değişmez</em>.</dd>
+        <dt>📤 Producer / 📥 Consumer</dt><dd>Olay <strong>üreten</strong> ve olay <strong>tüketen</strong> taraflar. Bir gazete (producer) ve okuyucular (consumer) gibi.</dd>
+        <dt>📑 Topic</dt><dd>Olayların kategori kanalı. "Spor", "ekonomi", "hava durumu" gazete bölümleri gibi.</dd>
+        <dt>🧱 Microservice (Mikroservis)</dt><dd>Bir uygulamayı tek büyük parça yerine küçük, bağımsız servislere bölme yaklaşımı. "Sipariş servisi", "ödeme servisi", "bildirim servisi" gibi. Birbirleriyle mesajlaşarak (genelde Kafka ile) konuşurlar.</dd>
+        <dt>📬 Queue (Kuyruk)</dt><dd>Sıraya giren mesajların beklediği yapı. Postanedeki bekleme sırası gibi.</dd>
+        <dt>🔁 Replication (Replikasyon)</dt><dd>Aynı veriyi birden fazla makinede kopya tutmak. Biri çökerse diğeri devreye girer. Kafka her olayı varsayılan 3 makinede tutar.</dd>
+        <dt>📡 IoT</dt><dd>"Internet of Things". İnternete bağlı sensörler, cihazlar: akıllı sayacınız, araç takip cihazları, fabrika sensörleri.</dd>
+        <dt>🤝 CDC</dt><dd>"Change Data Capture" = bir veritabanındaki <em>değişiklikleri</em> gerçek zamanlı olarak yakalayıp başka sistemlere ileten teknik. Veritabanını "konuşan" hale getirir.</dd>
+      </dl>
+    </div>
+
+    <div class="glossary">
+      <div class="glossary-title">🛡️ Güvenlik / hukuk dünyasından terimler</div>
+      <dl>
+        <dt>🔐 Encryption (Şifreleme)</dt><dd>Veriyi okunamaz hale getirmek. Sadece anahtarı olan açabilir. "At-rest" = diskte yatarken, "in-transit" = ağ üzerinde giderken.</dd>
+        <dt>🔑 TLS / SSL / HTTPS</dt><dd>Taraycınızın "kilit" simgesinin arkasındaki teknoloji. İnternet üzerinde giden veriyi şifreler.</dd>
+        <dt>🚪 VPN</dt><dd>"Virtual Private Network". İnternet üzerinden <em>özel ve şifreli</em> bir tünel kurmak. Uzak çalışanların şirket ağına güvenli bağlanması için.</dd>
+        <dt>🎭 Phishing (Olta)</dt><dd>Sahte e-posta/site ile insanları kandırıp şifre/kart bilgisi çalmak. En sık gerçekleşen siber saldırı türü.</dd>
+        <dt>👾 Ransomware (Fidye Yazılımı)</dt><dd>Bilgisayarınızdaki dosyaları şifreleyip açmak için fidye isteyen kötü niyetli yazılım. Hastane, belediye gibi kurumları felce uğratabilir.</dd>
+        <dt>🌊 DDoS</dt><dd>"Distributed Denial of Service". Bir siteyi binlerce bilgisayardan aynı anda istek atarak çökertme saldırısı.</dd>
+        <dt>📝 Audit Log</dt><dd>"Kim, ne zaman, neyi yaptı?" sorusuna cevap veren kayıt defteri. Sonradan denetim, ihlal soruşturması için kritik.</dd>
+        <dt>🔑 RBAC</dt><dd>"Role-Based Access Control" — rol bazlı yetkilendirme. "Mali müşavir tablosuna erişebilir, satış temsilcisi erişemez" gibi kuralların yönetimi.</dd>
+        <dt>📄 Veri İhlali (Data Breach)</dt><dd>Yetkisiz birinin verilere erişmesi/sızdırması. KVKK'ya 72 saat içinde bildirim zorunluluğu vardır.</dd>
+        <dt>⚗️ Hash + Salt</dt><dd><strong>Hash</strong>: bir değeri tek yönlü dönüştürme (geri çevrilemez). <strong>Salt</strong>: hash'lemeden önce üzerine eklenen rastgele değer; "aynı şifre = aynı hash" sorununu engeller.</dd>
+      </dl>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="batch-vs-stream">⏱️ Bölüm 1: Batch ve Stream — İki Farklı Zaman Anlayışı</h2>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Önceki bölümden geçiş</div>
+      <p>3. bölümdeki SuperMarket hikayemizde Cenk Bey gece 02:00'de çalışan bir ETL kurmuştu. Sabah 07:00'de Ayşe Hanım raporları görüyordu. Bu yıllarca yetti. Ama şimdi yeni bir sorumuz var: <em>peki ya cevabı sabaha kadar bekleyemezsek?</em> Düşünün: bir dolandırıcı çalınmış kartla 02:00'den önce, mesela 23:50'de işlem yaptı. Bizim ETL onun olayını yarın sabah 07:00'de fark edecek — parayı 8 saat önce kaptık. İşte bu bölümde "hemen şimdi" cevabını verecek mimariye adım atıyoruz.</p>
+    </div>
+
+    <p>Şimdiye kadar gördüğümüz her örnek <strong>batch (toplu) işleme</strong>ydi: gece 02:00'de tüm günün verisini bir kerede işle. Peki bir <em>kredi kartı dolandırıcılığı</em>nı önlemek için 12 saat beklemek mantıklı mıdır? Hayır — saniyeler içinde karar vermek gerek. İşte burada <strong>stream processing (akış işleme)</strong> devreye girer.</p>
+
+    <div class="comparison">
+      <div class="side">
+        <div class="side-title">📦 Batch Processing</div>
+        <ul>
+          <li><strong>Veri:</strong> Sınırlı — başlangıcı ve sonu belli bir veri kümesi (örn. "dünün tüm siparişleri")</li>
+          <li><strong>Gecikme:</strong> Dakikalar - saatler - günler</li>
+          <li><strong>Örnekler:</strong> Gece raporları, aylık fatura, model eğitimi</li>
+          <li><strong>Araçlar:</strong> Spark batch, Hadoop MR, dbt</li>
+          <li><strong>Sorgu:</strong> "Dün İstanbul'da kaç sipariş geldi?"</li>
+        </ul>
+      </div>
+      <div class="side">
+        <div class="side-title">🌊 Stream Processing</div>
+        <ul>
+          <li><strong>Veri:</strong> Sınırsız — sürekli akan, bitiş noktası olmayan olay dizisi (örn. "o andan itibaren gelen tüm tıklamalar")</li>
+          <li><strong>Gecikme:</strong> Milisaniye - saniye</li>
+          <li><strong>Örnekler:</strong> Dolandırıcılık tespiti, canlı dashboard, IoT alarmı</li>
+          <li><strong>Araçlar:</strong> Kafka Streams, Flink, Spark Structured Streaming</li>
+          <li><strong>Sorgu:</strong> "Son 5 dk'da bu kartla 3 farklı şehirden işlem geldi mi?"</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">🎬 Gerçek Hayat: Trendyol'da bir tıklama</div>
+      <p>Bir kullanıcı Trendyol'da bir ürüne tıkladığında saniyenin altında şu zincir tetiklenir:</p>
+      <ol>
+        <li>Tıklama olayı bir <strong>event</strong> olarak Kafka'ya yazılır.</li>
+        <li>Bir stream işi bu olayı görüp <strong>öneri motorunu</strong> günceller — ekranın yanındaki "benzer ürünler" kutusu o anda kişiselleşir.</li>
+        <li>Aynı olay <strong>reklam izleme sistemine</strong> de gönderilir. <em>Çünkü tıkladığın ürün aslında sıradan bir arama sonucu değil, sponsorlu bir reklamdı</em> (uygulamada genelde küçük "Reklam" / "Ad" etiketiyle gösterilir). Reklam veren marka, Trendyol'a "benim ürünüm tıklanırsa şu kadar TL öderim" sözü vermiştir; bu modelin adı <strong>CPC — cost-per-click</strong>'tir. Yani sen sadece bir tıklama yaptın, ama Trendyol bu tek tıklamadan <em>üç ayrı yerden</em> para kazanır: (1) ileride alışveriş yaparsan komisyon, (2) bu tıklama için reklam veren markadan CPC ücreti, (3) toplanan veriyle daha iyi öneri ve daha pahalı reklam alanı.</li>
+        <li>Olay aynı zamanda <strong>data lake'in bronze katmanı</strong>na sızdırılır — gece batch ETL'i bunu kullanarak ertesi gün yeni öneri modellerini eğitir.</li>
+      </ol>
+      <p>Tek olay, <strong>aynı anda</strong> hem gerçek zamanlı (öneri + fatura) hem toplu (model eğitimi) işlem akışlarını besler. Buna <em>Lambda mimarisi</em> denir.</p>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="streaming-kavram">🌊 Bölüm 2: Streaming Temel Kavramları</h2>
+
+    <h3>📨 Event (Olay)</h3>
+    <p>Bir <strong>event</strong>, <em>belirli bir zamanda olmuş bir şeyin değişmez kaydıdır</em>. Örnek: <em>"user_id=42 ürün 1337'ye 2025-05-17 10:23:11'de tıkladı"</em>. Event'in en önemli özelliği <strong>immutable</strong> (değişmez) olmasıdır — bir kez yazıldıktan sonra düzenlenmez, sadece yeni event eklenir.</p>
+
+    <h3>🧭 Producer ve Consumer</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📤</div>
+        <div class="card-title">Producer</div>
+        <div class="card-desc">Olay üreten taraf. Web sunucusu, mobil uygulama, IoT sensörü, başka bir mikroservis…</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📥</div>
+        <div class="card-title">Consumer</div>
+        <div class="card-desc">Olayları okuyup bir şey yapan taraf. Veritabanına yazar, model çalıştırır, dashboard günceller…</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📑</div>
+        <div class="card-title">Topic</div>
+        <div class="card-desc">Olayların kategorize edildiği "kanal". Örn: <code>orders</code>, <code>clicks</code>, <code>fraud-alerts</code>.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧩</div>
+        <div class="card-title">Partition</div>
+        <div class="card-desc">Topic'i paralelleştirmek için parçalama. Aynı anahtarlı olaylar (örn. aynı user_id) hep aynı partition'a gider — sıra korunur.</div>
+      </div>
+    </div>
+
+    <h3>🚌 Mesajlaşma Modelleri</h3>
+
+    <div class="diagram-container">
+      <div class="diagram-box">
+        <div class="mermaid">
+flowchart LR
+    subgraph PS["📡 Publish / Subscribe (Kafka)"]
+        P1[Producer] --> T[(Topic)]
+        T --> C1[Consumer A]
+        T --> C2[Consumer B]
+        T --> C3[Consumer C]
+    end
+    subgraph Q["📬 Point-to-Point Queue"]
+        P2[Producer] --> QU[(Queue)]
+        QU -->|biri alır| Co1[Consumer]
+    end
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil 1: Pub/Sub'da her abone aynı mesajı alır; klasik kuyrukta mesaj tek tüketiciye gider</div>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="kafka">🟦 Bölüm 3: Apache Kafka</h2>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Önceki bölümden geçiş</div>
+      <p>Streaming'in <em>fikrini</em> gördük — olaylar anında üret, anında işle. Ama bir fikir yetmiyor: bu olayları güvenle taşıyacak, kaybedilmeyecek, gerekirse geriye sarılabilecek bir <em>altyapı</em> lazım. <strong>Kafka</strong> tam olarak bu boşluğu doldurur: producer'lar ile consumer'lar arasında olağanüstü dayanıklı bir "olay otobüsü". LinkedIn 2010'da bunu kendi iç ihtiyaçları için yaptı, sonra açık kaynak hale gelince bütün endüstrinin de facto standardı oldu.</p>
+    </div>
+
+    <p><strong>Apache Kafka</strong>, 2010'da LinkedIn'de doğmuş, açık kaynak <em>dağıtık event streaming platformu</em>dur. Bugün <em>Fortune 100</em> şirketlerinin %80'inden fazlası kullanıyor. Kalbi basit ama dahice bir fikirdir: <strong>"durable, append-only log"</strong> — silinemez, sadece sona eklenen kayıt defteri.</p>
+
+    <div class="glossary">
+      <div class="glossary-title">📖 Kafka'nın kalbindeki 3 kelime</div>
+      <dl>
+        <dt>Durable (Kalıcı)</dt><dd>Veri diske yazılır ve kopyalanır. Sistem çökse de kaybolmaz.</dd>
+        <dt>Append-only (Sadece sona ekle)</dt><dd>Yazılmış bir olay <strong>silinemez ve değiştirilemez</strong>. Yeni olay her zaman <em>sona</em> eklenir. Bir muhasebe defteri gibi: yanlış varsa "düzeltme kaydı" eklersin, eskiyi karalamazsın.</dd>
+        <dt>Log</dt><dd>Burada "log dosyası" anlamında değil, <em>sıralı kayıt defteri</em> anlamında. Her olayın bir sıra numarası (offset) vardır.</dd>
+      </dl>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 "Dağıtık" Ne Demek Tekrar Hatırlayalım</div>
+      <p>Kafka tek bir sunucuda değil, <strong>birden fazla sunucudan oluşan bir cluster</strong>'da çalışır. Bu sunuculara Kafka'da <strong>broker</strong> denir. 3 broker'lık bir Kafka cluster'ı, bir broker çökse de çalışmaya devam eder. Bu yüzden "asla durmaması gereken" sistemler için idealdir.</p>
+    </div>
+
+    <h3>🏛️ Kafka Mimarisi</h3>
+
+    <div class="diagram-container">
+      <div class="diagram-box">
+        <div class="mermaid">
+flowchart TB
+    subgraph PROD["📤 Producers"]
+        P1[Web app]
+        P2[Mobile app]
+        P3[IoT sensor]
+    end
+    subgraph KAF["🟦 KAFKA CLUSTER"]
+        B1["Broker 1"]
+        B2["Broker 2"]
+        B3["Broker 3"]
+    end
+    subgraph CONS["📥 Consumers"]
+        C1["Fraud detection<br>(Spark Streaming)"]
+        C2["Real-time dashboard"]
+        C3["Data lake sink<br>(S3)"]
+        C4["ElasticSearch<br>(arama)"]
+    end
+    P1 --> KAF
+    P2 --> KAF
+    P3 --> KAF
+    KAF --> C1
+    KAF --> C2
+    KAF --> C3
+    KAF --> C4
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil 2: Kafka = sistemler arasında "merkezi sinir sistemi"</div>
+    </div>
+
+    <h3>📜 Topic, Partition ve Offset</h3>
+
+    <p>Bir <strong>topic</strong> birden fazla <strong>partition</strong>'a bölünür. Her partition, sıralı bir log'tur. Her olayın o partition içinde bir <strong>offset</strong>'i (sıra numarası) vardır. Consumer "ben şu offset'e kadar okudum" der ve oradan devam eder.</p>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🧩 Partition'lar Hangi Broker'da Durur?</div>
+      <p>Çok karıştırılan nokta: <em>partition'lar tek bir broker'da mı yoksa birden fazlasında mı?</em> Cevap: <strong>Kafka her partition'ı bir broker'a atar (“leader”), aynı partition'ın kopyalarını başka broker'lara koyar (“follower”)</strong>. Yani:</p>
+      <ul>
+        <li>Bir <strong>topic</strong>'in farklı partition'ları <em>farklı broker'lara dağıtılır</em> — böylece yük paralelleşir.</li>
+        <li>Her partition'ın bir <strong>leader broker</strong>'ı vardır: o partition'a yazma/okuma bu broker üzerinden olur.</li>
+        <li>Aynı partition'ın verisi <strong>replication factor</strong> kadar broker'da kopyalanır (varsayılan 3). Leader çökerse, follower'lardan biri leader olur, hizmet kesilmez.</li>
+        <li>Sonuç: Bir topic'in tüm verisi <em>cluster'a yayılmıştır</em>; hiçbir broker tek başına her şeye sahip değildir.</li>
+      </ul>
+      <p>Aşağıda önce <em>mantıksal</em> görünümü (topic → partition'lar), sonra <em>fiziksel</em> görünümü (partition'lar broker'lara nasıl dağılmış) göreceğiz.</p>
+    </div>
+
+    <div class="diagram-container">
+      <div class="diagram-box">
+        <div class="mermaid">
+flowchart LR
+    subgraph T["Topic: orders (mantıksal görünüm)"]
+        direction TB
+        subgraph P0["Partition 0"]
+            P0E["[0] [1] [2] [3] [4] →"]
+        end
+        subgraph P1["Partition 1"]
+            P1E["[0] [1] [2] [3] →"]
+        end
+        subgraph P2["Partition 2"]
+            P2E["[0] [1] [2] →"]
+        end
+    end
+    CG["Consumer Group: analytics"] -->|"offset=2"| P0
+    CG -->|"offset=1"| P1
+    CG -->|"offset=0"| P2
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil 3a: <strong>Mantıksal</strong> görünüm — bir topic, üç partition. Offset her partition için ayrı sayılır.</div>
+    </div>
+
+    <div class="diagram-container">
+      <div class="diagram-box">
+        <div class="mermaid">
+flowchart TB
+    subgraph C["Kafka Cluster (3 broker, replication factor = 2)"]
+        direction LR
+        subgraph B1["Broker 1"]
+            B1P0["P0 (LEADER)"]
+            B1P2R["P2 (follower)"]
+        end
+        subgraph B2["Broker 2"]
+            B2P1["P1 (LEADER)"]
+            B2P0R["P0 (follower)"]
+        end
+        subgraph B3["Broker 3"]
+            B3P2["P2 (LEADER)"]
+            B3P1R["P1 (follower)"]
+        end
+    end
+    Prod["Producer"] -->|"P0'a yaz"| B1P0
+    Prod -->|"P1'e yaz"| B2P1
+    Prod -->|"P2'ye yaz"| B3P2
+    B1P0 -.->|"replikasyon"| B2P0R
+    B2P1 -.->|"replikasyon"| B3P1R
+    B3P2 -.->|"replikasyon"| B1P2R
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil 3b: <strong>Fiziksel</strong> görünüm — her partition'ın leader'ı farklı broker'da; replikalar ayrı broker'larda. Böylece yük dağılır ve bir broker çökse de veri kaybolmaz.</div>
+    </div>
+
+    <h3>⭐ Kafka'nın Süper Güçleri</h3>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">💾</div>
+        <div class="card-title">Durable</div>
+        <div class="card-desc">Olaylar diske yazılır, replikasyonla 3 makinede saklanır. Bir broker çökse de veri kaybolmaz.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">⏪</div>
+        <div class="card-title">Replay</div>
+        <div class="card-desc">Consumer offset'ini geri sararak "dünkü olayları tekrar oku" diyebilir. Bug bulunca yeniden işleyebilirsiniz.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🚀</div>
+        <div class="card-title">Yüksek Throughput</div>
+        <div class="card-desc">Tek küme saniyede milyonlarca olay (LinkedIn 7 trilyon/gün). Sıralı disk yazımı + zero-copy.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧵</div>
+        <div class="card-title">Çoklu Tüketici</div>
+        <div class="card-desc">Aynı olayı farklı sistemler bağımsız tüketir. Producer'lar tüketici sayısından habersizdir — gevşek bağlı mimari.</div>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 Kafka ≠ Geleneksel Mesaj Kuyruğu</div>
+      <p>RabbitMQ gibi klasik kuyruklarda mesaj okununca <strong>silinir</strong>. Kafka'da olay diskte <strong>kalır</strong> (varsayılan 7 gün, kalıcı da olabilir). Bu yüzden Kafka aynı zamanda <em>"olay tabanlı veri ambarı"</em> gibi düşünülebilir.</p>
+    </div>
+
+    <h3>🔀 Kafka Tek Seçenek Mi? — Alternatifler</h3>
+
+    <p>Kafka bugün <em>de facto</em> standart, ama tek seçenek değil. Senaryoya göre daha uygun araçlar olabilir:</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Araç</th><th>Tip</th><th>Ne zaman tercih edilir?</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Apache Kafka</strong></td>
+            <td>Açık kaynak, kendin kur</td>
+            <td>Yüksek throughput, replay, çok tüketici. En geniş ekosistem. Sektörde de facto standart.</td>
+          </tr>
+          <tr>
+            <td><strong>AWS Kinesis</strong></td>
+            <td>Amazon yönetilen</td>
+            <td>AWS'desin ve Kafka cluster yönetmek istemiyorsun. Kullandığın kadar öde.</td>
+          </tr>
+          <tr>
+            <td><strong>Google Pub/Sub</strong></td>
+            <td>Google yönetilen</td>
+            <td>GCP üzerindesin. Sunucusuz, otomatik ölçek.</td>
+          </tr>
+          <tr>
+            <td><strong>Azure Event Hubs</strong></td>
+            <td>Microsoft yönetilen</td>
+            <td>Azure'da. Kafka protokolüyle uyumlu — Kafka istemcileri çalışır.</td>
+          </tr>
+          <tr>
+            <td><strong>Apache Pulsar</strong></td>
+            <td>Açık kaynak</td>
+            <td>Çok bölgeli (multi-region) senaryolar, storage/compute ayrımı. Kafka'nın modern rakibi.</td>
+          </tr>
+          <tr>
+            <td><strong>RabbitMQ</strong></td>
+            <td>Açık kaynak, klasik kuyruk</td>
+            <td>"Mesaj okununca silinsin, tekrar oynama gerekmesin" senaryoları. Mikro servis iletişimi, görev kuyruğu.</td>
+          </tr>
+          <tr>
+            <td><strong>Redis Streams</strong></td>
+            <td>Redis üzerinde</td>
+            <td>Zaten Redis kullanıyorsun, hafif ve düşük gecikme istiyorsun. Küçük-orta yük için.</td>
+          </tr>
+          <tr>
+            <td><strong>NATS / NATS JetStream</strong></td>
+            <td>Açık kaynak</td>
+            <td>IoT, edge cihazlar, çok düşük gecikme. Kafka'dan çok daha hafif.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:1rem">🔍 Her birini biraz daha yakından tanıyalım</h3>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🟧</div>
+        <div class="card-title">AWS Kinesis Data Streams</div>
+        <div class="card-desc">Kafka'ya en yakın AWS hizmeti. Birim: <em>shard</em> (Kafka'daki partition gibi). Her shard 1MB/sn yazma, 2MB/sn okuma kapasiteli; trafik artınca shard eklersin. Kayıtlar 24 saat–365 gün arası saklanır. Avantaj: cluster yönetimi yok, IAM ile entegre. Dezavantaj: ekosistem Kafka kadar geniş değil, tooling AWS'e bağımlı.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🟦</div>
+        <div class="card-title">Google Cloud Pub/Sub</div>
+        <div class="card-desc">Tamamen sunucusuz — partition/shard kavramı bile yok, sen sadece "topic"e yazarsın, GCP altta otomatik ölçekler. Global yönlendirme (bir bölgeye yazarsın, dünya genelinden tüketilir). Tam <em>sıralı teslimat</em> için <em>ordering key</em> tanımlaman gerekir; varsayılan ise sırasızdır. Kısa süreli kuyruk + tetikleyici (Cloud Functions) için ideal.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🟨</div>
+        <div class="card-title">Azure Event Hubs</div>
+        <div class="card-desc">Microsoft'un Kinesis muadili, fakat <em>Kafka protokol uyumlu</em>: mevcut Kafka producer/consumer kütüphanelerini bootstrap server'ı değiştirerek doğrudan kullanabilirsin. Capture özelliği ile gelen olayları otomatik olarak Azure Data Lake / Blob Storage'a Parquet/Avro olarak yazar.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🟩</div>
+        <div class="card-title">Apache Pulsar</div>
+        <div class="card-desc">Kafka'nın modern rakibi. En önemli mimari farkı: <em>storage ile compute ayrı</em> (BookKeeper katmanı veriyi tutar, broker'lar stateless çalışır) → ölçeklemek ve broker eklemek daha hızlı. Doğuştan <em>multi-tenancy</em> (aynı cluster'da farklı ekipler izole). Hem stream hem klasik kuyruk semantiği destekler.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🐇</div>
+        <div class="card-title">RabbitMQ</div>
+        <div class="card-desc">Veri akışı değil, <em>iş kuyruğu</em>. AMQP protokolü. Esas gücü <em>exchange</em> tipleri: <code>direct</code> (anahtara göre yönlendir), <code>topic</code> (wildcard pattern), <code>fanout</code> (herkese kopyala), <code>headers</code>. Mesaj tüketilince silinir; replay yok. E-posta gönderme, PDF üretme gibi "yap-bitir" görevleri için Kafka'dan çok daha pratik.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🟥</div>
+        <div class="card-title">Redis Streams</div>
+        <div class="card-desc">Zaten Redis kullanıyorsan ekstra bir altyapı kurmadan basit stream işleri yapabilirsin. Consumer group desteği, XADD/XREAD/XGROUP komutları. Veri RAM'de durduğu için <em>çok düşük gecikme</em>; dezavantajı: kalıcılık ve hacim Kafka kadar değil. Küçük-orta yük için ideal.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🟪</div>
+        <div class="card-title">NATS / NATS JetStream</div>
+        <div class="card-desc">Aşırı hafif. "Subject" hiyerarşisi var: <code>orders.eu.tr.istanbul</code> gibi noktayla ayrılmış konulara wildcard ile abone olabilirsin (<code>orders.eu.&gt;</code>). Tek binary, küçük bellek, milisaniye altı gecikme — IoT/edge senaryolarında Kafka'dan çok daha uygun. JetStream eklentisi ile kalıcılık ve replay de gelir.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🟫</div>
+        <div class="card-title">Redpanda</div>
+        <div class="card-desc">Kafka API'siyle <em>tam uyumlu</em> bir alternatif; tek farkı Java/JVM yerine <em>C++</em>'da yazılmış olması ve ZooKeeper'a ihtiyaç duymaması. Daha düşük p99 gecikmesi, daha az operasyonel karmaşıklık. Aynı Kafka client'larınız değişmeden çalışır.</div>
+      </div>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">🎯 Hızlı karar</div>
+      <p><strong>Kendin kurmak istemiyorsan</strong> ve buluttaysan: o bulutun yönetilen hizmeti (Kinesis/Pub-Sub/Event Hubs) en pratik. <strong>Klasik iş kuyruğu</strong> (e-posta gönder, fatura üret) için: RabbitMQ. <strong>Olay akışı, replay, geniş ekosistem</strong> için: Kafka. <strong>Edge/IoT</strong> için: NATS. <strong>Kafka uyumlu ama daha hafif</strong> istiyorsan: Redpanda. <strong>Multi-region / multi-tenant</strong> ihtiyacın varsa: Pulsar.</p>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="kafka-kod">🐍 Bölüm 4: Python ile Basit Bir Kafka Uygulaması</h2>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Önceki bölümden geçiş</div>
+      <p>Kafka'nın mimari kavramlarını (broker, topic, partition, offset, consumer group) gördük. Şimdi <em>gerçek kodla</em> ellerimizi kirletme zamanı. Çok az satırla bir producer ve bir consumer yazacağız. ETL bölümündeki "pandas mini ETL" örneğimiz gibi: önünüzde tüm iş değeri zinciri oluşacak, sadece bu sefer veri <em>artık canlı</em>.</p>
+    </div>
+
+    <p>Kafka ile çalışmak için yaygın iki Python kütüphanesi var: <code>kafka-python</code> ve <code>confluent-kafka</code>. Aşağıda basit bir <em>producer/consumer</em> ikilisi:</p>
+
+    <h3>📤 Producer — Olay Yayan Taraf</h3>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>from kafka import KafkaProducer       # pip install kafka-python
+import json, time, random
+from datetime import datetime
+
+# Producer = olay üreten istemci. Burada Python'dan Kafka'ya yazıyoruz.
+producer = KafkaProducer(
+    bootstrap_servers="localhost:9092",                    # Cluster'a gireceğimiz ilk kapı. Kafka geri kalan broker'ları buradan öğrenir.
+    value_serializer=lambda v: json.dumps(v).encode("utf-8"),  # Python dict → JSON string → byte. Kafka her şeyi byte olarak taşır.
+    key_serializer=lambda k: k.encode("utf-8")             # Key'i de byte'a çeviriyoruz; partition seçiminde kullanılacak.
+)
+
+cities = ["Ankara", "İstanbul", "İzmir", "Bursa", "Antalya"]
+
+# 100 sentetik sipariş olayı üret ve gönder
+for i in range(100):
+    event = {
+        "order_id": 1000 + i,                              # Tek tek artan sipariş no
+        "user_id":  random.randint(1, 50),                 # 1–50 arası rastgele müşteri
+        "city":     random.choice(cities),                 # Rastgele şehir
+        "amount":   round(random.uniform(20, 500), 2),     # 20–500 TL arası rastgele tutar
+        "ts":       datetime.utcnow().isoformat()          # UTC zaman damgası ("2025-05-17T10:23:11")
+    }
+    # producer.send(topic, key, value) → olayı buffer'a koyar (henuz ağa gitmemiş olabilir).
+    # key=user_id seçmemiz önemli: Kafka, hash(key) mod partition_count formülüyle
+    # partition seçer. Yani aynı user_id'nin tüm olayları hep AYNI partition'a gider
+    # → o kullanıcı için olay sırası (siparisşA → iade → siparisşB) korunur.
+    producer.send("orders", key=str(event["user_id"]), value=event)
+    print("→", event)
+    time.sleep(0.5)                                        # Gösterim için saniyede 2 olay
+
+producer.flush()   # Buffer'da kalan her şeyi ağa zorla yolla. Olmadan program biterse olaylar kaybolabilir.</code></pre>
+    </div>
+
+    <h3>📥 Consumer — Olay Tüketen Taraf</h3>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>from kafka import KafkaConsumer
+import json
+
+# Consumer = olayları okuyup bir şeyler yapan istemci.
+consumer = KafkaConsumer(
+    "orders",                                                  # Hangi topic'i dinleyeceğiz
+    bootstrap_servers="localhost:9092",                        # Cluster'a giriş kapısı (producer'daki ile aynı)
+    group_id="analytics-app",                                  # Consumer Group adı. Aynı grup adıyla kaç instance çalıştırırsan,
+                                                               # Kafka partition'ları onlara bölüştürür (paralelleşme).
+    auto_offset_reset="earliest",                              # Bu grup ilk kez çalışıyorsa: nereden başlayalım?
+                                                               # "earliest" = en eski olaydan; "latest" = sadece şimdiden sonra geleceklerden.
+    value_deserializer=lambda v: json.loads(v.decode("utf-8")) # byte → string → Python dict (producer'daki serializer'ın tersi)
+)
+
+total_by_city = {}   # Bellekte tutacağımız birikimli şehir cirosu
+
+# for döngüsü, Kafka'dan yeni olay geldikçe otomatik döner. Olay yoksa bloklar (bekler).
+# Bu, Spark gibi değil; "manuel" bir consumer. Ölçeklenmesi gerekiyorsa bu script'i
+# birden fazla makinede aynı group_id ile çalıştırırsın; Kafka iş paylaşımını yapar.
+for msg in consumer:
+    e = msg.value                                              # Çözülmüş dict ("order_id", "city", ...)
+    total_by_city[e["city"]] = total_by_city.get(e["city"], 0) + e["amount"]
+    print(f"📊 Şehir cirosu (anlık): {total_by_city}")
+    # NOT: Bu script offset'i otomatik commit eder (varsayılan). Yani "buraya kadar okudum"
+    # bilgisi periyodik olarak Kafka'ya yazılır. Crash olursa o noktadan devam edersin.</code></pre>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">🧪 Lokal Kafka için Hızlı Kurulum</div>
+      <div class="code-block" data-lang="bash"><pre><code># docker-compose ile tek komut
+docker run -d --name kafka -p 9092:9092 \
+  -e KAFKA_CFG_NODE_ID=1 \
+  -e KAFKA_CFG_PROCESS_ROLES=controller,broker \
+  -e KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093 \
+  -e KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 \
+  -e KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@localhost:9093 \
+  -e KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER \
+  bitnami/kafka:latest</code></pre></div>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="spark-streaming">⚡ Bölüm 5: Spark Structured Streaming</h2>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Önceki bölümden geçiş</div>
+      <p>Kafka olayları güvenle <em>taşıyor</em>, ama bizim aslında yapmak istediğimiz şey olayları <em>analiz etmek</em>: "son 5 dakikada hangi ürüne kaç kez tıklandı?", "şu anda hangi şehirde ortalama sepet ne?". Küçük consumer'ları elle yazmak yetmiyor; bize <em>sürekli akan</em> bir veri üzerinde <strong>gruplama</strong>, <strong>birleştirme (JOIN)</strong> ve <strong>zaman penceresi</strong> gibi işlemleri yapabilen bir motor lazım. İşte burada 3. bölümden tanıdığımız <strong>Spark</strong>'ı yeni bir görevde görüyoruz: aynı DataFrame API ile akış işleme. Bu fikrin güzelliği: <em>batch'te öğrendiğimiz her şey, stream'de de çalışıyor.</em></p>
+    </div>
+
+    <p>Spark, batch için kullandığımız <em>aynı DataFrame API</em>'sini stream'e de uygular. Spark'a göre <strong>akış = sonu gelmeyen DataFrame</strong>. Bu fikir devrim niteliğindeydi — aynı kodla hem geçmişi hem geleceği işleyebilirsiniz.</p>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+from pyspark.sql.types import StructType, StringType, DoubleType, IntegerType, TimestampType
+
+# SparkSession = bütün Spark API'sine giriş kapısı. Bir uygulamada bir tane olur.
+spark = SparkSession.builder.appName("realtime-sales").getOrCreate()
+
+# Kafka'da JSON olarak duran olayın şemasını önceden tanımlıyoruz.
+# (Streaming'de "infer schema" yoktur — sonsuz veri önceden taranamaz.)
+schema = (StructType()
+    .add("order_id", IntegerType())
+    .add("user_id",  IntegerType())
+    .add("city",     StringType())
+    .add("amount",   DoubleType())
+    .add("ts",       TimestampType()))
+
+# 1) KAYNAK — Kafka'dan akış olarak oku
+# readStream batch'teki read'in stream versiyonu. Sonuç "sonsuz DataFrame".
+raw = (spark.readStream
+       .format("kafka")
+       .option("kafka.bootstrap.servers", "localhost:9092")
+       .option("subscribe", "orders")           # Hangi topic? Birden fazla virgülle ayrılabilir.
+       .load())
+# raw'ın kolonları: key, value, topic, partition, offset, timestamp...
+# value şu an byte; bizim JSON'umuz orada gizli.
+
+# 2) VALUE'YU JSON OLARAK ÇÖZÜMLE
+# from_json: byte→string yaptıktan sonra şemaya göre ayıkla. e.* ile alt-alanları açıyoruz.
+events = (raw.select(F.from_json(F.col("value").cast("string"), schema).alias("e"))
+             .select("e.*"))
+
+# 3) DÖNÜŞÜM — 1 dakikalık pencerelerde şehir bazında ciro
+# withWatermark: 2 dakikadan fazla geciken olayları yok say → pencereler kapanıp RAM boşlasın.
+# F.window("ts", "1 minute"): tumbling pencere. Olayın event time'ına göre grupla.
+agg = (events
+       .withWatermark("ts", "2 minutes")
+       .groupBy(F.window("ts", "1 minute"), "city")
+       .agg(F.sum("amount").alias("ciro")))
+
+# 4) ÇIKTI — konsola yazdır
+# outputMode="update": her tetikte sadece DEĞİŞMİŞ gruplar yazılır.
+# Alternatifler: "append" (sadece yeni kapanan pencereler), "complete" (her seferinde tümü).
+query = (agg.writeStream
+         .outputMode("update")
+         .format("console")             # Gerçek hayatta: "delta", "kafka", "jdbc"...
+         .option("truncate", False)
+         .start())
+
+query.awaitTermination()   # Stream sonsuz çalışır; bu satır main thread'i bekletir.</code></pre>
+    </div>
+
+    <h3>🪟 Windowing (Pencereleme)</h3>
+
+    <p>Akan veride "<em>tüm zamanların toplam cirosu nedir?</em>" sorusunun bir cevabı yoktur — çünkü akış hiç bitmez, toplam her saniye değişir ve sonsuza gider. Onun yerine soruyu <em>zaman aralıklarına bölerek</em> sorarız: "<strong>son 1 dakikada</strong> şehir başına ciro ne?", "<strong>son 5 dakikada</strong> kaç hatalı login oldu?". Bu zaman aralıklarına <strong>pencere (window)</strong> denir. Üç ana pencere türü vardır; her biri farklı bir soruyu cevaplar:</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Tumbling (Çakışmasız)</div>
+        <div class="card-desc">
+          <p>Sabit boyutta, <em>bitince başa dönen</em> pencereler. Örneğin 5 dakikalık tumbling pencerelerde olaylar tam olarak <strong>bir</strong> pencereye düşer.</p>
+          <p><strong>Zaman çizelgesi:</strong> <code>[10:00–10:05) [10:05–10:10) [10:10–10:15)</code></p>
+          <p><strong>Örnek soru:</strong> "Her 5 dakikada bir, kaç sipariş geldi?"</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Sliding (Kayan)</div>
+        <div class="card-desc">
+          <p>Sabit boyutta ama <em>çakışan</em> pencereler. Örneğin 5 dakikalık pencere, 2 dakikada bir kayar. Bir olay <strong>birden fazla</strong> pencereye düşebilir.</p>
+          <p><strong>Zaman çizelgesi:</strong> <code>[10:00–10:05) [10:02–10:07) [10:04–10:09)</code></p>
+          <p><strong>Örnek soru:</strong> "Son 5 dakikanın ortalama yanıt süresi nedir? (Her 2 dakikada bir güncellensin.)"</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Session (Oturum)</div>
+        <div class="card-desc">
+          <p>Sabit boyutta değil! Bir kullanıcının etkinliği devam ettiği sürece pencere uzar; <em>X dakika sessizlik</em> olduğunda kapanır.</p>
+          <p><strong>Zaman çizelgesi:</strong> Ali 10:01–10:05 arası tıklıyor → 1 oturum. 5 dk sessizlikten sonra 10:11'de tekrar geliyor → yeni oturum.</p>
+          <p><strong>Örnek soru:</strong> "Bir kullanıcının ortalama oturum süresi ne kadar?"</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="diagram-container">
+      <div class="diagram-box" style="background: var(--bg-soft, #f7f8fa); padding:2rem 1.5rem;">
+        <div style="display:flex; flex-direction:column; gap:2.5rem; max-width:780px; margin:0 auto; font-size:0.85rem;">
+
+          <!-- TUMBLING -->
+          <div>
+            <div style="font-weight:700; margin-bottom:0.6rem; font-size:0.95rem;">🪟 Tumbling — 5 dk uzunluk, çakışma yok</div>
+            <!-- Timeline: 0..15 dk, her dk = 1 birim (15 birim toplam) -->
+            <div style="display:grid; grid-template-columns:repeat(15, 1fr); row-gap:4px;">
+              <!-- Pencere bantları -->
+              <div style="grid-column:1/6;  background:#3b82f6; color:white; padding:0.5rem; border-radius:6px; text-align:center;"><b>Pencere 1</b> · 10:00–10:05</div>
+              <div style="grid-column:6/11; background:#60a5fa; color:white; padding:0.5rem; border-radius:6px; text-align:center;"><b>Pencere 2</b> · 10:05–10:10</div>
+              <div style="grid-column:11/16;background:#93c5fd; color:#1e3a8a; padding:0.5rem; border-radius:6px; text-align:center;"><b>Pencere 3</b> · 10:10–10:15</div>
+              <!-- Zaman ekseni -->
+              <div style="grid-column:1/16; height:1px; background:#9ca3af; margin-top:6px;"></div>
+              <div style="grid-column:1;  text-align:left;   font-size:0.72rem; color:#6b7280;">10:00</div>
+              <div style="grid-column:6;  text-align:center; font-size:0.72rem; color:#6b7280;">10:05</div>
+              <div style="grid-column:11; text-align:center; font-size:0.72rem; color:#6b7280;">10:10</div>
+              <div style="grid-column:15; text-align:right;  font-size:0.72rem; color:#6b7280;">10:15</div>
+            </div>
+            <div style="font-style:italic; color:#555; margin-top:0.6rem;">Her olay tam olarak <b>bir</b> pencereye düşer. Pencereler birbirine değmez.</div>
+          </div>
+
+          <!-- SLIDING -->
+          <div>
+            <div style="font-weight:700; margin-bottom:0.6rem; font-size:0.95rem;">↔️ Sliding — 5 dk uzunluk, her 2 dk'da yeni pencere</div>
+            <!-- Üç pencere ayrı satırlarda; çakışma açıkça görülsün -->
+            <div style="display:grid; grid-template-columns:repeat(15, 1fr); row-gap:6px;">
+              <div style="grid-column:1/6;  background:#059669; color:white; padding:0.45rem; border-radius:6px; text-align:center;"><b>Pencere 1</b> · 10:00–10:05</div>
+              <div style="grid-column:3/8;  background:#10b981; color:white; padding:0.45rem; border-radius:6px; text-align:center;"><b>Pencere 2</b> · 10:02–10:07</div>
+              <div style="grid-column:5/10; background:#34d399; color:#064e3b; padding:0.45rem; border-radius:6px; text-align:center;"><b>Pencere 3</b> · 10:04–10:09</div>
+              <!-- 10:03'teki olay işareti -->
+              <div style="grid-column:4/5; grid-row:4; text-align:center; color:#b91c1c; font-weight:700;">▼ olay 10:03</div>
+              <div style="grid-column:1/16; height:1px; background:#9ca3af; margin-top:6px;"></div>
+              <div style="grid-column:1;  text-align:left;   font-size:0.72rem; color:#6b7280;">10:00</div>
+              <div style="grid-column:4;  text-align:center; font-size:0.72rem; color:#6b7280;">10:03</div>
+              <div style="grid-column:6;  text-align:center; font-size:0.72rem; color:#6b7280;">10:05</div>
+              <div style="grid-column:10; text-align:center; font-size:0.72rem; color:#6b7280;">10:09</div>
+            </div>
+            <div style="font-style:italic; color:#555; margin-top:0.6rem;">Pencereler <b>çakışır</b>. 10:03'teki tek bir olay aynı anda <b>Pencere 1 ve Pencere 2'ye</b> dahildir; yani iki ayrı agregada sayılır.</div>
+          </div>
+
+          <!-- SESSION -->
+          <div>
+            <div style="font-weight:700; margin-bottom:0.6rem; font-size:0.95rem;">👤 Session — sabit süre yok, sessizlik biter</div>
+            <div style="display:grid; grid-template-columns:repeat(15, 1fr); row-gap:4px;">
+              <div style="grid-column:2/6;  background:#f59e0b; color:white; padding:0.5rem; border-radius:6px; text-align:center;"><b>Oturum 1</b> · 10:01–10:05 (3 tıklama)</div>
+              <div style="grid-column:6/12; background:#e5e7eb; color:#374151; padding:0.5rem; border-radius:6px; text-align:center; border:2px dashed #9ca3af;">⏸️ Sessizlik (≥5 dk)</div>
+              <div style="grid-column:12/15;background:#fbbf24; color:white; padding:0.5rem; border-radius:6px; text-align:center;"><b>Oturum 2</b> · 10:11–10:14</div>
+              <div style="grid-column:1/16; height:1px; background:#9ca3af; margin-top:6px;"></div>
+              <div style="grid-column:1;  text-align:left;   font-size:0.72rem; color:#6b7280;">10:00</div>
+              <div style="grid-column:6;  text-align:center; font-size:0.72rem; color:#6b7280;">10:05</div>
+              <div style="grid-column:12; text-align:center; font-size:0.72rem; color:#6b7280;">10:11</div>
+              <div style="grid-column:15; text-align:right;  font-size:0.72rem; color:#6b7280;">10:15</div>
+            </div>
+            <div style="font-style:italic; color:#555; margin-top:0.6rem;">Pencere uzunluğu sabit değil; aktivite oldukça uzar, belirlenen süre kadar sessizlik olursa kapanır.</div>
+          </div>
+
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil 4: Üç ana pencere türü — tumbling (çakışmasız), sliding (çakışan), session (aktiviteye duyarlı)</div>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 Event Time vs Processing Time + Watermark</div>
+      <p>Streaming dünyasının en çok kafa karıştıran kavramıdır. Üç adımda anlatalım:</p>
+
+      <p><strong>1) İki farklı "zaman" var.</strong></p>
+      <ul>
+        <li><strong>Event time:</strong> Olayın <em>gerçekte gerçekleştiği</em> zaman. "Ali 14:32:01'de uygulamada bir butona bastı".</li>
+        <li><strong>Processing time:</strong> Olayın <em>sunucumuza ulaştığı</em> zaman. "Bu olay bizim Kafka'ya 14:35:12'de geldi".</li>
+      </ul>
+
+      <p><strong>2) Neden farklı olabilir?</strong> Mobil telefon metroda olabilir, çevrimdışıdır. Olay telefonda kuyruğa girer; cihaz tekrar ağa bağlandığında 5 dakika sonra (bazen 5 saat sonra!) sunucuya gönderilir. Bunlara <em>late event (geciken olay)</em> denir.</p>
+
+      <p><strong>3) Sorun ve çözüm: Watermark.</strong> Düşünün: "10:00–10:05 penceresindeki tıklamaları say" diyoruz. Saat 10:05'te pencereyi kapatıp sayıyı yazsak, geciken olaylar dışarıda kalır. Peki ne kadar bekleyelim? Sonsuza dek bekleyemeyiz — RAM dolar.</p>
+
+      <p><strong>Watermark</strong>, "<em>artık X dakikadan eski olaylar gelmeyecek varsayıyorum</em>" sözü vermektir. Örneğin <code>withWatermark("ts", "10 minutes")</code> dersek, Spark "10 dakikadan fazla geciken her olayı yok say" der. Pencereler bu watermark geçtikten sonra kapatılır ve hafıza serbest bırakılır. Trade-off: <em>watermark uzun = daha çok geciken yakalanır ama daha çok RAM gerekir</em>; <em>watermark kısa = az RAM, ama bazı geciken olaylar kaybolur</em>.</p>
+    </div>
+
+    <h3>🔁 Garantiler: At-most-once, At-least-once, Exactly-once</h3>
+
+    <p>Bir streaming sistemi güvenle çalışırken şu soruyu sormalısınız: <em>"Bir olay üretildi; sistemin onu işlemesi tam olarak kaç kez gerçekleşir?"</em> Cevap her zaman "tam bir kez" olur sanmayın; ağ kopabilir, makineler çökebilir. Endüstride üç olası cevap (garanti seviyesi) vardır:</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">At-most-once ("en fazla bir kez")</div>
+        <div class="card-desc">
+          <p>Olay <em>ya bir kez işlenir, ya hiç</em>. Sistem bir mesajı alıp işlemeden önce çökerse, o mesaj kaybolur — tekrar denenmez.</p>
+          <p><strong>Kullanım yeri:</strong> Veri kaybının önemli olmadığı yerler. Örneğin sosyal medya "trend olan kelimeler" dashboard'u; birkaç kelime eksik sayılsa kimse fark etmez. Pratikte nadiren tercih edilir.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">At-least-once ("en az bir kez")</div>
+        <div class="card-desc">
+          <p>Olay <em>kesinlikle işlenir, ama bazen birden fazla kez</em>. Örneğin: işleme bitti ama "onaylandı" sinyali Kafka'ya ulaşmadan makine çöktü. Sistem mesajı yeniden gönderir; bu sefer hem eski işleme hem yenisi sayılır.</p>
+          <p><strong>Sorun:</strong> Sayma açısından şişme. "<em>idempotent</em>" işler iyi çalışır (idempotent = aynı işi kaç kez yaparsanız yapın sonuç aynı kalır). Örneğin "<em>kullanıcı X'in son görülme zamanını 14:32 yap</em>" idempotent'tir; ama "<em>satıcı hesabına 100 TL ekle</em>" idempotent <em>değildir</em> — iki kez çalışırsa 200 TL eklenir.</p>
+          <p><strong>Varsayılan tercih:</strong> Kafka + ortalama bir consumer en yaygın olarak bu seviyededir.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Exactly-once ("tam olarak bir kez")</div>
+        <div class="card-desc">
+          <p>Altın standart: ne kaybolur ne tekrarlanır. Kâğıt üzerinde basit görünür ama dağıtık sistemlerde sağlamak çok zordur — ağ kopması, kısmi başarısızlık gibi durumları düzgün ele almak gerek.</p>
+          <p><strong>Nasıl yapılır?</strong> Genelde iki teknik birlikte: (1) Kafka transaction'ları ("oku + işle + yaz" tek bir atomik birim), (2) işlem sonuçlarının yazıldığı hedef sistemde her olayın eşsiz bir kimliği olması (idempotent yazma).</p>
+          <p><strong>Maliyet:</strong> Daha yavaş, daha çok kaynak tüketir. Kafka + Spark Structured Streaming, Flink veya Kafka Streams bu modu destekler.</p>
+          <p><strong>Kullanım yeri:</strong> Para hareketleri, fatura, satış kayıtları — "iki kez işlemek felaket" durumları.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">💳 Gerçek hayat örneği</div>
+      <p>Düşünün: bir bankada "ATM'den 100 TL çekme" olayı Kafka'ya yazılıyor; bir consumer da bu olayı alıp hesabı güncelliyor.</p>
+      <ul>
+        <li><em>At-most-once</em>: Müşteri para almış olabilir ama bakiye düşmemişse banka zarara uğrar. 🚫</li>
+        <li><em>At-least-once</em>: Olay iki kez işlenir; bakiye iki kere 100 düşer. Müşteri 200 ödemiş görünür. 🚫</li>
+        <li><em>Exactly-once</em>: Tek bir 100 düşüş. ✅ Bu yüzden finansal sistemler bu garanti seviyesini seçer.</li>
+      </ul>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Garanti</th><th>Anlam</th><th>Risk</th></tr></thead>
+        <tbody>
+          <tr><td><strong>At-most-once</strong></td><td>Mesaj en fazla bir kez işlenir</td><td>❌ Veri kaybı olabilir</td></tr>
+          <tr><td><strong>At-least-once</strong></td><td>Mesaj en az bir kez işlenir</td><td>⚠️ Aynı mesaj birden fazla kez işlenebilir (idempotent olmalı)</td></tr>
+          <tr><td><strong>Exactly-once</strong></td><td>Tam olarak bir kez</td><td>✅ Altın standart — Kafka + Spark/Flink ile mümkün, pahalı</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="guvenlik-giris">🛡️ Bölüm 6: Büyük Veri Güvenliği — Neden Önemli?</h2>
+
+    <p>Veri ne kadar büyürse, kötü kullanıldığında verdiği zarar da o kadar büyük. Önce <strong>dünyadan</strong>, sonra <strong>Türkiye'den</strong> gerçek vakalara bakalım.</p>
+
+    <h3 style="margin-top:0.4rem">🌍 Dünyadan büyük veri ihlalleri</h3>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">💌</div>
+        <div class="card-title">Yahoo (2013-14, keşif: 2016)</div>
+        <div class="card-desc"><strong>3 milyar</strong> hesap — tarihin en büyük ihlali. Verizon, Yahoo'yu satın alım fiyatını 350M$ düşürdü.<p style="margin-top:0.5rem; font-size:0.82rem;"><strong>Kaynak:</strong> <a href="https://en.wikipedia.org/wiki/Yahoo!_data_breaches" target="_blank" rel="noopener">Yahoo data breaches</a></p></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">💳</div>
+        <div class="card-title">Equifax (2017)</div>
+        <div class="card-desc">147 milyon Amerikalının kredi bilgisi. Yamanmamış Apache Struts açığı. 700M$ ceza + üst yönetim istifa.<p style="margin-top:0.5rem; font-size:0.82rem;"><strong>Kaynak:</strong> <a href="https://en.wikipedia.org/wiki/2017_Equifax_data_breach" target="_blank" rel="noopener">Equifax breach</a> · <a href="https://www.ftc.gov/enforcement/refunds/equifax-data-breach-settlement" target="_blank" rel="noopener">FTC settlement</a></p></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📱</div>
+        <div class="card-title">Facebook – Cambridge Analytica (2018)</div>
+        <div class="card-desc">87 milyon kullanıcının verisi onay olmadan siyasi mikro-hedefleme için kullanıldı. Brexit/Trump kampanyaları. GDPR'ı hızlandırdı.<p style="margin-top:0.5rem; font-size:0.82rem;"><strong>Kaynak:</strong> <a href="https://en.wikipedia.org/wiki/Facebook%E2%80%93Cambridge_Analytica_data_scandal" target="_blank" rel="noopener">Cambridge Analytica scandal</a></p></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏥</div>
+        <div class="card-title">Anthem (2015)</div>
+        <div class="card-desc">78 milyon sağlık kaydı. Tek bir phishing e-postası → lateral hareket → tam veritabanı. 16M$ HIPAA tazminatı.<p style="margin-top:0.5rem; font-size:0.82rem;"><strong>Kaynak:</strong> <a href="https://en.wikipedia.org/wiki/Anthem_medical_data_breach" target="_blank" rel="noopener">Anthem medical data breach</a></p></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏨</div>
+        <div class="card-title">Marriott / Starwood (2018)</div>
+        <div class="card-desc">500 milyon misafir kaydı; pasaport numaraları dahil. Satın alınan Starwood'un eski sisteminde yıllarca oturan saldırgan. GDPR cezası da aldı.<p style="margin-top:0.5rem; font-size:0.82rem;"><strong>Kaynak:</strong> <a href="https://en.wikipedia.org/wiki/Marriott_International#Data_breaches" target="_blank" rel="noopener">Marriott data breaches</a></p></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">💼</div>
+        <div class="card-title">LinkedIn (2021)</div>
+        <div class="card-desc">700 milyon profil scrape edildi (API kötüye kullanımı). "Veri zaten public'ti" savunması GDPR açısından tartışıldı.<p style="margin-top:0.5rem; font-size:0.82rem;"><strong>Kaynak:</strong> <a href="https://en.wikipedia.org/wiki/LinkedIn#Data_breaches" target="_blank" rel="noopener">LinkedIn data breaches</a></p></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📲</div>
+        <div class="card-title">T-Mobile US (2021, 2023)</div>
+        <div class="card-desc">2021'de 76M, 2023'te 37M müşteri verisi. Tekrar eden ihlaller → sektör için olumsuz emsal.<p style="margin-top:0.5rem; font-size:0.82rem;"><strong>Kaynak:</strong> <a href="https://en.wikipedia.org/wiki/T-Mobile_data_breach" target="_blank" rel="noopener">T-Mobile data breach</a></p></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📞</div>
+        <div class="card-title">Optus (Avustralya, 2022)</div>
+        <div class="card-desc">10 milyon vatandaş (nüfusun %40'ı). Açık API endpoint. Avustralya'nın veri koruma yasalarını güncellemesine yol açtı.<p style="margin-top:0.5rem; font-size:0.82rem;"><strong>Kaynak:</strong> <a href="https://en.wikipedia.org/wiki/2022_Optus_data_breach" target="_blank" rel="noopener">Optus data breach</a></p></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧬</div>
+        <div class="card-title">23andMe (2023)</div>
+        <div class="card-desc">6.9 milyon kullanıcının <em>genetik verisi</em> (etnik köken dahil). Credential stuffing. Genetik veri bir kez sızdı mı, "şifre değiştiremezsin".<p style="margin-top:0.5rem; font-size:0.82rem;"><strong>Kaynak:</strong> <a href="https://en.wikipedia.org/wiki/23andMe_data_leak" target="_blank" rel="noopener">23andMe data leak</a></p></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">❄️</div>
+        <div class="card-title">Snowflake müşterileri (2024)</div>
+        <div class="card-desc">Ticketmaster (560M), AT&amp;T (110M), Santander… MFA olmayan Snowflake hesapları üzerinden zincirleme ihlal. "Bulutta paylaşılan sorumluluk" dersinin tipik örneği.<p style="margin-top:0.5rem; font-size:0.82rem;"><strong>Kaynak:</strong> <a href="https://cloud.google.com/blog/topics/threat-intelligence/unc5537-snowflake-data-theft-extortion" target="_blank" rel="noopener">Google Cloud / Mandiant</a> · <a href="https://www.bbc.com/news/articles/cw99ql0239wo" target="_blank" rel="noopener">BBC Ticketmaster</a></p></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🚨</div>
+        <div class="card-title">MOVEit / Clop (2023)</div>
+        <div class="card-desc">MOVEit dosya transferi yazılımındaki zero-day → BBC, British Airways, Shell, ABD eyalet kurumları dahil 2.700+ organizasyon, ~95M kayıt.<p style="margin-top:0.5rem; font-size:0.82rem;"><strong>Kaynak:</strong> <a href="https://en.wikipedia.org/wiki/2023_MOVEit_data_breach" target="_blank" rel="noopener">MOVEit data breach</a></p></div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:1.2rem">🇹🇷 Türkiye'den veri ihlali ve KVKK ceza örnekleri</h3>
+
+    <p>Aşağıdaki örnekler, Türkçe basında veya ansiklopedik kaynaklarda izlenebilen veri ihlali ve ceza vakalarıdır. Bağlantılar, öğrencinin olayı doğrudan okuyabileceği haber/ansiklopedi kaynaklarına gider.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🆔</div>
+        <div class="card-title">MERNİS / vatandaş verisi sızıntısı (2016)</div>
+        <div class="card-desc">49.6 milyon vatandaşın kimlik bilgilerini içeren veri setinin internete yayıldığı iddia edildi. Olay genelde "MERNİS sızıntısı" diye anılır; ders açısından ana risk, merkezi kimlik verisinin bir kez sızınca geri alınamamasıdır.<p style="margin-top:0.5rem; font-size:0.82rem;"><strong>Kaynaklar:</strong> <a href="https://www.sozcu.com.tr/50-milyon-kimlik-bilgisi-calindi-iddiasi-wp1169450" target="_blank" rel="noopener">Sözcü</a> · <a href="https://en.wikipedia.org/wiki/2016_MERNIS_scandal" target="_blank" rel="noopener">Wikipedia</a></p></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🍕</div>
+        <div class="card-title">Yemeksepeti (2021)</div>
+        <div class="card-desc">27 Mart 2021'de yapılan açıklamaya göre yaklaşık 21.5 milyon kullanıcının ad, telefon, e-posta, adres ve bazı kullanıcı bilgilerinin ele geçirildiği bildirildi. E-ticarette teslimat verisi de kişisel veridir.<p style="margin-top:0.5rem; font-size:0.82rem;"><strong>Kaynaklar:</strong> <a href="https://tr.wikipedia.org/wiki/Yemeksepeti#Veri_ihlali" target="_blank" rel="noopener">Wikipedia TR</a> · <a href="https://www.webtekno.com/yemeksepeti-kullanici-veri-tabani-siber-saldiri-h108027.html" target="_blank" rel="noopener">Webtekno</a></p></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">💬</div>
+        <div class="card-title">WhatsApp / Meta (2021)</div>
+        <div class="card-desc">Güncellenen gizlilik politikasının açık rıza ve aydınlatma yükümlülükleri açısından değerlendirilmesi sonucu WhatsApp'a 1.95 milyon TL idari para cezası verildi. Politika metni, veri akışı kadar önemlidir.<p style="margin-top:0.5rem; font-size:0.82rem;"><strong>Kaynak:</strong> <a href="https://t24.com.tr/bilim-teknoloji/kvkk-dan-whats-app-a-1-milyon-950-bin-lira-ceza,976478" target="_blank" rel="noopener">T24</a></p></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧾</div>
+        <div class="card-title">WhatsApp / Meta VERBİS (2023)</div>
+        <div class="card-desc">KVKK, Veri Sorumluları Sicili'ne kayıt yükümlülüğünü yerine getirmediği gerekçesiyle WhatsApp ve Meta'ya toplam 5.33 milyon TL ceza verdi. Ders: sadece güvenlik açığı değil, kayıt ve beyan yükümlülüğü de veri yönetişiminin parçasıdır.<p style="margin-top:0.5rem; font-size:0.82rem;"><strong>Kaynak:</strong> <a href="https://www.marketingturkiye.com.tr/haberler/kvkk-whatsapp-ve-meta-ceza/" target="_blank" rel="noopener">Marketing Türkiye</a></p></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎮</div>
+        <div class="card-title">Twitch Türkiye kullanıcıları (2024)</div>
+        <div class="card-desc">Twitch'teki 125 GB'lık sızıntı iddiaları üzerine yapılan incelemede Türkiye'de 35.274 kişinin etkilendiği açıklandı; platforma toplam 2 milyon TL ceza verildi. Bulut/uygulama yapılandırması hatası, küresel bir olayı yerel KVKK gündemine taşıyabilir.<p style="margin-top:0.5rem; font-size:0.82rem;"><strong>Kaynaklar:</strong> <a href="https://t24.com.tr/haber/kvkk-den-twitch-e-veri-sizintisi-gerekcesiyle-para-cezasi,1196993" target="_blank" rel="noopener">T24 ceza haberi</a> · <a href="https://t24.com.tr/haber/twitch-turkiye-de-35-binden-fazla-kisiyi-etkiledigi-aciklanan-veri-sizintisiyla-ilgili-neler-biliniyor,1197081" target="_blank" rel="noopener">T24 olay özeti</a></p></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📞</div>
+        <div class="card-title">Şikayetvar / Baydöner (2026)</div>
+        <div class="card-desc">Şikayetvar'da 212 binden fazla kullanıcının; Baydöner tarafında ise yaklaşık 1.5 milyon kişinin bulunduğu veri tabanının etkilendiği bildirildi. Özellikle API anahtarı ve tedarikçi platformu gibi üçüncü taraf riskleri görünür hale geliyor.<p style="margin-top:0.5rem; font-size:0.82rem;"><strong>Kaynak:</strong> <a href="https://t24.com.tr/haber/kvkkden-veri-ihlali-bildirimi-sikayetvar-ve-baydonerde-sizinti,1306883" target="_blank" rel="noopener">T24</a></p></div>
+      </div>
+    </div>
+
+    <div class="alert alert-warning" style="margin-top:1rem">
+      <div class="alert-title">📊 Tekrar eden örüntü</div>
+      <p>Bu vakaların yaklaşık <em>%80'i</em> sofistike sıfır-gün saldırısı değil; şu üçünden biri: <strong>(1)</strong> yamanmamış açık sistem, <strong>(2)</strong> internete açık unutulmuş veritabanı / S3 bucket, <strong>(3)</strong> çalınan kimlik bilgisiyle login. Yani çoğu "yapay zeka destekli saldırı" değil, <em>ihmal</em>. İyi haber: çözümü de zor değil — MFA, patch yönetimi, "default = erişim kapalı" politikası ve audit log neredeyse hepsini kapatır.</p>
+    </div>
+
+    <div class="alert alert-danger">
+      <div class="alert-title">⚠️ Veri = Sorumluluk</div>
+      <p>Büyük veri ile çalışan bir mühendis sadece teknik biri değildir — bir <strong>vekil</strong>dir. İnsanlar size verilerini güveniyor. Bir veri sızıntısı, hayatlarını değiştirebilir (örn. eski eş tarafından bulunmak isteyen şiddet mağduru bir kadının adresinin sızması). Etik düşünmek ders konusu değil, <em>meslek koşuludur</em>.</p>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="cia">🔺 Bölüm 7: CIA Üçgeni</h2>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Önceki bölümden geçiş</div>
+      <p>Felaket vakalarını gördük — Equifax, Facebook, Anthem, MERNİS/Yemeksepeti. İyi de, bu felaketleri <em>nasıl</em> önleyebilirdik? “Güvenlik” soyut bir kelime; bir mühendis veya yönetici için bunu <em>somut hedeflere</em> indirgemek lazım. İşte burada bilgi güvenliğinin temel çerçevesi <strong>CIA Üçgeni</strong>ne geçiyoruz. Bu üçgen, "bir sistem güvenli mi?" sorusunu "şu üç özelliği sağlıyor mu?" sorusuna dönüştürür.</p>
+    </div>
+
+    <p><strong>Bilgi güvenliğinin</strong> <strong>üç ana hedefi</strong> vardır. İngilizce baş harfleri rastlantı eseri <strong>CIA</strong> kelimesini oluşturur (Amerikan istihbarat servisiyle alakası yoktur 🙂):</p>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 Önce: "Bilgi Güvenliği" Ne Demek?</div>
+      <p><strong>Bilgi güvenliği (information security / infosec)</strong>, bir kurumun sahip olduğu tüm bilgilerin (sadece dijital değil; kağıt evraklar, konuşmalar dahil) <em>yetkisiz erişim, değiştirme veya yok edilme</em>ye karşı korunması disiplinidir. CIA üçgeni bu disiplinin <em>hedeflerini</em> 3 kelimede özetler.</p>
+    </div>
+
+    <div class="diagram-container">
+      <div class="diagram-box">
+        <div class="mermaid">
+flowchart TB
+    T["🛡️ INFORMATION SECURITY"]
+    T --> C["🔒 CONFIDENTIALITY<br>(Gizlilik)<br>Sadece yetkili erişebilsin"]
+    T --> I["✅ INTEGRITY<br>(Bütünlük)<br>İzinsiz değiştirilemesin"]
+    T --> A["🟢 AVAILABILITY<br>(Erişilebilirlik)<br>İhtiyaç anında erişilebilir olsun"]
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil 5: CIA üçgeni — bilgi güvenliğinin üç ayağı</div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🔒</div>
+        <div class="card-title">Confidentiality (Gizlilik)</div>
+        <div class="card-desc">
+          <p><strong>Soru:</strong> "Bu veriyi kim okuyabilmeli?" Cevap: <em>sadece yetkili olanlar.</em></p>
+          <p><strong>Hangi senaryolarda kritik?</strong> Sağlık kayıtları, finansal işlemler, kişisel mesajlar, ticari sırlar.</p>
+          <p><strong>Mekanizmalar (katman katman):</strong></p>
+          <ul>
+            <li><strong>Şifreleme — at-rest:</strong> Veri diskte yatıyorken şifreli durur. AWS S3 SSE, disk-level encryption (LUKS, BitLocker), veritabanı TDE. Disk çalınsa bile okunamaz.</li>
+            <li><strong>Şifreleme — in-transit:</strong> Veri ağda giderken şifreli olur. <em>TLS</em> (HTTPS için), <em>VPN</em>, <em>SSH</em>. Wifi'yi dinleyen biri şifrelenmiş çöpü görür.</li>
+            <li><strong>Erişim kontrolü (RBAC / ABAC):</strong> Roller tanımlanır ("analist", "yönetici"), her rolün hangi tabloya/kolona erişebildiği yazılı olur. Snowflake/Databricks Unity Catalog tam bunun için.</li>
+            <li><strong>Ağ izolasyonu:</strong> Veritabanını internete açma; VPC içinde, sadece belli IP'lerden erişilebilir yap.</li>
+            <li><strong>Kolon-seviyesinde maskeleme:</strong> Aynı tabloyu farklı roller farklı görsün (örn. çağrı merkezi temsilcisi sadece son 4 hanesi görsün).</li>
+          </ul>
+          <p><strong>Klasik ihlal:</strong> Şifrelenmemiş veritabanı yedeğinin <em>public</em> bir S3 bucket'a yüklenmesi. 2023'te onlarca şirket böyle keşfedildi (bug bounty avcıları Shodan'da arar).</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">✅</div>
+        <div class="card-title">Integrity (Bütünlük)</div>
+        <div class="card-desc">
+          <p><strong>Soru:</strong> "Bu veri okuduğum gibi mi, yoksa biri değiştirdi mi? Değiştirdiyse anlayabilir miyim?" Cevap: <em>orijinalden sapma olmamalı, olduysa kanıtlanabilir olmalı.</em></p>
+          <p><strong>Hangi senaryolarda kritik?</strong> Bankacılık bakiyesi, tıbbi reete, hukuki kayıt, ML model eğitim verisi (kirletilmiş eğitim verisi = bozulmuş model → <em>data poisoning</em>).</p>
+          <p><strong>Mekanizmalar:</strong></p>
+          <ul>
+            <li><strong>Checksum / hash:</strong> Dosyanın SHA-256 özetini ayrı sakla; tekrar okurken yeniden hesapla, karşılaştır. Eski Git'in içindeki çalışan mekanizma da budur.</li>
+            <li><strong>Dijital imza:</strong> Hash + gönderenin özel anahtarı. Hem bütünlük hem <em>kimden geldiği</em> kanıtlanır. APT güncellemeleri, kod imzalama, e-imzalı belgeler böyle çalışır.</li>
+            <li><strong>Versiyonlama — immutable storage:</strong> Delta Lake time travel, Git, S3 Object Lock. Eski versiyon silinemez → kim ne zaman değiştirdi görülür.</li>
+            <li><strong>Audit log:</strong> Her <em>SELECT</em>/<em>UPDATE</em>/<em>DELETE</em> kim, ne zaman, hangi satırı sorusunu cevaplayan ayrı ve <em>append-only</em> bir defter. KVKK denetiminde temel kanıt.</li>
+            <li><strong>Database constraint'leri:</strong> FOREIGN KEY, UNIQUE, CHECK — yanlış veriyi en başta engelle.</li>
+          </ul>
+          <p><strong>Klasik ihlal:</strong> Bir saldırgan bankanın SQL injection açığından kendi bakiyesini 100 TL'den 1.000.000 TL'ye çıkarır; çıkışı audit log'a yansımadığı için haftalar sonra fark edilir.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🟢</div>
+        <div class="card-title">Availability (Erişilebilirlik)</div>
+        <div class="card-desc">
+          <p><strong>Soru:</strong> "Yetkili olan ihtiyaç duyduğunda sistem ayağa kalkmış mı, erişilebilir mi?" Çünkü en güvenli sistem <em>asla açılmayan</em>dır — ve faydası da yoktur.</p>
+          <p><strong>Hangi senaryolarda kritik?</strong> 112/Acil servis, ATM ağı, bankacılık uygulaması, e-imza altyapısı, e-ticarette Black Friday.</p>
+          <p><strong>Mekanizmalar:</strong></p>
+          <ul>
+            <li><strong>Replikasyon &amp; HA (High Availability):</strong> Veritabanı birden fazla makinede kopya; biri çökse diğeri devralır. PostgreSQL streaming replication, Kafka 3x replication.</li>
+            <li><strong>Yedekleme &amp; DR (Disaster Recovery):</strong> Veriyi başka bir bölgeye (örn. Frankfurt → Dublin) periyodik kopyalamak. Felaket sonrası kaç saatte ayağa kalkacakşını belirleyen iki KPI: <em>RTO</em> (Recovery Time Objective) ve <em>RPO</em> (Recovery Point Objective).</li>
+            <li><strong>Load balancer + auto-scaling:</strong> Yük arttıkça otomatik sunucu ekle, duşükçe azalt.</li>
+            <li><strong>DDoS koruma:</strong> Cloudflare, AWS Shield gibi servisler trafiği filtreler.</li>
+            <li><strong>Sağlık kontrolleri (health checks) &amp; alerting:</strong> Sorun çıktığı anda nobetciye bildirim — PagerDuty, OpsGenie.</li>
+          </ul>
+          <p><strong>Klasik ihlal:</strong> Bir hastanenin radyoloji sistemi ransomware ile şifrelenir, acil ameliyatlar 12 saat ertelenir. 2017 WannaCry saldırısında NHS (İngiltere) tam bunu yaşadı; 19.000 randevu iptal edildi.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-warning">
+      <div class="alert-title">⚖️ Üçü Arasında Denge</div>
+      <p>Bu üç hedef bazen <strong>çatışır</strong>. Gizliliği artırmak (örn. iki faktörlü kimlik doğrulama, çok katmanlı erişim) erişilebilirliği zorlaştırır. Bütünlük için her değişikliği imzalamak performansı düşürür. İyi mimar, bağlama göre <em>doğru dengeyi</em> kurar — bir banka için gizlilik öncelik, bir 112 sisteminde erişilebilirlik öncelik.</p>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="kvkk-gdpr">⚖️ Bölüm 8: KVKK ve GDPR</h2>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Önceki bölümden geçiş</div>
+      <p>CIA bize "sistemde nelere dikkat edeceğiz" sorusunun teknik cevabını verdi. Ama veri sadece bir şirketin <em>kendi işi</em> değil — içinde insanların bilgisi var. "Ben müşterimin verisini istediğim gibi kullanabilir miyim?" sorusu artık <em>yasal</em> olarak yanıtlanıyor. AB ve Türkiye'nin verdiği cevap: <strong>hayır, kurallar var</strong>. Bu bölümde bu kuralların iki en önemli kaynağını öğreniyoruz; mühendislik kararı verirken hukukun da masada oturduğunu bilmek modern bir veri profesyonelinin temel sorumluluğu.</p>
+    </div>
+
+    <p>Veri güvenliği sadece teknik değil aynı zamanda <strong>hukuki</strong> bir konudur. Avrupa Birliği <strong>GDPR</strong> (2018), Türkiye <strong>KVKK</strong> (6698 sayılı kanun, 2016) ile vatandaşın <em>kişisel veri</em> üzerindeki haklarını yasal güvence altına aldı.</p>
+
+    <div class="comparison">
+      <div class="side">
+        <div class="side-title">🇪🇺 GDPR (General Data Protection Regulation)</div>
+        <ul>
+          <li><strong>Yürürlük:</strong> 25 Mayıs 2018</li>
+          <li><strong>Kapsam:</strong> AB vatandaşlarının verisi (şirket nerede olursa olsun)</li>
+          <li><strong>Ceza:</strong> En çok 20M€ veya küresel cironun %4'ü (hangisi büyükse)</li>
+          <li><strong>Örnek ceza:</strong> Meta 1.2 milyar € (2023, ABD'ye veri transferi)</li>
+        </ul>
+      </div>
+      <div class="side">
+        <div class="side-title">🇹🇷 KVKK (Kişisel Verilerin Korunması Kanunu)</div>
+        <ul>
+          <li><strong>Yürürlük:</strong> 7 Nisan 2016 (6698 sayılı kanun)</li>
+          <li><strong>Kapsam:</strong> TR'de kişisel veri işleyen herkes</li>
+          <li><strong>Otorite:</strong> KVKK Kurulu (Kurum: KVKK)</li>
+          <li><strong>Ceza:</strong> Milyonlarca TL idari para cezası + cezai sorumluluk</li>
+          <li><strong>2024 güncellemesi:</strong> Yurt dışına veri aktarımı için "uygun güvence" sistemi</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>🔑 Temel Kavramlar</h3>
+
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Terim</th><th>Anlam</th><th>Örnek</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Kişisel Veri</strong></td><td>Belirli/belirlenebilir gerçek kişiyle ilgili her tür bilgi</td><td>Ad, e-posta, IP adresi, GPS konum, fotoğraf</td></tr>
+          <tr><td><strong>Özel Nitelikli Kişisel Veri</strong></td><td>Hassas kategori — sağlık, din, cinsel yaşam, biyometrik</td><td>Kan grubu, dini inanç, parmak izi</td></tr>
+          <tr><td><strong>Veri Sorumlusu</strong></td><td>Verinin niye/nasıl işleneceğini belirleyen taraf</td><td>Bir e-ticaret şirketi</td></tr>
+          <tr><td><strong>Veri İşleyen</strong></td><td>Sorumlu adına işlem yapan taraf</td><td>Şirketin kullandığı AWS, Mailchimp gibi sağlayıcılar</td></tr>
+          <tr><td><strong>Açık Rıza</strong></td><td>Belirli konuda, bilgilendirilmiş, özgür irade ile verilen onay</td><td>"Pazarlama e-postası göndermemize izin veriyorum" kutucuğu (önceden işaretli olmamalı!)</td></tr>
+          <tr><td><strong>Aydınlatma Yükümlülüğü</strong></td><td>Veri toplanırken kişiye amacı, kapsamı, hakları anlatma</td><td>Form altındaki "Aydınlatma Metni" linki</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>👤 Veri Sahibinin Hakları (KVKK m. 11 / GDPR Bölüm 3)</h3>
+
+    <ul class="objectives-list">
+      <li><span class="obj-icon">📩</span> Verisinin işlenip işlenmediğini öğrenme</li>
+      <li><span class="obj-icon">📄</span> İşlenmişse hangi amaçla, kime aktarıldığını öğrenme</li>
+      <li><span class="obj-icon">✏️</span> Eksik/yanlış verilerin düzeltilmesini isteme</li>
+      <li><span class="obj-icon">🗑️</span> Silinmesini/yok edilmesini isteme ("unutulma hakkı")</li>
+      <li><span class="obj-icon">📦</span> Verisinin başka bir veri sorumlusuna taşınmasını isteme (data portability)</li>
+      <li><span class="obj-icon">⚖️</span> Otomatik kararlara itiraz etme (örn. kredi reddine)</li>
+    </ul>
+
+    <h3>📐 Tasarımdan Mahremiyet — 7 İlke</h3>
+
+    <p>GDPR'ın temel ilkesi: <strong>Privacy by Design &amp; by Default</strong>. Yani mahremiyet, ürün üzerine sonradan eklenen bir özellik değil, <em>sistemin DNA'sında</em> olmalı.</p>
+
+    <div class="card-grid">
+      <div class="card"><div class="card-title">1) Veri minimizasyonu</div><div class="card-desc">Sadece <em>amacın için gerekli olan</em> veriyi topla. "Belki ileride lazım olur" diye fazladan veri biriktirmek hem yasal hem de güvenlik açısından tehlikelidir.</div></div>
+      <div class="card"><div class="card-title">2) Amaç sınırlaması</div><div class="card-desc">Hangi amaçla topladıysan o amaçla kullan. "Pazarlama" için toplanan e-posta, "kredi skorlama" için kullanılamaz.</div></div>
+      <div class="card"><div class="card-title">3) Doğruluk</div><div class="card-desc">Veri güncel ve doğru tutulmalı.</div></div>
+      <div class="card"><div class="card-title">4) Saklama süresi</div><div class="card-desc">Süresiz saklama yasak. Saklama politikası belirlenmeli.</div></div>
+      <div class="card"><div class="card-title">5) Bütünlük &amp; gizlilik</div><div class="card-desc">Teknik &amp; idari tedbirler (şifreleme, erişim kontrolü…)</div></div>
+      <div class="card"><div class="card-title">6) Hesap verebilirlik</div><div class="card-desc">Veri sorumlusu uyumluluğu <em>belgelemek</em> zorundadır.</div></div>
+      <div class="card"><div class="card-title">7) Şeffaflık</div><div class="card-desc">Veri sahibi neler olduğunu kolayca anlayabilmeli.</div></div>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">🇹🇷 VERBİS — Veri Sorumluları Sicili</div>
+      <p>Belirli ölçeğin üzerindeki Türk şirketleri <strong>VERBİS</strong>'e kayıt olmak, hangi kişisel verileri hangi amaçla işlediklerini beyan etmek zorundadır. Kayıt yapmamak veya yanlış beyan vermek başlı başına idari ceza sebebidir.</p>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="anonim">🎭 Bölüm 9: Anonimleştirme — Veriyi Güvenli Kullanmak</h2>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Önceki bölümden geçiş</div>
+      <p>KVKK ve GDPR bize "kişisel veriyi rıza olmadan işleyemezsin, ama anonimleştirilmişse istisna" diyor. Peki <em>anonimleştirme</em> tam olarak ne demek? Adı silmek yeter mi? Cevap: <strong>hayır, ve bunun nedeni çok ilginç</strong>. Bu bölüm hem hukuki "anonim" çıtasını hem de tekrar tanımlama (re-identification) saldırılarını açıklar; gerçek hayatta isim silinmiş bir veri setinden Netflix kullanıcılarının nasıl tekrar tanımlandığını göreceğiz.</p>
+    </div>
+
+    <p>"Bu veriyi araştırmacılarla paylaşmak istiyorum ama kullanıcılarımın kimliğini açığa çıkarmadan…" — yaygın bir ihtiyaç. Bunu çözmek sandığınızdan zordur.</p>
+
+    <div class="glossary">
+      <div class="glossary-title">📖 Önce: "Tanımlayıcı" türleri</div>
+      <dl>
+        <dt>Doğrudan tanımlayıcı (direct identifier)</dt><dd>Tek başına sizi tanımlar: TC kimlik, ad-soyad, e-posta, telefon.</dd>
+        <dt>Yarı-tanımlayıcı (quasi-identifier)</dt><dd>Tek başına yetmez ama <em>kombinasyon</em> yaptığınızda sizi tanımlar: yaş + cinsiyet + posta kodu.</dd>
+        <dt>Hassas öznitelik (sensitive attribute)</dt><dd>Korumak istediğimiz bilgi: maaş, hastalık, siyasi görüş.</dd>
+      </dl>
+    </div>
+
+    <h3>🆚 Pseudonymization vs Anonymization</h3>
+
+    <div class="comparison">
+      <div class="side">
+        <div class="side-title">🎭 Pseudonymization (Takma Adlandırma)</div>
+        <p>Kimlik bilgisi <strong>tersine çevrilebilir</strong> bir takma adla değiştirilir. Anahtar ayrı saklanır → istenirse geri açılabilir.</p>
+        <ul>
+          <li>Hâlâ <strong>kişisel veri</strong> sayılır (KVKK/GDPR kapsamında)</li>
+          <li>Örnek: <code>"ahmet@example.com" → "user_8f3a2b"</code></li>
+        </ul>
+      </div>
+      <div class="side">
+        <div class="side-title">🫥 Anonymization (Anonimleştirme)</div>
+        <p>Veri <strong>geri döndürülemez</strong> şekilde değiştirilir. Hiçbir kombinasyonla kimliğe ulaşılamamalıdır.</p>
+        <ul>
+          <li>KVKK/GDPR kapsamı <strong>dışına</strong> çıkar</li>
+          <li>Çok zordur — naive yöntemler kolayca kırılır</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="alert alert-danger">
+      <div class="alert-title">🚨 "Anonim" Sandığımız Veri Aslında Anonim Değil</div>
+      <p>Netflix 2006'da 500.000 kullanıcının izleme geçmişini "anonim" olarak yayınladı. Araştırmacılar IMDb yorumlarıyla çapraz eşleştirerek <strong>%99 doğrulukla</strong> bireyleri yeniden tanımlayabildi (Narayanan &amp; Shmatikov, 2008). Latanya Sweeney ise sadece <em>posta kodu + cinsiyet + doğum tarihi</em> ile ABD nüfusunun <strong>%87'sinin</strong> tek olarak tanımlanabildiğini gösterdi.</p>
+    </div>
+
+    <h3>🛠️ Teknikler</h3>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🎭</div>
+        <div class="card-title">Masking / Redaction</div>
+        <div class="card-desc"><code>53401234****1234</code> gibi kısmi gizleme. UI'de yaygın.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔐</div>
+        <div class="card-title">Hash (one-way)</div>
+        <div class="card-desc">SHA-256 ile değer hash'lenir. Tek yönlüdür. Dikkat: <em>rainbow table</em>'a karşı <strong>salt</strong> şart!</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🪣</div>
+        <div class="card-title">Generalization / Binning</div>
+        <div class="card-desc">"32 yaşında" → "30-35 yaş bandı". Yaş, gelir, konum için.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">👥</div>
+        <div class="card-title">k-Anonymity</div>
+        <div class="card-desc">Her satırın en az <em>k-1</em> başka satırla aynı yarı-tanımlayıcılara sahip olmasını sağla. <em>k=5</em> → her kombinasyondan en az 5 kişi.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎲</div>
+        <div class="card-title">Differential Privacy</div>
+        <div class="card-desc">Sonuçlara <strong>kontrollü gürültü</strong> ekle. Bir bireyin verisinin sonucu <em>kayda değer ölçüde</em> değiştirmediğini matematiksel olarak garanti eder. Apple, Google, US Census kullanıyor.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧪</div>
+        <div class="card-title">Synthetic Data</div>
+        <div class="card-desc">Gerçek veriden üretilmiş, istatistiksel olarak benzer ama hiçbir gerçek satıra denk gelmeyen yapay veri. GAN/VAE modelleriyle.</div>
+      </div>
+    </div>
+
+    <h3>🐍 Mini Uygulama 1: Hashing + Binning</h3>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import pandas as pd
+import hashlib, os
+
+# SALT = hash'e eklenen "gizli tuz". Olmazsa: saldırgan "rainbow table" ile
+# milyonlarca TC'nin SHA-256'ını önceden hesaplayıp eşleyebilir. Salt ekleyince
+# o hazır tablolar işe yaramaz. Salt'ı koda göm, ortam değişkeninde sakla.
+SALT = os.environ.get("PSEUDONYM_SALT", "ders-2025-bdt").encode()
+
+def pseudonymize(value: str) -> str:
+    """Geriye döndürülemez ama tutarlı takma ad.
+    Tutarlı = aynı girdi her zaman aynı çıktı (JOIN yapabilesin diye).
+    Geri dönülemez = kaçışla TC'yi geri çevirmek matematiksel olarak imkansız.
+    """
+    # SHA-256 özetinin ilk 12 hex karakteri (~48 bit) yeter; çarpışma olasılığı düşük.
+    return hashlib.sha256(SALT + str(value).encode()).hexdigest()[:12]
+
+# Örnek ham veri (KVKK kapsamında "kişisel veri")
+df = pd.DataFrame({
+    "tc":    ["12345678901", "98765432109", "55555555555"],   # doğrudan tanımlayıcı
+    "ad":    ["Ali Veli", "Ayşe Yılmaz", "Mehmet Demir"],         # doğrudan tanımlayıcı
+    "yas":   [27, 34, 41],                                       # yarı-tanımlayıcı (quasi-id)
+    "sehir": ["Ankara", "İstanbul", "İzmir"],                     # yarı-tanımlayıcı
+    "maas":  [25000, 45000, 38000],                              # hassas öznitelik
+})
+
+# 1) DOĞRUDAN TANIMLAYICILAR — ya pseudonymize et ya sil
+# tc'yi hash'le (analiz için tek bir "user_id" kalmalı ki ileride JOIN edebilelim)
+df["user_id"] = df["tc"].apply(pseudonymize)
+# Ad gerek yok, tamamen at → tekrar tanımlama riskini azaltır.
+df = df.drop(columns=["tc", "ad"])
+
+# 2) YARI-TANIMLAYICILAR — generalization (binning)
+# Tek tek yaş değeri tutmak gereksiz, k-anonymity'i kırıyor.
+# 10'luk bantlara koy: 27 → "20-29", 34 → "30-39".
+def yas_band(y):
+    return f"{(y//10)*10}-{(y//10)*10+9}"
+df["yas_band"] = df["yas"].apply(yas_band)
+df = df.drop(columns=["yas"])
+
+# 3) HASSAS KOLON — differential privacy benzeri gürültü
+# Maaşa Gaussian gürültü (örn. σ=2000 TL) ekle, sonra 100'lük yuvarla.
+# Tek bir kişinin etkisi gürültüye "kaybolur", agregat ortalama hala anlamlı kalır.
+import numpy as np
+np.random.seed(42)
+df["maas_anonim"] = (df["maas"] + np.random.normal(0, 2000, len(df))).round(-2)
+df = df.drop(columns=["maas"])
+
+print(df)
+# Sonuç: ne ad ne TC; yaş bant halinde; maaş gürültülü. user_id ile yeni
+# veri geldiğinde tutarlı şekilde birleştirebilirsin — ama gerçek kimliğe dönemezsin.</code></pre>
+    </div>
+
+    <h3 style="margin-top:1rem">📦 Python'da işe yarayan kütüphaneler</h3>
+
+    <p>"Anonimleştirme" tek bir kütüphane değil, bir <em>aracı kutusudur</em>. Hangi işi yapmak istediğine göre farklı çıkarır:</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🔐</div>
+        <div class="card-title">hashlib (built-in)</div>
+        <div class="card-desc">Standart kütüphane. SHA-256 / SHA-512 / BLAKE2 hash'leri. Pseudonymization için temel taş. Mutlaka <strong>salt</strong> ile kullan; parolalar için <code>hashlib.scrypt</code> veya <code>bcrypt</code>/<code>argon2</code> tercih et.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎭</div>
+        <div class="card-title">Faker</div>
+        <div class="card-desc"><code>pip install Faker</code>. Gerçekçi sahte ad, soyad, adres, e-posta, TC kimlik, telefon üretir (Turkish locale destekli: <code>Faker("tr_TR")</code>). Test/demo ortamında gerçek veriyi <em>sahte</em>siyle değiştirmek için standart çözüm.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔍</div>
+        <div class="card-title">Microsoft Presidio</div>
+        <div class="card-desc">Açık kaynak. Serbest metinde (örn. müşteri yorumu, e-posta gövdesi) PII'ı NER + regex ile otomatik bulur ve maskeler. "<em>Ben Ayşe, telefonum 0532…</em>" → "<em>Ben &lt;NAME&gt;, telefonum &lt;PHONE&gt;…</em>". Güncel projeler için standart hale geldi.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <div class="card-title">anonympy</div>
+        <div class="card-desc">DataFrame'lere doğrudan anonimleştirme uygulayan kütüphane (maskeleme, generalization, k-anonymity). Pandas DataFrame alır, anonimleşmiş DataFrame döner.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔑</div>
+        <div class="card-title">pycryptodome / cryptography</div>
+        <div class="card-desc">AES (simetrik) ve RSA (asimetrik) şifreleme. Anonimleştirme yerine <em>geri döndürülebilir</em> koruma istiyorsan (KVKK'da bu "pseudonymization" sayılır, anonim değil). AWS KMS, Azure Key Vault gibi anahtar yönetim servisleriyle birlikte kullanılır.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎲</div>
+        <div class="card-title">IBM diffprivlib</div>
+        <div class="card-desc"><code>pip install diffprivlib</code>. Differential privacy ile <em>istatistik</em> ve <em>ML</em> (ortalama, histogram, lojistik regresyon, k-means). ε (epsilon) parametresi gürültü miktarını belirler: küçük ε = daha çok mahremiyet, daha az doğruluk.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔥</div>
+        <div class="card-title">Opacus (PyTorch)</div>
+        <div class="card-desc">Facebook/Meta'nın kütüphanesi. PyTorch ile eğitim sırasında her gradient adımına DP gürültüsü ekler. "Modelimi hassas veride eğitiyorum ve membership inference saldırısına karşı korumak istiyorum" senaryosu için.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧮</div>
+        <div class="card-title">tensorflow-privacy</div>
+        <div class="card-desc">Opacus'un TensorFlow/Keras versiyonu. <code>DPKerasSGDOptimizer</code> ile mevcut Keras kodunu birkaç satır değişiklikle DP-uyumlu yapar. ABD Census ve Google tarafından kullanılıyor.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧬</div>
+        <div class="card-title">SDV (Synthetic Data Vault)</div>
+        <div class="card-desc">Tabloları GAN / Copula / VAE ile öğrenip <em>istatistiksel olarak benzer</em> sentetik veri üretir. Hiçbir satır gerçek bir müşteriye denk gelmez; demo, model eğitimi, ortak çalışma için idealdir.</div>
+      </div>
+    </div>
+
+    <h3>🤖 Mini Uygulama 2: Scikit-learn Pipeline'ında Anonim Veriyle Modelleme</h3>
+
+    <p>Anonimleştirilmiş veri üzerinde de makine öğrenmesi yapabiliriz. Önemli olan <em>modelin eğitildiği veri</em> ve <em>tahmin için aldığı veri</em>nin aynı şekilde dönüştürülmesi (scikit-learn <code>Pipeline</code> bunu sağlar).</p>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+import pandas as pd, numpy as np, hashlib
+
+# --- 1) ANONİMLEŞTİRİCİ FONKSİYONLAR
+def hash_id(s, salt=b"x"):
+    # SHA-256 → hex → ilk 10 karakter. Salt mutlaka ortam değişkenden gelmeli
+    # (burada demo için sabit b"x" kullanıldı; üretimde ASLA böyle yapma).
+    return hashlib.sha256(salt + str(s).encode()).hexdigest()[:10]
+
+def anonimize(df):
+    df = df.copy()
+    df["user_id"] = df["user_id"].apply(hash_id)          # pseudonymize: 17 → "a8f3..."
+    df["yas_band"] = (df["yas"] // 5 * 5).astype(str)      # binning: 27 → "25", 34 → "30"
+    return df.drop(columns=["yas"])                        # ham yaşı at; sadece bant kalsın
+
+# --- 2) SENTETİK MÜŞTERİ VERİSİ (gerçek veri kullanmadan demo)
+rng = np.random.default_rng(0)
+raw = pd.DataFrame({
+    "user_id":  range(1000),                                             # 0..999 kişi
+    "yas":      rng.integers(18, 70, 1000),                              # 18-69 arası yaş
+    "sehir":    rng.choice(["Ankara","İstanbul","İzmir"], 1000),         # 3 şehirden biri
+    "harcama":  rng.normal(500, 150, 1000),                              # ort 500, std 150
+    "churn":    rng.integers(0, 2, 1000),                                # hedef: ayrıldı mı (0/1)
+})
+data = anonimize(raw)   # Önce anonimleştir; sonra modeli anonim veriyle eğit.
+
+X = data[["yas_band","sehir","harcama"]]   # öznitelikler (anonim)
+y = data["churn"]                            # hedef
+
+# Veriyi eğitim/test olarak ayır (modeli görmediği veride doğruluyoruz)
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, random_state=0)
+
+# --- 3) PIPELINE: önce dönüştür, sonra modele ver
+# ColumnTransformer: hangi kolon hangi işlemden geçsin?
+#   - kategorik (yas_band, sehir) → OneHotEncoder (her değeri ayrı 0/1 kolonu yap)
+#   - sayısal   (harcama)         → StandardScaler (ortalama=0, std=1'e ölçekle)
+# Pipeline: "önce dönüştür (pre), sonra sınıflandır (clf)".
+# Avantaj: tek bir nesne — .fit() / .predict() aynı şekilde çalışır,
+# test verisine aynı dönüşümü otomatik uygular (data leakage olmaz).
+pre = ColumnTransformer([
+    ("cat", OneHotEncoder(handle_unknown="ignore"), ["yas_band","sehir"]),
+    ("num", StandardScaler(),                       ["harcama"]),
+])
+pipe = Pipeline([("pre", pre), ("clf", LogisticRegression(max_iter=500))])
+
+pipe.fit(X_tr, y_tr)                              # eğitim seti üzerinde öğren
+print("Test doğruluğu:", pipe.score(X_te, y_te))  # görmediği veride performans</code></pre>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 ML Modelleri de Kişisel Veri Sızdırabilir</div>
+      <p>Modeller eğitim verisini "ezberleyebilir". Bir saldırgan modeli sorgulayarak eğitim setindeki bireyleri çıkarabilir (<em>membership inference attack</em>). Hassas veri ile eğitilen modeller için <strong>differential privacy</strong> destekli eğitim (örn. <code>opacus</code>, <code>tensorflow-privacy</code>) düşünülmelidir.</p>
+    </div>
+
+    <h3>📋 Pratik Kontrol Listesi</h3>
+
+    <div class="alert alert-success">
+      <div class="alert-title">✅ Yeni Bir Veri Setiyle Çalışmaya Başlamadan Önce</div>
+      <ul style="list-style:none; padding-left:0;">
+        <li style="margin:0.35rem 0;"><span style="display:inline-block; width:1.3em;">▢</span> Bu veride kişisel veri var mı? Özel nitelikli mi?</li>
+        <li style="margin:0.35rem 0;"><span style="display:inline-block; width:1.3em;">▢</span> Hangi yasal dayanakla işliyorum? (açık rıza, sözleşme, meşru menfaat…)</li>
+        <li style="margin:0.35rem 0;"><span style="display:inline-block; width:1.3em;">▢</span> Aydınlatma metni hazır mı?</li>
+        <li style="margin:0.35rem 0;"><span style="display:inline-block; width:1.3em;">▢</span> Saklama süresi belirlendi mi? Otomatik silme kuralı var mı?</li>
+        <li style="margin:0.35rem 0;"><span style="display:inline-block; width:1.3em;">▢</span> Şifreleme: at-rest ve in-transit aktif mi?</li>
+        <li style="margin:0.35rem 0;"><span style="display:inline-block; width:1.3em;">▢</span> Erişim minimum yetki prensibine göre verildi mi?</li>
+        <li style="margin:0.35rem 0;"><span style="display:inline-block; width:1.3em;">▢</span> Audit log tutuluyor mu?</li>
+        <li style="margin:0.35rem 0;"><span style="display:inline-block; width:1.3em;">▢</span> Üçüncü taraflara aktarım varsa veri işleyen sözleşmesi imzalı mı?</li>
+        <li style="margin:0.35rem 0;"><span style="display:inline-block; width:1.3em;">▢</span> Bu veri için anonimleştirme / pseudonymization gerekiyor mu?</li>
+        <li style="margin:0.35rem 0;"><span style="display:inline-block; width:1.3em;">▢</span> Veri ihlali olursa müdahale planımız var mı? (KVKK'ya 72 saat içinde bildirim!)</li>
+      </ul>
+    </div>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <h2 id="ozet">📝 Özet</h2>
+
+    <div class="alert alert-success">
+      <div class="alert-title">🎓 Bu Hafta Ne Öğrendik?</div>
+      <ul>
+        <li><strong>Stream vs Batch:</strong> "Gece çalış" yetmediğinde — dolandırıcılık, IoT, canlı dashboard için <em>akış işleme</em> şart.</li>
+        <li><strong>Kafka:</strong> Append-only log mantığıyla çalışan, dağıtık, kalıcı, replay edilebilir mesajlaşma omurgası.</li>
+        <li><strong>Spark Structured Streaming:</strong> DataFrame API'siyle akışı sonu gelmeyen tablo gibi işle; windowing + watermark.</li>
+        <li><strong>CIA:</strong> Confidentiality + Integrity + Availability — bilgi güvenliğinin üç temeli.</li>
+        <li><strong>KVKK / GDPR:</strong> Veriyi <em>yasal</em> ve <em>etik</em> kullanmanın çerçevesi. Veri minimizasyonu, açık rıza, aydınlatma.</li>
+        <li><strong>Anonimleştirme:</strong> "Anonim" demek kolay, yapmak zor. Pseudonymization, hashing+salt, k-anonymity, differential privacy.</li>
+      </ul>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">📚 Daha Fazla Okuma (Opsiyonel)</div>
+      <ul>
+        <li><a href="https://kafka.apache.org/documentation/" target="_blank">Apache Kafka — Documentation</a></li>
+        <li><a href="https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html" target="_blank">Spark Structured Streaming Guide</a></li>
+        <li><a href="https://tr.wikipedia.org/wiki/Ki%C5%9Fisel_Verilerin_Korunmas%C4%B1_Kanunu" target="_blank" rel="noopener">Kişisel Verilerin Korunması Kanunu — Vikipedi</a></li>
+        <li><a href="https://gdpr-info.eu/" target="_blank">GDPR Full Text (EN)</a></li>
+        <li><a href="https://desfontain.es/privacy/differential-privacy-awesomeness.html" target="_blank">Differential Privacy — Friendly Intro</a></li>
+        <li>Narayanan &amp; Shmatikov (2008) — "Robust De-anonymization of Large Sparse Datasets" (Netflix Prize çalışması)</li>
+        <li><a href="https://jakevdp.github.io/PythonDataScienceHandbook/" target="_blank">Python Data Science Handbook — Pandas &amp; Matplotlib (okuma ödevi)</a></li>
+      </ul>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🤔 Düşünme Soruları</div>
+      <ol>
+        <li>Bir teslimat şirketi (örn. Yemeksepeti) için hangi olaylar Kafka'ya yazılmalı? Hangi consumer'lar bunları nasıl tüketir?</li>
+        <li>Bir bankanın "5 dakika içinde aynı kartla 3 farklı şehirden işlem" kuralını Spark Structured Streaming ile nasıl yazarsınız? Hangi window türünü seçersiniz?</li>
+        <li>Sağlık verisiyle çalışan bir araştırma ekibi için verileri nasıl anonimleştirirsiniz? k-anonymity'de k değerini nasıl seçersiniz?</li>
+        <li>"Açık rıza" ile "meşru menfaat" arasındaki fark nedir? Hangi durumda hangisi tercih edilir?</li>
+        <li>Bir e-ticaret sitesinde kullanıcının "unutulma hakkı" talebi geldiğinde, verisi kaç farklı sistemden silinmelidir? (CDC, yedekler, log'lar, ML model eğitim setleri…)</li>
+      </ol>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="hafta3.html">← Bölüm 3: ETL & PySpark</a>
+    <a href="uygulamalar2.html">🧪 Uygulamalar →</a>
+  </div>
+  <p class="footer-text">Büyük Veri Teknolojileri Ders Notları — 2025-2026 Bahar Dönemi</p>
+</footer>
+
+<!-- Scroll to Top -->
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<!-- Pyodide Status -->
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python motoru yükleniyor...</span>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
