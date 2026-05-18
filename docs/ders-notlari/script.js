@@ -285,6 +285,24 @@ function initMermaid() {
       theme: isDark ? 'dark' : 'default',
       securityLevel: 'loose',
       fontFamily: 'Inter, sans-serif',
+      fontSize: 16,
+      flowchart: {
+        useMaxWidth: true,
+        htmlLabels: true,
+        curve: 'basis',
+        nodeSpacing: 60,
+        rankSpacing: 70,
+        padding: 20,
+      },
+      gantt: {
+        useMaxWidth: true,
+        fontSize: 14,
+        barHeight: 24,
+        barGap: 6,
+      },
+      themeVariables: {
+        fontSize: '16px',
+      },
     });
   }
 }

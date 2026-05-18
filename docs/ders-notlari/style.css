@@ -704,7 +704,7 @@ body {
 
 /* --- Diagram Container --- */
 .diagram-container {
-  margin: 1.5rem 0;
+  margin: 2rem 0;
   text-align: center;
 }
 
@@ -712,22 +712,80 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
-  padding: 1.5rem;
-  display: inline-block;
+  padding: 1.75rem 1.25rem;
+  display: block;
   box-shadow: var(--shadow-sm);
-  max-width: 100%;
+  width: 100%;
   overflow-x: auto;
 }
 
 .diagram-container .diagram-caption {
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   color: var(--text-muted);
-  margin-top: 0.75rem;
+  margin-top: 0.85rem;
   font-style: italic;
+}
+
+/* Mermaid: büyüt, ortala, okunaklı yap */
+.mermaid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 280px;
+  font-size: 1rem !important;
+}
+.mermaid svg {
+  width: 100% !important;
+  max-width: 1000px !important;
+  height: auto !important;
+  min-height: 280px;
+}
+.mermaid .nodeLabel,
+.mermaid .edgeLabel,
+.mermaid .label {
+  font-size: 15px !important;
+  font-family: 'Inter', sans-serif !important;
 }
 
 /* Mermaid overrides for dark mode */
 [data-theme="dark"] .mermaid text { fill: var(--text-primary) !important; }
+
+/* --- Glossary / "İlk kez duyuyorsan" kutusu --- */
+.glossary {
+  background: var(--bg-tip);
+  border-left: 4px solid var(--tip-border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin: 1rem 0 1.5rem;
+  font-size: 0.95rem;
+}
+.glossary .glossary-title {
+  font-weight: 700;
+  color: var(--tip-border);
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.glossary dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.4rem 1rem;
+}
+.glossary dt {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.glossary dd {
+  margin: 0;
+  color: var(--text-secondary);
+}
+@media (max-width: 640px) {
+  .glossary dl { grid-template-columns: 1fr; }
+  .glossary dd { margin-bottom: 0.4rem; }
+}
 
 /* --- Progress Bar (for objectives) --- */
 .objectives-list {
