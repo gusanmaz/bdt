@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gauss Karışımları — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="05-sklearn" data-section="12-gaussian-mixtures" data-preload-numpy="true" data-preload-pandas="true" data-preload-matplotlib="true" data-preload-sklearn="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.12-gaussian-mixtures.html" target="_blank" rel="noopener">05.12 Gaussian Mixtures</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>5.12 Derinlemesine: Gauss Karışımları</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.12-gaussian-mixtures.html" target="_blank" rel="noopener">05.12 Gaussian Mixtures</a></em></p>
+    <p>Önceki bölümde incelediğimiz <em>k</em>-means kümeleme modeli basit ve anlaşılması nispeten kolaydır; ancak bu basitlik uygulamada pratik zorluklara yol açar. Özellikle <em>k</em>-means'in olasılıksal olmaması ve küme merkezine basit uzaklıkla üyelik ataması, birçok gerçek dünya durumunda zayıf performansa neden olur.</p>
+    <p>Bu bölümde Gauss karışım modellerine bakacağız; bunlar <em>k</em>-means fikirlerinin bir uzantısı olarak görülebilir, aynı zamanda basit kümelemenin ötesinde güçlü bir tahmin aracı da olabilir.</p>
+    <p>Standart içe aktarmalarla başlayalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="imports_gmm.py">
+      <pre><code>%matplotlib inline
+import matplotlib.pyplot as plt
+plt.style.use(&#x27;seaborn-whitegrid&#x27;)
+import numpy as np</code></pre>
+    </div>
+
+    <h2 id="kmeans-zayiflik">Gauss Karışımlarını Motive Etmek: k-Means'in Zayıflıkları</h2>
+
+    <div class="code-block" data-lang="python" data-filename="make_blobs_gmm.py">
+      <pre><code># Generate some data
+from sklearn.datasets import make_blobs
+X, y_true = make_blobs(n_samples=400, centers=4,
+                       cluster_std=0.60, random_state=0)
+X = X[:, ::-1] # flip axes for better plotting</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="kmeans_labels_plot.py">
+      <pre><code># Plot the data with k-means labels
+from sklearn.cluster import KMeans
+kmeans = KMeans(4, random_state=0)
+labels = kmeans.fit(X).predict(X)
+plt.scatter(X[:, 0], X[:, 1], c=labels, s=40, cmap=&#x27;viridis&#x27;);</code></pre>
+    </div>
+
+    <p>Sezgisel olarak bazı noktalar için küme atamasının diğerlerinden daha kesin olmasını bekleriz: ortadaki iki küme arasında hafif örtüşme var gibi görünüyor; aralarındaki noktaların küme atamasına tam güvenmeyebiliriz. Ne yazık ki <em>k</em>-means modelinin küme atamalarının olasılık veya belirsizliğini ölçen içsel bir ölçüsü yoktur (bootstrap ile tahmin edilebilir). Bunun için modeli genelleştirmeyi düşünmeliyiz.</p>
+    <p><em>k</em>-means modelini, her kümenin merkezine bir daire (yüksek boyutlarda hiperküre) yerleştiren ve yarıçapını kümedeki en uzak noktayla tanımlayan bir model olarak düşünebiliriz. Bu yarıçap eğitim kümesinde sert bir kesim görevi görür: daire dışındaki noktalar küme üyesi sayılmaz. Bu küme modelini aşağıdaki fonksiyonla görselleştirebiliriz (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="plot_kmeans_fn.py">
+      <pre><code>from sklearn.cluster import KMeans
+from scipy.spatial.distance import cdist
+
+def plot_kmeans(kmeans, X, n_clusters=4, rseed=0, ax=None):
+    labels = kmeans.fit_predict(X)
+
+    # plot the input data
+    ax = ax or plt.gca()
+    ax.axis(&#x27;equal&#x27;)
+    ax.scatter(X[:, 0], X[:, 1], c=labels, s=40, cmap=&#x27;viridis&#x27;, zorder=2)
+
+    # plot the representation of the KMeans model
+    centers = kmeans.cluster_centers_
+    radii = [cdist(X[labels == i], [center]).max()
+             for i, center in enumerate(centers)]
+    for c, r in zip(centers, radii):
+        ax.add_patch(plt.Circle(c, r, ec=&#x27;black&#x27;, fc=&#x27;lightgray&#x27;,
+                                lw=3, alpha=0.5, zorder=1))</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="kmeans_circles.py">
+      <pre><code>kmeans = KMeans(n_clusters=4, random_state=0)
+plot_kmeans(kmeans, X)</code></pre>
+    </div>
+
+    <p><em>k</em>-means için önemli bir gözlem: bu küme modelleri <em>dairesel olmak zorundadır</em> — <em>k</em>-means elips veya uzun kümeleri hesaba katamaz. Aynı veriyi dönüştürürsek küme atamaları karışır (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="kmeans_stretched.py">
+      <pre><code>rng = np.random.RandomState(13)
+X_stretched = np.dot(X, rng.randn(2, 2))
+
+kmeans = KMeans(n_clusters=4, random_state=0)
+plot_kmeans(kmeans, X_stretched)</code></pre>
+    </div>
+
+    <p>Gözle bu dönüştürülmüş kümelerin dairesel olmadığını görürüz; dairesel kümeler kötü bir uyum olur. Yine de <em>k</em>-means buna uyum sağlayamaz ve veriyi dört dairesel kümeye zorlar; sonuçta daireler örtüşür — özellikle grafiğin sağ alt köşesine bakın.</p>
+    <p>Bu özel durumu PCA ile ön işlemeyle ele almayı düşünebiliriz (bkz. <a href="09-principal-component-analysis.html">5.9 PCA</a>); ancak pratikte böyle küresel bir işlemin bireysel grupları daireselleştireceğinin garantisi yoktur.</p>
+    <p><em>k</em>-means'in bu iki dezavantajı — küme şeklinde esneklik eksikliği ve olasılıksal atama eksikliği — birçok veri kümesinde (özellikle düşük boyutlu) umut ettiğiniz kadar iyi performans vermeyebileceği anlamına gelir.</p>
+    <p>Belirsizliği, her noktanın yalnızca en yakın merkeze değil <em>tüm</em> küme merkezlerine uzaklıklarını karşılaştırarak ölçerek; küme sınırlarının daire yerine elips olmasına izin vererek genelleştirebilirsiniz. Bunlar Gauss karışım modellerinin iki temel bileşenidir.</p>
+
+    <h2 id="gmm-genelleme">E–M'yi Genelleştirmek: Gauss Karışım Modelleri</h2>
+    <p>Gauss karışım modeli (GMM), girdi veri kümesini en iyi modelleyen çok boyutlu Gauss olasılık dağılımları karışımını bulmaya çalışır. En basit durumda GMM, <em>k</em>-means ile aynı şekilde küme bulmak için kullanılabilir (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="gmm_fit_predict.py">
+      <pre><code>from sklearn.mixture import GaussianMixture
+gmm = GaussianMixture(n_components=4).fit(X)
+labels = gmm.predict(X)
+plt.scatter(X[:, 0], X[:, 1], c=labels, s=40, cmap=&#x27;viridis&#x27;);</code></pre>
+    </div>
+
+    <p>Ancak GMM kaputun altında olasılıksal bir model içerdiğinden, olasılıksal küme atamaları da bulunabilir — Scikit-Learn'de <code>predict_proba</code> yöntemiyle. Bu, herhangi bir noktanın verilen kümeye ait olasılığını ölçen <code>[n_samples, n_clusters]</code> boyutunda bir matris döndürür:</p>
+
+    <div class="code-block" data-lang="python" data-filename="gmm_predict_proba.py">
+      <pre><code>probs = gmm.predict_proba(X)
+print(probs[:5].round(3))</code></pre>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 </div>
+      <p>GMM ile olasılıksal küme atamasını inceleyin:</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_gmm_proba.py">
+      <pre><code>import numpy as np
+from sklearn.mixture import GaussianMixture
+from sklearn.datasets import make_blobs
+X, _ = make_blobs(n_samples=200, centers=3, random_state=0)
+gmm = GaussianMixture(n_components=3, random_state=0).fit(X)
+print(gmm.predict_proba(X[:3]).round(3))</code></pre>
+    </div>
+
+    </div>
+
+
+    <p>Bu belirsizliği, örneğin her noktanın boyutunu tahmin kesinliğiyle orantılı yaparak görselleştirebiliriz; aşağıdaki şekilde kümeler arasındaki sınırdaki noktaların tam da bu atama belirsizliğini yansıttığını görürüz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="gmm_uncertainty_size.py">
+      <pre><code>size = 50 * probs.max(1) ** 2  # square emphasizes differences
+plt.scatter(X[:, 0], X[:, 1], c=labels, cmap=&#x27;viridis&#x27;, s=size);</code></pre>
+    </div>
+
+    <p>Kaputun altında Gauss karışım modeli <em>k</em>-means'e çok benzer: beklenti–maksimizasyon kullanır; nitel olarak şunları yapar:</p>
+    <ul>
+      <li>Konum ve şekil için başlangıç tahminleri seçin.</li>
+      <li>Yakınsayana kadar tekrarlayın:</li>
+      <li><em>E-adımı</em>: Her nokta için her kümedeki üyelik olasılığını kodlayan ağırlıkları bulun.</li>
+      <li><em>M-adımı</em>: Her küme için konum, normalleştirme ve şekli <em>tüm</em> veri noktalarına, ağırlıkları kullanarak güncelleyin.</li>
+    </ul>
+    <p>Sonuçta her küme sert kenarlı bir küreyle değil, düzgün bir Gauss modeliyle ilişkilidir. <em>k</em>-means E–M'de olduğu gibi algoritma bazen küresel optimumu kaçırabilir; pratikte birden fazla rastgele başlangıç kullanılır.</p>
+    <p>GMM çıktısına dayanarak elipsler çizen ve küme konumlarını/şekillerini görselleştirmemize yardımcı olacak bir fonksiyon yazalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="draw_ellipse_fn.py">
+      <pre><code>from matplotlib.patches import Ellipse
+
+def draw_ellipse(position, covariance, ax=None, **kwargs):
+    &quot;&quot;&quot;Draw an ellipse with a given position and covariance&quot;&quot;&quot;
+    ax = ax or plt.gca()
+    
+    # Convert covariance to principal axes
+    if covariance.shape == (2, 2):
+        U, s, Vt = np.linalg.svd(covariance)
+        angle = np.degrees(np.arctan2(U[1, 0], U[0, 0]))
+        width, height = 2 * np.sqrt(s)
+    else:
+        angle = 0
+        width, height = 2 * np.sqrt(covariance)
+    
+    # Draw the ellipse
+    for nsig in range(1, 4):
+        ax.add_patch(Ellipse(position, nsig * width, nsig * height,
+                             angle, **kwargs))
+        
+def plot_gmm(gmm, X, label=True, ax=None):
+    ax = ax or plt.gca()
+    labels = gmm.fit(X).predict(X)
+    if label:
+        ax.scatter(X[:, 0], X[:, 1], c=labels, s=40, cmap=&#x27;viridis&#x27;, zorder=2)
+    else:
+        ax.scatter(X[:, 0], X[:, 1], s=40, zorder=2)
+    ax.axis(&#x27;equal&#x27;)
+    
+    w_factor = 0.2 / gmm.weights_.max()
+    for pos, covar, w in zip(gmm.means_, gmm.covariances_, gmm.weights_):
+        draw_ellipse(pos, covar, alpha=w * w_factor)</code></pre>
+    </div>
+
+    <p>Bununla birlikte dört bileşenli GMM'nin başlangıç verimize ne verdiğine bakalım (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="plot_gmm_four.py">
+      <pre><code>gmm = GaussianMixture(n_components=4, random_state=42)
+plot_gmm(gmm, X)</code></pre>
+    </div>
+
+    <p>Benzer şekilde GMM ile gerilmiş veri kümemize uyum sağlayabiliriz; tam kovaryansa izin verildiğinde model çok uzun, gerilmiş kümeleri bile uyabilir (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="gmm_stretched_full.py">
+      <pre><code>gmm = GaussianMixture(n_components=4, covariance_type=&#x27;full&#x27;, random_state=42)
+plot_gmm(gmm, X_stretched)</code></pre>
+    </div>
+
+    <p>Bu, daha önce <em>k</em>-means ile karşılaşılan iki ana pratik sorunu GMM'nin nasıl giderdiğini netleştirir.</p>
+
+    <h2 id="kovaryans-tipi">Kovaryans Tipini Seçmek</h2>
+
+    <p>Önceki uyumlara bakarsanız <code>covariance_type</code> seçeneğinin her birinde farklı ayarlandığını görürsünüz. Bu hiperparametre, her kümenin şeklindeki serbestlik derecelerini kontrol eder; verilen problem için dikkatle ayarlanmalıdır.</p>
+    <p>Varsayılan <code>covariance_type="diag"</code>, her boyutta küme boyutunun bağımsız ayarlanabileceği anlamına gelir; elips eksenlerle hizalı kalır. Biraz daha basit ve hızlı model <code>covariance_type="spherical"</code>, tüm boyutların eşit olmasını zorlar; sonuç <em>k</em>-means'e benzer ama tam eşdeğil değildir. Daha karmaşık ve pahalı model (boyut arttıkça özellikle) <code>covariance_type="full"</code>, her kümeyi keyfi yönelimli elips olarak modellemeye izin verir.</p>
+    <p>Tek bir küme için bu üç seçeneğin görsel temsilini aşağıdaki şekilde görebiliriz:</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.12-covariance-type.png" alt="GMM kovaryans tipleri: spherical, diag, full" width="700" loading="lazy">
+      <figcaption>Kovaryans tipi seçenekleri (orijinal kitap ekinden).</figcaption>
+    </figure>
+
+    <div class="code-block" data-lang="python" data-filename="make_moons_gmm.py">
+      <pre><code>from sklearn.datasets import make_moons
+Xmoon, ymoon = make_moons(200, noise=.05, random_state=0)
+plt.scatter(Xmoon[:, 0], Xmoon[:, 1]);</code></pre>
+    </div>
+
+    <h2 id="gmm-yogunluk">Yoğunluk Tahmini Olarak Gauss Karışım Modelleri</h2>
+    <p>GMM sıklıkla kümeleme algoritması diye sınıflandırılsa da temelde bir <em>yoğunluk tahmini</em> algoritmasıdır. Yani GMM uyumu teknik olarak bir kümeleme modeli değil, verinin dağılımını tanımlayan üretken olasılıksal bir modeldir.</p>
+    <p>Örnek olarak Scikit-Learn'in <code>make_moons</code> fonksiyonundan üretilmiş veriyi düşünün (<a href="11-k-means.html">5.11 K-Means</a> bölümünde tanıtılmıştı; aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="gmm2_moons_fail.py">
+      <pre><code>gmm2 = GaussianMixture(n_components=2, covariance_type=&#x27;full&#x27;, random_state=0)
+plot_gmm(gmm2, Xmoon)</code></pre>
+    </div>
+
+    <p>Bunu kümeleme modeli olarak iki bileşenli GMM ile uydurmaya çalışırsak sonuç pek kullanışlı olmaz (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="gmm16_density.py">
+      <pre><code>gmm16 = GaussianMixture(n_components=16, covariance_type=&#x27;full&#x27;, random_state=0)
+plot_gmm(gmm16, Xmoon, label=False)</code></pre>
+    </div>
+
+    <p>Ancak çok daha fazla bileşen kullanıp küme etiketlerini yok sayarsak, girdi verisine çok daha yakın bir uyum buluruz (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="gmm16_sample.py">
+      <pre><code>Xnew, ynew = gmm16.sample(400)
+plt.scatter(Xnew[:, 0], Xnew[:, 1]);</code></pre>
+    </div>
+
+    <p>Burada 16 Gauss bileşenli karışım, ayrık kümeler bulmak için değil, girdi verisinin genel <em>dağılımını</em> modellemek içindir. Bu, girdi verimize benzer yeni rastgele veri üretmek için tarif veren üretken bir dağılım modelidir. Örneğin orijinal veriye uydurulmuş 16 bileşenli GMM'den 400 yeni nokta çizebiliriz (aşağıdaki şekil):</p>
+
+    <p>GMM, keyfi çok boyutlu veri dağılımını modellemek için esnek bir araçtır.</p>
+
+    <div class="code-block" data-lang="python" data-filename="gmm_aic_bic.py">
+      <pre><code>n_components = np.arange(1, 21)
+models = [GaussianMixture(n, covariance_type=&#x27;full&#x27;, random_state=0).fit(Xmoon)
+          for n in n_components]
+
+plt.plot(n_components, [m.bic(Xmoon) for m in models], label=&#x27;BIC&#x27;)
+plt.plot(n_components, [m.aic(Xmoon) for m in models], label=&#x27;AIC&#x27;)
+plt.legend(loc=&#x27;best&#x27;)
+plt.xlabel(&#x27;n_components&#x27;);</code></pre>
+    </div>
+
+    <h3 id="kac-bilesen">Kaç Bileşen?</h3>
+    <p>GMM'nin üretken model olması, veri kümesi için optimal bileşen sayısını belirlemenin doğal bir yolunu verir. Üretken model doğası gereği veri kümesi için olasılık dağılımıdır; veriyi model altında değerlendirebiliriz, aşırı uyumu önlemek için çapraz doğrulama kullanırız.</p>
+    <p>Aşırı uyumu düzeltmek için <a href="https://en.wikipedia.org/wiki/Akaike_information_criterion" target="_blank" rel="noopener">AIC</a> veya <a href="https://en.wikipedia.org/wiki/Bayesian_information_criterion" target="_blank" rel="noopener">BIC</a> gibi analitik ölçütlerle model olabilirliklerini ayarlayabiliriz. Scikit-Learn <code>GaussianMixture</code> tahmincisi her ikisini de hesaplayan yerleşik yöntemler içerir.</p>
+    <p>Ay verisi için GMM bileşen sayısına karşı AIC ve BIC'ye bakalım (aşağıdaki şekil):</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — AIC / BIC</div>
+      Bileşen sayısı seçimi küme kalitesinden çok yoğunluk uyumunu ölçer. Kümeleme için silhouette; yoğunluk için AIC/BIC daha uygundur.
+    </div>
+
+
+    <p>Optimal küme sayısı AIC veya BIC'yi minimize eden değerdir. AIC, daha önce seçtiğimiz 16 bileşenin muhtemelen fazla olduğunu söyler: yaklaşık 8–12 bileşen daha iyi olurdu. Bu tür problemlerde BIC genelde daha sade model önerir.</p>
+
+    <div class="code-block" data-lang="python" data-filename="load_digits_gmm.py">
+      <pre><code>from sklearn.datasets import load_digits
+digits = load_digits()
+digits.data.shape</code></pre>
+    </div>
+
+    <p>Hatırlamak için ilk 50 tanesini çizelim (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="plot_digits_fn.py">
+      <pre><code>def plot_digits(data):
+    fig, ax = plt.subplots(5, 10, figsize=(8, 4),
+                           subplot_kw=dict(xticks=[], yticks=[]))
+    fig.subplots_adjust(hspace=0.05, wspace=0.05)
+    for i, axi in enumerate(ax.flat):
+        im = axi.imshow(data[i].reshape(8, 8), cmap=&#x27;binary&#x27;)
+        im.set_clim(0, 16)
+plot_digits(digits.data)</code></pre>
+    </div>
+
+    <p>64 boyutta yaklaşık 1.800 rakamımız var; bunun üzerine GMM kurabiliriz. GMM bu kadar yüksek boyutta yakınsamakta zorlanabilir; veri üzerinde tersinir bir boyut indirgeme algoritmasıyla başlayacağız. Burada doğrudan PCA kullanıp yansıtılan veride %99 varyansı koruyacağız:</p>
+
+    <div class="code-block" data-lang="python" data-filename="pca_digits_gmm.py">
+      <pre><code>from sklearn.decomposition import PCA
+pca = PCA(0.99, whiten=True)
+data = pca.fit_transform(digits.data)
+data.shape</code></pre>
+    </div>
+
+    <p>Sonuç 41 boyuttur — neredeyse 1/3 azalma, neredeyse bilgi kaybı yok. Bu yansıtılmış veriyle kaç GMM bileşeni kullanmamız gerektiğine AIC ile bakalım (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="gmm_aic_digits.py">
+      <pre><code>n_components = np.arange(50, 210, 10)
+models = [GaussianMixture(n, covariance_type=&#x27;full&#x27;, random_state=0)
+          for n in n_components]
+aics = [model.fit(data).aic(data) for model in models]
+plt.plot(n_components, aics);</code></pre>
+    </div>
+
+    <p>Yaklaşık 140 bileşen AIC'yi minimize ediyor gibi görünüyor; bu modeli kullanacağız. Veriye hızlıca uydurup yakınsadığını doğrulayalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="gmm140_fit.py">
+      <pre><code>gmm = GaussianMixture(140, covariance_type=&#x27;full&#x27;, random_state=0)
+gmm.fit(data)
+print(gmm.converged_)</code></pre>
+    </div>
+
+    <p>Şimdi GMM'yi üretken model olarak kullanarak bu 41 boyutlu yansıtılmış uzayda 100 yeni nokta çekebiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="gmm_sample_latent.py">
+      <pre><code>data_new, label_new = gmm.sample(100)
+data_new.shape</code></pre>
+    </div>
+
+    <p>Son olarak PCA nesnesinin ters dönüşümüyle yeni rakamları oluşturabiliriz (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="gmm_new_digits.py">
+      <pre><code>digits_new = pca.inverse_transform(data_new)
+plot_digits(digits_new)</code></pre>
+    </div>
+
+    <p>Sonuçların çoğu veri kümesindeki makul rakamlara benziyor! Burada yaptığımızı düşünün: el yazısı rakam örnekleminden yola çıkarak verinin dağılımını, karışım modeliyle girdi verisinde bireysel olarak görünmeyen ama genel özellikleri yakalayan yeni rakam örnekleri üretebilecek şekilde modelledik. Böyle bir üretken rakam modeli, sonraki bölümde göreceğimiz gibi Bayes üretken sınıflandırıcının bileşeni olarak çok faydalı olabilir.</p>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="13-kernel-density-estimation.html">5.13 Çekirdek Yoğunluk Tahmini →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas + Matplotlib + scikit-learn yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

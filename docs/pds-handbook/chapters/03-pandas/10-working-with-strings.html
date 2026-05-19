@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dizelerle Çalışma — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="03-pandas" data-section="10-working-with-strings" data-preload-numpy="true" data-preload-pandas="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.10-working-with-strings.html" target="_blank" rel="noopener">03.10 Working With Strings</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>3.10 Dizelerle Çalışma</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.10-working-with-strings.html" target="_blank" rel="noopener">Working With Strings</a></em></p>
+    <p>Python'un güçlü yanlarından biri dize verisini işleme ve dönüştürmedeki görece kolaylığıdır. Pandas bunun üzerine inşa edilir ve gerçek dünya verisiyle çalışırken (okuyun: temizlerken) gereken <em>munging</em> türünün önemli parçası olan kapsamlı bir <em>vektörize dize işlemleri</em> kümesi sunar. Bu bölümde Pandas dize işlemlerinden bazılarını ele alacağız; ardından internetten toplanmış çok dağınık bir tarif veri kümesini kısmen temizlemek için bunları kullanacağız.</p>
+
+    <h2 id="pandas-dize-giris">Pandas Dize İşlemlerine Giriş</h2>
+    <p>Önceki bölümlerde NumPy ve Pandas gibi araçların aritmetik işlemleri genelleştirerek aynı işlemi birçok dizi elemanına kolayca ve hızlıca uygulayabildiğimizi gördük. Örneğin:</p>
+
+    <div class="code-block" data-lang="python" data-filename="numpy_vektor.py">
+      <pre><code>import numpy as np
+x = np.array([2, 3, 5, 7, 11, 13])
+x * 2</code></pre>
+    </div>
+
+    <p>İşlemlerin bu <em>vektörizasyonu</em>, dizi verisi üzerinde çalışmanın sözdizimini sadeleştirir: artık dizinin boyutu veya şekliyle değil, yapılmasını istediğimiz işlemle ilgilenmemiz yeterlidir. Dize dizileri için NumPy bu kadar basit bir erişim sağlamaz; daha ayrıntılı bir döngü sözdizimi kullanmak zorunda kalırsınız:</p>
+
+    <div class="code-block" data-lang="python" data-filename="liste_capitalize.py">
+      <pre><code>data = [&#x27;peter&#x27;, &#x27;Paul&#x27;, &#x27;MARY&#x27;, &#x27;gUIDO&#x27;]
+[s.capitalize() for s in data]</code></pre>
+    </div>
+
+    <p>Bazı verilerle bu yeterli olabilir; ancak eksik değer varsa kod kırılır — bu yüzden ek kontroller gerekir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="none_capitalize.py">
+      <pre><code>data = [&#x27;peter&#x27;, &#x27;Paul&#x27;, None, &#x27;MARY&#x27;, &#x27;gUIDO&#x27;]
+[s if s is None else s.capitalize() for s in data]</code></pre>
+    </div>
+
+    <p>Bu tür manuel yaklaşım yalnızca ayrıntılı ve kullanışsız değil, hata yapmaya da açıktır.</p>
+    <p>Pandas, vektörize dize işlemleri ihtiyacını ve dize içeren <code>Series</code> ile <code>Index</code> nesnelerinin <code>str</code> özniteliği aracılığıyla eksik veriyi doğru işleme ihtiyacını karşılar. Örneğin bu veriyle bir Pandas <code>Series</code> oluşturursak, eksik değer işleme yerleşik olan <code>str.capitalize</code> yöntemini doğrudan çağırabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="str_capitalize.py">
+      <pre><code>import pandas as pd
+names = pd.Series(data)
+names.str.capitalize()</code></pre>
+    </div>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — str erişimcisi</div>
+      <p>Dize sütunlarında <code>.str</code> olmadan vektörize yöntem çağrılamaz. <code>names.capitalize()</code> hata verir; <code>names.str.capitalize()</code> eksik değerleri atlayarak çalışır.</p>
+    </div>
+
+    <h2 id="dize-yontemleri">Pandas Dize Yöntemleri Tabloları</h2>
+    <p>Python'da dize manipülasyonunu iyi biliyorsanız Pandas dize sözdiziminin çoğu sezgiseldir; yöntemleri listelemek muhtemelen yeterlidir. Ayrıntılara girmeden önce buradan başlayacağız. Bu bölümdeki örnekler aşağıdaki <code>Series</code> nesnesini kullanır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="monte_series.py">
+      <pre><code>monte = pd.Series([&#x27;Graham Chapman&#x27;, &#x27;John Cleese&#x27;, &#x27;Terry Gilliam&#x27;,
+                   &#x27;Eric Idle&#x27;, &#x27;Terry Jones&#x27;, &#x27;Michael Palin&#x27;])</code></pre>
+    </div>
+
+    <h3 id="python-benzeri">Python Dize Yöntemlerine Benzer Yöntemler</h3>
+    <p>Python'un yerleşik dize yöntemlerinin neredeyse tamamı Pandas vektörize dize yöntemiyle eşlenir. Python dize yöntemlerini yansıtan Pandas <code>str</code> yöntemlerinin bir listesi:</p>
+    <div class="table-wrapper">
+      <table class="vocab-table">
+        <thead><tr><th></th><th></th><th></th><th></th></tr></thead>
+        <tbody>
+          <tr><td><code>len()</code></td><td><code>lower()</code></td><td><code>translate()</code></td><td><code>islower()</code></td></tr>
+          <tr><td><code>ljust()</code></td><td><code>upper()</code></td><td><code>startswith()</code></td><td><code>isupper()</code></td></tr>
+          <tr><td><code>rjust()</code></td><td><code>find()</code></td><td><code>endswith()</code></td><td><code>isnumeric()</code></td></tr>
+          <tr><td><code>center()</code></td><td><code>rfind()</code></td><td><code>isalnum()</code></td><td><code>isdecimal()</code></td></tr>
+          <tr><td><code>zfill()</code></td><td><code>index()</code></td><td><code>isalpha()</code></td><td><code>split()</code></td></tr>
+          <tr><td><code>strip()</code></td><td><code>rindex()</code></td><td><code>isdigit()</code></td><td><code>rsplit()</code></td></tr>
+          <tr><td><code>rstrip()</code></td><td><code>capitalize()</code></td><td><code>isspace()</code></td><td><code>partition()</code></td></tr>
+          <tr><td><code>lstrip()</code></td><td><code>swapcase()</code></td><td><code>istitle()</code></td><td><code>rpartition()</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Bunların dönüş tipleri farklıdır. <code>lower</code> gibi bazıları dize <code>Series</code>'i döndürür:</p>
+
+    <div class="code-block" data-lang="python" data-filename="str_lower.py">
+      <pre><code>monte.str.lower()</code></pre>
+    </div>
+
+    <p>Bazıları sayı döndürür:</p>
+
+    <div class="code-block" data-lang="python" data-filename="str_len.py">
+      <pre><code>monte.str.len()</code></pre>
+    </div>
+
+    <p>Veya Boolean değerler:</p>
+
+    <div class="code-block" data-lang="python" data-filename="str_startswith.py">
+      <pre><code>monte.str.startswith(&#x27;T&#x27;)</code></pre>
+    </div>
+
+    <p>Diğerleri her eleman için liste veya başka bileşik değerler döndürür:</p>
+
+    <div class="code-block" data-lang="python" data-filename="str_split.py">
+      <pre><code>monte.str.split()</code></pre>
+    </div>
+
+    <p>Tartışmaya devam ederken bu tür liste-dizisi nesneleri üzerinde daha fazla manipülasyon göreceğiz.</p>
+
+    <h3 id="regex-yontemler">Düzenli İfadeler Kullanan Yöntemler</h3>
+    <p>Ayrıca her dize elemanının içeriğini incelemek için düzenli ifadeler (regex) kabul eden ve Python'un yerleşik <code>re</code> modülünün API kurallarının bir kısmını izleyen birkaç yöntem vardır:</p>
+    <div class="table-wrapper">
+      <table class="vocab-table">
+        <thead><tr><th>Yöntem</th><th>Açıklama</th></tr></thead>
+        <tbody>
+          <tr><td><code>match</code></td><td>Her eleman üzerinde <code>re.match</code> çağırır; Boolean döndürür.</td></tr>
+          <tr><td><code>extract</code></td><td>Her eleman üzerinde <code>re.match</code> çağırır; eşleşen grupları dize olarak döndürür.</td></tr>
+          <tr><td><code>findall</code></td><td>Her eleman üzerinde <code>re.findall</code> çağırır.</td></tr>
+          <tr><td><code>replace</code></td><td>Desenin geçtiği yerleri başka bir dizeyle değiştirir.</td></tr>
+          <tr><td><code>contains</code></td><td>Her eleman üzerinde <code>re.search</code> çağırır; boolean döndürür.</td></tr>
+          <tr><td><code>count</code></td><td>Desenin geçiş sayısını sayar.</td></tr>
+          <tr><td><code>split</code></td><td><code>str.split</code> eşdeğeri; regex kabul eder.</td></tr>
+          <tr><td><code>rsplit</code></td><td><code>str.rsplit</code> eşdeğeri; regex kabul eder.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Bunlarla geniş bir işlem yelpazesi yapılabilir. Örneğin her elemanın başındaki ardışık karakter grubunu isteyerek ilk adı çıkarabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="str_extract.py">
+      <pre><code>monte.str.extract(&#x27;([A-Za-z]+)&#x27;, expand=False)</code></pre>
+    </div>
+
+    <p>Veya daha karmaşık bir şey: ünsüzle başlayıp ünsüzle biten tüm adları bulmak için dize başı (<code>^</code>) ve dize sonu (<code>$</code>) regex karakterlerini kullanabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="str_findall.py">
+      <pre><code>monte.str.findall(r&#x27;^[^AEIOU].*[^aeiou]$&#x27;)</code></pre>
+    </div>
+
+    <p>Düzenli ifadeleri <code>Series</code> veya <code>DataFrame</code> girişlerine özlü biçimde uygulayabilme, veri analizi ve temizliği için birçok olasılık açar.</p>
+
+    <h3 id="cesitli-yontemler">Çeşitli Yöntemler</h3>
+    <p>Son olarak diğer kullanışlı işlemlere olanak tanıyan çeşitli yöntemler vardır:</p>
+    <div class="table-wrapper">
+      <table class="vocab-table">
+        <thead><tr><th>Yöntem</th><th>Açıklama</th></tr></thead>
+        <tbody>
+          <tr><td><code>get</code></td><td>Her elemanı indeksler.</td></tr>
+          <tr><td><code>slice</code></td><td>Her elemanı dilimler.</td></tr>
+          <tr><td><code>slice_replace</code></td><td>Her elemandaki dilimi verilen değerle değiştirir.</td></tr>
+          <tr><td><code>cat</code></td><td>Dizeleri birleştirir.</td></tr>
+          <tr><td><code>repeat</code></td><td>Değerleri tekrarlar.</td></tr>
+          <tr><td><code>normalize</code></td><td>Dizelerin Unicode biçimini döndürür.</td></tr>
+          <tr><td><code>pad</code></td><td>Dizelerin soluna, sağına veya her iki tarafına boşluk ekler.</td></tr>
+          <tr><td><code>wrap</code></td><td>Uzun dizeleri verilen genişlikten kısa satırlara böler.</td></tr>
+          <tr><td><code>join</code></td><td><code>Series</code>'teki her elemandaki dizeleri verilen ayraçla birleştirir.</td></tr>
+          <tr><td><code>get_dummies</code></td><td>Kukla (dummy) değişkenleri <code>DataFrame</code> olarak çıkarır.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4 id="vektorize-erisim">Vektörize öğe erişimi ve dilimleme</h4>
+    <p>Özellikle <code>get</code> ve <code>slice</code> işlemleri, her diziden vektörize öğe erişimine olanak tanır. Örneğin <code>str.slice(0, 3)</code> ile her dizinin ilk üç karakterini alabiliriz. Bu davranış Python'un normal indeksleme sözdizimiyle de kullanılabilir; <code>df.str.slice(0, 3)</code> ile <code>df.str[0:3]</code> eşdeğerdir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="str_slice.py">
+      <pre><code>monte.str[0:3]</code></pre>
+    </div>
+
+    <p><code>df.str.get(i)</code> ve <code>df.str[i]</code> ile indeksleme de benzer şekilde çalışır.</p>
+    <p>Bu indeksleme yöntemleri, <code>split</code> ile döndürülen dizi elemanlarına da erişmenizi sağlar. Örneğin her girişin soyadını çıkarmak için <code>split</code> ile <code>str</code> indekslemesini birleştirebiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="str_split_soyad.py">
+      <pre><code>monte.str.split().str[-1]</code></pre>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p><code>split</code> + zincirleme <code>str</code> indekslemesi — basit ad-soyad ayırma:</p>
+      <div class="code-block" data-lang="python" data-filename="deneme_str_split.py">
+        <pre><code>import pandas as pd
+s = pd.Series([&quot;Ali Yılmaz&quot;, &quot;Ayşe Kaya&quot;, &quot;Mehmet Demir&quot;])
+print(s.str.split().str[-1])</code></pre>
+      </div>
+    </div>
+
+    <h4 id="gosterge-degiskenleri">Gösterge değişkenleri</h4>
+    <p>Biraz ek açıklama gerektiren bir diğer yöntem <code>get_dummies</code>'tır. Veriniz bir tür kodlanmış gösterge içeren bir sütuna sahipse kullanışlıdır. Örneğin A = "Amerika'da doğdu", B = "Birleşik Krallık'ta doğdu", C = "peynir sever", D = "spam sever" gibi kodlar içeren bir veri kümemiz olabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="full_monte.py">
+      <pre><code>full_monte = pd.DataFrame({&#x27;name&#x27;: monte,
+                           &#x27;info&#x27;: [&#x27;B|C|D&#x27;, &#x27;B|D&#x27;, &#x27;A|C&#x27;,
+                                    &#x27;B|D&#x27;, &#x27;B|C&#x27;, &#x27;B|C|D&#x27;]})
+full_monte</code></pre>
+    </div>
+
+    <p><code>get_dummies</code> rutini bu gösterge değişkenlerini bir <code>DataFrame</code>'e ayırmamıza izin verir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="get_dummies.py">
+      <pre><code>full_monte[&#x27;info&#x27;].str.get_dummies(&#x27;|&#x27;)</code></pre>
+    </div>
+
+    <p>Bu işlemleri yapı taşları olarak kullanarak verinizi temizlerken sonsuz sayıda dize işleme prosedürü oluşturabilirsiniz.</p>
+    <p>Bu yöntemlere daha fazla girmeyeceğiz; Pandas çevrimiçi dokümantasyonundaki <a href="https://pandas.pydata.org/docs/user_guide/text.html" target="_blank" rel="noopener">"Working with Text Data"</a> bölümünü okumanızı veya <a href="13-further-resources.html">3.13 Kaynaklar</a> bölümündeki kaynaklara başvurmanızı öneririm.</p>
+
+    <h2 id="ornek-tarif">Örnek: Tarif Veritabanı</h2>
+    <p>Vektörize dize işlemleri dağınık gerçek dünya verisini temizlerken en faydalı hale gelir. Burada web'deki çeşitli kaynaklardan derlenmiş açık bir tarif veritabanı örneği üzerinden yürüyeceğiz. Hedefimiz tarif verisini malzeme listelerine ayrıştırmak; böylece eldeki malzemelere göre hızlıca tarif bulabiliriz. Derleme betikleri <a href="https://github.com/fictivekin/openrecipes" target="_blank" rel="noopener">openrecipes</a> deposunda; veritabanının en güncel bağlantısı da orada.</p>
+    <p>Veritabanı yaklaşık 30 MB'tır; aşağıdaki komutlarla indirilip açılabilir (notebook'taki yorum satırları):</p>
+
+    <div class="code-block" data-lang="python" data-filename="tarif_indir.py">
+      <pre><code># repo = &quot;https://raw.githubusercontent.com/jakevdp/open-recipe-data/master&quot;
+# !cd data &amp;&amp; curl -O {repo}/recipeitems.json.gz
+# !gunzip data/recipeitems.json.gz</code></pre>
+    </div>
+
+    <p>Veritabanı JSON biçimindedir; <code>pd.read_json</code> ile okuruz (dosyanın her satırı bir JSON girişi olduğu için <code>lines=True</code> gerekir):</p>
+
+    <div class="code-block" data-lang="python" data-filename="read_recipes.py">
+      <pre><code>recipes = pd.read_json(&#x27;data/recipeitems.json&#x27;, lines=True)
+recipes.shape</code></pre>
+    </div>
+
+    <p>Yaklaşık 175.000 tarif ve 17 sütun görüyoruz. Ne olduğunu görmek için bir satıra bakalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="recipes_iloc0.py">
+      <pre><code>recipes.iloc[0]</code></pre>
+    </div>
+
+    <p>Orada çok bilgi var; ancak çoğu web'den kazınmış veride tipik olduğu gibi çok dağınık biçimde. Özellikle malzeme listesi dize biçiminde; ilgilendiğimiz bilgiyi dikkatle çıkarmamız gerekecek. Malzemelere yakından bakarak başlayalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="ingredients_len.py">
+      <pre><code>recipes.ingredients.str.len().describe()</code></pre>
+    </div>
+
+    <p>Malzeme listeleri ortalama 250 karakter; minimum 0, maksimum neredeyse 10.000 karakter!</p>
+    <p>Meraktan, en uzun malzeme listesine sahip tarif hangisi bakalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="en_uzun_tarif.py">
+      <pre><code>recipes.name[np.argmax(recipes.ingredients.str.len())]</code></pre>
+    </div>
+
+    <p>Başka toplu keşifler de yapabiliriz; örneğin kaç tarifin kahvaltı yemeği olduğunu (küçük ve büyük harfi eşleştiren regex ile) görelim:</p>
+
+    <div class="code-block" data-lang="python" data-filename="breakfast_count.py">
+      <pre><code>recipes.description.str.contains(&#x27;[Bb]reakfast&#x27;).sum()</code></pre>
+    </div>
+
+    <p>Veya kaç tarifte tarçın malzeme olarak geçiyor:</p>
+
+    <div class="code-block" data-lang="python" data-filename="cinnamon_count.py">
+      <pre><code>recipes.ingredients.str.contains(&#x27;[Cc]innamon&#x27;).sum()</code></pre>
+    </div>
+
+    <p>Hatta "cinamon" yazım hatası yapan tarif var mı diye bakabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="cinamon_typo.py">
+      <pre><code>recipes.ingredients.str.contains(&#x27;[Cc]inamon&#x27;).sum()</code></pre>
+    </div>
+
+    <p>Pandas dize araçlarıyla mümkün olan veri keşfi türü budur. Python gerçekten bu tür <em>data munging</em> işlerinde parlar.</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>Küçük bir metin <code>Series</code>'inde regex ile filtreleme deneyin:</p>
+      <div class="code-block" data-lang="python" data-filename="deneme_str_contains.py">
+        <pre><code>import pandas as pd
+s = pd.Series([&quot;Python&quot;, &quot;pandas&quot;, &quot;NumPy&quot;, &quot;pydata&quot;])
+print(s[s.str.contains(&quot;py&quot;, case=False, regex=True)])</code></pre>
+      </div>
+    </div>
+
+    <h3 id="tarif-onerici">Basit Bir Tarif Önerici</h3>
+    <p>Biraz daha ileri gidip basit bir tarif öneri sistemi yapalım: verilen malzeme listesi için hepsini kullanan tarifleri bulmak istiyoruz. Kavramsal olarak basit olsa da verinin heterojenliği görevi zorlaştırır; örneğin her satırdan temiz malzeme listesi çıkarmak için kolay bir işlem yok. Bu yüzden biraz hile yapacağız: yaygın malzemeler listesiyle başlayıp her tarifin malzeme listesinde geçip geçmediklerine bakacağız. Basitlik için şimdilik yalnızca ot ve baharatlarla sınırlı kalalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="spice_list.py">
+      <pre><code>spice_list = [&#x27;salt&#x27;, &#x27;pepper&#x27;, &#x27;oregano&#x27;, &#x27;sage&#x27;, &#x27;parsley&#x27;,
+              &#x27;rosemary&#x27;, &#x27;tarragon&#x27;, &#x27;thyme&#x27;, &#x27;paprika&#x27;, &#x27;cumin&#x27;]</code></pre>
+    </div>
+
+    <p>Ardından her malzemenin listede geçip geçmediğini gösteren <code>True</code> ve <code>False</code> değerlerinden oluşan Boolean bir <code>DataFrame</code> oluşturabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="spice_df.py">
+      <pre><code>import re
+spice_df = pd.DataFrame({
+    spice: recipes.ingredients.str.contains(spice, re.IGNORECASE)
+    for spice in spice_list})
+spice_df.head()</code></pre>
+    </div>
+
+    <p>Örnek olarak maydanoz, kırmızı biber ve tarhun kullanan bir tarif bulmak isteyelim. <code>DataFrame</code>'lerin <code>query</code> yöntemiyle (<a href="12-performance-eval-and-query.html">3.12 Performans ve Sorgu</a> bölümünde ayrıntılı) çok hızlı hesaplayabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="spice_query.py">
+      <pre><code>selection = spice_df.query(&#x27;parsley &amp; paprika &amp; tarragon&#x27;)
+len(selection)</code></pre>
+    </div>
+
+    <p>Bu kombinasyonla yalnızca 10 tarif buluyoruz. Seçimin döndürdüğü indeksi kullanarak bu tariflerin adlarını bulalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="recipe_names.py">
+      <pre><code>recipes.name[selection.index]</code></pre>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>Basit malzeme eşleştirmesi — elinizdeki malzemelerle tarif arama mantığını küçük ölçekte deneyin:</p>
+      <div class="code-block" data-lang="python" data-filename="deneme_tarif_ara.py">
+        <pre><code>import pandas as pd
+recipes = pd.DataFrame({
+    &quot;name&quot;: [&quot;Omlet&quot;, &quot;Çorba&quot;, &quot;Salata&quot;],
+    &quot;ingredients&quot;: [&quot;yumurta, tuz, biber&quot;, &quot;tuz, soğan, biber&quot;, &quot;marul, limon&quot;]
+})
+have = [&quot;tuz&quot;, &quot;biber&quot;]
+mask = recipes.ingredients.str.contains(&quot;|&quot;.join(have), case=False)
+print(recipes[mask])</code></pre>
+      </div>
+    </div>
+
+    <p>175.000 tariften 10'a indirdiğimize göre akşam yemeği için daha bilinçli karar verebiliriz.</p>
+
+    <h3 id="tarif-ileri">Tariflerle Daha İleriye</h3>
+    <p>Umarım bu örnek Pandas dize yöntemlerinin etkin biçimde sağladığı veri temizleme işlemlerinin türü hakkında fikir vermiştir. Sağlam bir tarif öneri sistemi kurmak elbette <em>çok</em> daha fazla iş gerektirir! Her tariften tam malzeme listesi çıkarmak önemli bir parça olurdu; kullanılan formatların çeşitliliği bunu nispeten zaman alıcı kılar.</p>
+    <p>Veri biliminde gerçek dünya verisinin temizlenmesi ve munging'inin çoğu zaman işin büyük kısmını oluşturduğu gerçeğine işaret eder — Pandas bunu verimli yapmanıza yardımcı olacak araçları sunar.</p>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="11-working-with-time-series.html">3.11 Zaman Serileri →</a></p>
+    </div>
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

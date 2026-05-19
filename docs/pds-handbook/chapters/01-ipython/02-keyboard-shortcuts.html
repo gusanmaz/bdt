@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1.2 Klavye Kısayolları — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="01-ipython" data-section="02-keyboard-shortcuts">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/01.02-shell-keyboard-shortcuts.html" target="_blank" rel="noopener">Keyboard Shortcuts in the IPython Shell</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+    <h1>1.2 Klavye Kısayolları</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/01.02-shell-keyboard-shortcuts.html" target="_blank" rel="noopener">Keyboard Shortcuts in the IPython Shell</a></em></p>
+
+    <p>Bilgisayarda zaman geçiriyorsanız iş akışınızda klavye kısayollarına muhtemelen yer vermişsinizdir. En tanıdıkları Cmd-c / Cmd-v (veya Ctrl-c / Ctrl-v) kopyala-yapıştırdır. Güç kullanıcıları daha da ileri gider: Emacs, Vim gibi editörler karmaşık tuş kombinasyonlarıyla çok geniş işlem yelpazesi sunar.</p>
+
+    <p>IPython kabuğu bu kadar ileri gitmez; komut yazarken hızlı gezinme için bir dizi klavye kısayolu sunar. Bunların bir kısmı tarayıcı tabanlı defterlerde de çalışır; bu bölüm özellikle IPython kabuğundaki kısayollara odaklanır.</p>
+
+    <p>Alıştığınızda ellerinizi «ev» klavye konumundan kaldırmadan belirli komutları hızla çalıştırmak çok yararlı olur. Emacs veya Linux tarzı kabuk deneyiminiz varsa aşağıdakiler tanıdık gelecektir. Kısayolları birkaç kategoride toplayacağız: <em>gezinme</em>, <em>metin girişi</em>, <em>komut geçmişi</em> ve <em>çeşitli</em>.</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Mac vs Linux/Windows</div>
+      <p>Kitapta <strong>Ctrl</strong> yazıyor; macOS'ta birçok kısayol için <strong>Cmd</strong> veya <strong>Option</strong> kullanılır. JupyterLab'da kısayollar <em>Settings → Advanced Settings Editor → JupyterLab Shortcuts</em> altından özelleştirilebilir.</p>
+    </div>
+
+    <h2 id="gezinme-kisayollari">Gezinme Kısayolları</h2>
+
+    <p>Sol/sağ ok ile satırda ileri-geri gitmek açıktır; ellerinizi «ev» konumundan kaldırmadan başka seçenekler de vardır:</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Tuş</th><th>İşlem</th></tr></thead>
+        <tbody>
+          <tr><td>Ctrl-a</td><td>İmleci satır başına taşı</td></tr>
+          <tr><td>Ctrl-e</td><td>İmleci satır sonuna taşı</td></tr>
+          <tr><td>Ctrl-b veya sol ok</td><td>İmleci bir karakter geri</td></tr>
+          <tr><td>Ctrl-f veya sağ ok</td><td>İmleci bir karakter ileri</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="metin-girisi-kisayollari">Metin Girişi Kısayolları</h2>
+
+    <p>Backspace önceki karakteri silmek için tanıdıktır; tuşa uzanmak küçük bir parmak jimnastiği ister ve tek seferde bir karakter siler. IPython'da yazdığınız metnin bir bölümünü silmek için birkaç kısayol vardır; en hemen işe yarayanları tüm satırı kesmektir. Ctrl-b ve Ctrl-d'yi Backspace yerine kullanmaya başladığınızda ikinci doğaya dönüşmüştür!</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Tuş</th><th>İşlem</th></tr></thead>
+        <tbody>
+          <tr><td>Backspace</td><td>Satırda önceki karakteri sil</td></tr>
+          <tr><td>Ctrl-d</td><td>Satırda sonraki karakteri sil</td></tr>
+          <tr><td>Ctrl-k</td><td>İmleçten satır sonuna kadar kes</td></tr>
+          <tr><td>Ctrl-u</td><td>Satır başından imlece kadar kes</td></tr>
+          <tr><td>Ctrl-y</td><td>Daha önce kesilen metni yapıştır (yank)</td></tr>
+          <tr><td>Ctrl-t</td><td>Önceki iki karakteri yer değiştir</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="komut-gecmisi-kisayollari">Komut Geçmişi Kısayolları</h2>
+
+    <p>Buradaki en etkili kısayollardan biri IPython'un komut geçmişinde gezinmesidir. Geçmiş yalnızca mevcut oturumla sınırlı değildir: tüm komut geçmişiniz IPython profil dizininizde bir SQLite veritabanında saklanır. Önceki komutlara en doğrudan yol yukarı/aşağı ok tuşlarıdır; başka seçenekler de vardır:</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Tuş</th><th>İşlem</th></tr></thead>
+        <tbody>
+          <tr><td>Ctrl-p (veya yukarı ok)</td><td>Geçmişte önceki komut</td></tr>
+          <tr><td>Ctrl-n (veya aşağı ok)</td><td>Geçmişte sonraki komut</td></tr>
+          <tr><td>Ctrl-r</td><td>Komut geçmişinde geriye doğru arama</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Geriye arama özellikle yararlıdır. Daha önce <code>square</code> adlı bir fonksiyon tanımlamıştık. Yeni bir IPython kabuğunda Python geçmişinde geriye arayıp bu tanımı yeniden bulalım. IPython terminalinde Ctrl-r'ye bastığınızda şu istemi görürsünüz:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="reverse_search_prompt.txt">
+      <pre><code>In [1]:
+(reverse-i-search)`': </code></pre>
+    </div>
+
+    <p>Bu istemde karakter yazmaya başladığınızda IPython, eşleşen en son komutu otomatik doldurur:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="reverse_search_sqa.txt">
+      <pre><code>In [1]:
+(reverse-i-search)`sqa': square??</code></pre>
+    </div>
+
+    <p>İstediğiniz zaman daha fazla karakter ekleyerek aramayı daraltabilir veya Ctrl-r'ye tekrar basarak bir sonraki eşleşmeyi arayabilirsiniz. Daha önce takip ettiyseniz Ctrl-r'ye iki kez daha basınca:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="reverse_search_def.txt">
+      <pre><code>In [1]:
+(reverse-i-search)`sqa': def square(a):
+    """Return the square of a"""
+    return a ** 2</code></pre>
+    </div>
+
+    <p>Aradığınız komutu bulunca Return'a basın; arama biter ve komutu oturumda kullanmaya devam edebilirsiniz:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="square_session.txt">
+      <pre><code>In [1]: def square(a):
+    """Return the square of a"""
+    return a ** 2
+
+In [2]: square(2)
+Out[2]: 4</code></pre>
+    </div>
+
+    <p>Ctrl-p/Ctrl-n veya yukarı/aşağı ok ile de benzer şekilde geçmişte arayabilirsiniz; ancak yalnızca satır <em>başındaki</em> karakterlerle eşleşir. Yani <strong><code>def</code></strong> yazıp Ctrl-p'ye basarsanız geçmişte <code>def</code> ile <em>başlayan</em> en son komut bulunur.</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin — square fonksiyonu</div>
+      <p>Pyodide'da aşağıdaki kodu çalıştırın; gerçek IPython'da Ctrl-r ile geçmiş aramasını deneyin.</p>
+      <div class="code-block" data-lang="python" data-filename="square_ornek.py">
+        <pre><code>def square(a):
+    """Return the square of a."""
+    return a ** 2
+
+square(2)</code></pre>
+      </div>
+    </div>
+
+    <h2 id="cesitli-kisayollar">Çeşitli Kısayollar</h2>
+
+    <p>Son olarak önceki kategorilere uymayan ama yine de bilinmesi yararlı birkaç kısayol:</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Tuş</th><th>İşlem</th></tr></thead>
+        <tbody>
+          <tr><td>Ctrl-l</td><td>Terminal ekranını temizle</td></tr>
+          <tr><td>Ctrl-c</td><td>Çalışan Python komutunu kes</td></tr>
+          <tr><td>Ctrl-d</td><td>IPython oturumundan çık</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Özellikle Ctrl-c, yanlışlıkla çok uzun süren bir iş başlattığınızda işe yarar.</p>
+
+    <p>Buradaki kısayolların bir kısmı başta abartılı görünebilir; pratikle otomatikleşir. Kas hafızası oluşunca başka ortamlarda da olmalarını dileyebilirsiniz.</p>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

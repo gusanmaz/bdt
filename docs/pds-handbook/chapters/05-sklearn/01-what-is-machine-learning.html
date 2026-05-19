@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Makine Öğrenmesi Nedir? — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="05-sklearn" data-section="01-what-is-machine-learning">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.01-what-is-machine-learning.html" target="_blank" rel="noopener">05.01 What Is Machine Learning?</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>Makine Öğrenmesi Nedir?</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.01-what-is-machine-learning.html" target="_blank" rel="noopener">05.01 What Is Machine Learning?</a></em></p>
+
+    <p>Birkaç makine öğrenmesi yönteminin ayrıntılarına geçmeden önce makine öğrenmesinin ne olduğuna — ve ne olmadığına — bakalım.
+    Makine öğrenmesi sıkça yapay zekanın alt alanı olarak sınıflandırılır; ancak bu sınıflandırma yanıltıcı olabilir.
+    Makine öğrenmesi araştırması kesinlikle bu bağlamdan doğmuştur; fakat veri biliminde makine öğrenmesi yöntemlerinin uygulanmasında, makine öğrenmesini <em>veriden model oluşturmanın</em> bir aracı olarak düşünmek daha yararlıdır.</p>
+
+    <p>Bu bağlamda "öğrenme", bu modellere gözlemlenen veriye uyarlanabilen <em>ayarlanabilir parametreler</em> verdiğimizde devreye girer; böylece program veriden "öğreniyor" sayılabilir.
+    Modeller daha önce görülen veriye uydurulduktan sonra, yeni gözlemlenen verinin yönlerini tahmin etmek ve anlamak için kullanılabilir.
+    Bu tür matematiksel, modele dayalı "öğrenmenin" insan beyninin sergilediği "öğrenmeye" ne ölçüde benzediği konusundaki daha felsefi tartışmayı okuyucuya bırakıyorum.</p>
+
+    <p>Makine öğrenmesinde problem bağlamını anlamak, bu araçları etkili kullanmak için gereklidir; bu yüzden burada ele alacağımız yaklaşım türlerinin geniş bir sınıflandırmasıyla başlayacağız.</p>
+
+    <h2 id="makine-ogrenmesi-kategorileri">Makine Öğrenmesi Kategorileri</h2>
+
+    <p>Makine öğrenmesi iki ana türe ayrılabilir: <em>denetimli öğrenme</em> ve <em>denetimsiz öğrenme</em>.</p>
+
+    <p><em>Denetimli öğrenme</em>, verinin ölçülen öznitelikleri ile veriyle ilişkili etiketler arasındaki ilişkiyi bir şekilde modellemeyi içerir; model belirlendikten sonra yeni, bilinmeyen verilere etiket uygulamak için kullanılabilir.
+    Bu bazen <em>sınıflandırma</em> ve <em>regresyon</em> görevlerine ayrılır: sınıflandırmada etiketler ayrık kategorilerdir; regresyonda süreklidir.
+    Sonraki bölümde her iki denetimli öğrenme türüne de örnekler göreceksiniz.</p>
+
+    <p><em>Denetimsiz öğrenme</em>, herhangi bir etikete başvurmadan bir veri kümesinin özniteliklerini modellemeyi içerir.
+    Bu modeller <em>kümeleme</em> ve <em>boyut indirgeme</em> gibi görevleri kapsar.
+    Kümeleme algoritmaları verinin belirgin gruplarını tanımlar; boyut indirgeme algoritmaları verinin daha özlü temsillerini arar.
+    Denetimsiz öğrenmenin her iki türüne de örnekler göreceksiniz.</p>
+
+    <p>Buna ek olarak, denetimli ile denetimsiz arasında kalan <em>yarı denetimli öğrenme</em> yöntemleri vardır; yalnızca eksik etiketler mevcut olduğunda sıkça yararlıdır.</p>
+
+    <h2 id="nitel-ornekler">Makine Öğrenmesi Uygulamalarına Nitel Örnekler</h2>
+
+    <p>Bu fikirleri somutlaştırmak için bir makine öğrenmesi görevinin birkaç çok basit örneğine bakalım.
+    Bu örnekler, kitabın bu bölümünde inceleyeceğimiz makine öğrenmesi görev türlerine sezgisel, nicel olmayan bir genel bakış vermek içindir.
+    Sonraki bölümlerde belirli modellere ve kullanımlarına daha derin ineceğiz.
+    Daha teknik yönlerin önizlemesi için aşağıdaki şekilleri üreten Python kaynağını çevrimiçi <a href="https://github.com/jakevdp/PythonDataScienceHandbook/blob/master/notebooks/06.00-Figure-Code.ipynb" target="_blank" rel="noopener">ek bölümde</a> bulabilirsiniz.</p>
+
+    <h3 id="siniflandirma">Sınıflandırma: Ayrık Etiketleri Tahmin Etmek</h3>
+
+    <p>Önce etiketli noktalar verildiğinde bunları kullanarak etiketsiz noktaları sınıflandırmak istediğimiz basit bir sınıflandırma görevine bakalım.</p>
+
+    <p>Aşağıdaki şekilde gösterilen veriye sahip olduğumuzu düşünün:</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.01-classification-1.png" alt="Sınıflandırma verisi — etiketli iki boyutlu noktalar" width="700" loading="lazy">
+    </figure>
+    <p>Bu veri iki boyutludur: her nokta için düzlemdeki (x,y) konumlarıyla temsil edilen iki <em>öznitelik</em> vardır.
+    Ayrıca her nokta için iki <em>sınıf etiketinden</em> biri vardır; burada noktaların renkleriyle gösterilir.
+    Bu öznitelikler ve etiketlerden, yeni bir noktanın "mavi" mi "kırmızı" mı etiketleneceğine karar verecek bir model oluşturmak isteriz.</p>
+
+    <p>Böyle bir sınıflandırma görevi için birçok model mümkündür; çok basit biriyle başlayacağız. İki grubun düzlemde aralarına çizilen düz bir doğruyla ayrılabileceğini, doğrunun her iki tarafındaki noktaların aynı gruba düştüğünü varsayacağız.
+    Burada <em>model</em>, "düz bir doğru sınıfları ayırır" ifadesinin nicel bir sürümüdür; <em>model parametreleri</em> ise bu doğrunun verimiz için konum ve yönelimini tanımlayan sayılardır.
+    Bu parametrelerin en uygun değerleri veriden öğrenilir (makine öğrenmesindeki "öğrenme" budur); buna genelde <em>modeli eğitmek</em> denir.</p>
+
+    <p>Aşağıdaki şekil, eğitilmiş modelin bu veri için nasıl göründüğünü gösterir:</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.01-classification-2.png" alt="Eğitilmiş sınıflandırma modeli — ayırıcı doğru" width="700" loading="lazy">
+    </figure>
+    <p>Model eğitildikten sonra yeni, etiketlenmemiş veriye genellenebilir.
+    Başka bir deyişle, yeni bir veri kümesi alıp bu doğruyu çizebilir ve modele göre yeni noktalara etiket atayabiliriz (aşağıdaki şekil).
+    Bu aşamaya genelde <em>tahmin</em> denir.</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.01-classification-3.png" alt="Yeni veriye tahmin — sınıflandırma" width="700" loading="lazy">
+    </figure>
+    <p>Bu, makine öğrenmesinde "sınıflandırma" görevinin temel fikridir; verinin ayrık sınıf etiketleri olduğunu belirtir.
+    İlk bakışta bu önemsiz görünebilir: veriye bakıp böyle bir ayırıcı doğru çizmek kolaydır.
+    Makine öğrenmesi yaklaşımının yararı ise çok daha büyük ve çok daha fazla boyutlu veri kümelerine genellenebilmesidir.</p>
+
+    <p>Örneğin bu, e-posta için otomatik spam tespitine benzer. Burada şu öznitelik ve etiketleri kullanabiliriz:</p>
+
+    <ul>
+      <li><em>öznitelik 1</em>, <em>öznitelik 2</em>, … → önemli kelime veya ifadelerin normalize sayıları ("Viagra", "Extended warranty" vb.)</li>
+      <li><em>etiket</em> → "spam" veya "spam değil"</li>
+    </ul>
+
+    <p>Eğitim kümesi için etiketler küçük bir temsil örneğinin tek tek incelenmesiyle belirlenebilir; kalan e-postalar için etiket modelle belirlenir.
+    Yeterince iyi oluşturulmuş özniteliklere (genelde binlerce veya milyonlarca kelime/ifade) sahip uygun eğitilmiş bir sınıflandırma algoritması çok etkili olabilir.
+    Metin tabanlı böyle bir sınıflandırma örneğini <a href="05-naive-bayes.html">Derinlemesine: Naive Bayes Sınıflandırması</a> bölümünde göreceğiz.</p>
+
+    <p>Daha ayrıntılı ele alacağımız önemli sınıflandırma algoritmaları arasında Gauss naive Bayes (<a href="05-naive-bayes.html">Derinlemesine: Naive Bayes</a>), destek vektör makineleri (<a href="07-support-vector-machines.html">Derinlemesine: SVM</a>) ve rastgele orman sınıflandırması (<a href="08-random-forests.html">Derinlemesine: Karar Ağaçları ve Rastgele Ormanlar</a>) vardır.</p>
+
+    <h3 id="regresyon">Regresyon: Sürekli Etiketleri Tahmin Etmek</h3>
+
+    <p>Sınıflandırma algoritmasının ayrık etiketlerinin aksine, etiketlerin sürekli nicelikler olduğu basit bir regresyon görevine bakalım.</p>
+
+    <p>Aşağıdaki şekildeki veriyi düşünün; her noktanın sürekli bir etiketi vardır:</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.01-regression-1.png" alt="Regresyon verisi — sürekli etiketli noktalar" width="700" loading="lazy">
+    </figure>
+    <p>Sınıflandırma örneğinde olduğu gibi iki boyutlu verimiz var: her veri noktasını tanımlayan iki öznitelik.
+    Her noktanın rengi o nokta için sürekli etiketi temsil eder.</p>
+
+    <p>Bu tür veri için birçok regresyon modeli kullanılabilir; burada noktaları tahmin etmek için basit doğrusal regresyon kullanacağız.
+    Bu basit model, etiketi üçüncü bir uzamsal boyut olarak ele alırsak veriye bir düzlem sığdırabileceğimizi varsayar.
+    Bu, iki koordinatlı veriye doğru sığdırma probleminin daha üst düzey bir genellemesidir.</p>
+
+    <p>Bu kurulumu aşağıdaki şekilde görselleştirebiliriz:</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.01-regression-2.png" alt="Regresyon — üç boyutlu düzlem uyumu" width="700" loading="lazy">
+    </figure>
+    <p><em>öznitelik 1–öznitelik 2</em> düzleminin iki boyutlu çizimdekiyle aynı olduğuna dikkat edin; burada etiketleri hem renkle hem üç boyutlu eksen konumuyla temsil ettik.
+    Bu bakış açısından, bu üç boyutlu veriye bir düzlem sığdırmak herhangi bir girdi parametre seti için beklenen etiketi tahmin etmemize olanak tanır gibi görünür.
+    İki boyutlu izdüşüme döndüğümüzde böyle bir düzlem sığdırdığımızda aşağıdaki sonucu elde ederiz:</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.01-regression-3.png" alt="Regresyon — iki boyutlu izdüşümde düzlem" width="700" loading="lazy">
+    </figure>
+    <p>Bu uyum düzlemi yeni noktalar için etiket tahmin etmemiz için gerekeni verir.
+    Görsel olarak sonuçlar aşağıdaki şekildedir:</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.01-regression-4.png" alt="Regresyon — yeni noktalara tahmin" width="700" loading="lazy">
+    </figure>
+    <p>Sınıflandırma örneğinde olduğu gibi, az sayıda boyutta bu görev önemsiz görünebilir.
+    Ancak bu yöntemlerin gücü, çok sayıda özniteliği olan veriye doğrudan uygulanıp değerlendirilebilmesidir.</p>
+
+    <p>Örneğin bu, teleskopla gözlemlenen galaksilere uzaklık hesaplamaya benzer:</p>
+
+    <ul>
+      <li><em>öznitelik 1</em>, <em>öznitelik 2</em>, … → her galaksinin bir veya birkaç dalga boyundaki parlaklığı</li>
+      <li><em>etiket</em> → galaksinin uzaklığı veya kırmızıya kayması</li>
+    </ul>
+
+    <p>Küçük bir galaksi alt kümesinin uzaklıkları bağımsız (genelde daha pahalı/karmaşık) gözlemlerle belirlenebilir.
+    Kalan galaksilerin uzaklıkları uygun bir regresyon modeliyle tahmin edilebilir; tüm küme için pahalı gözlemi tekrarlamaya gerek kalmaz.
+    Astronomi çevrelerinde buna "fotometrik kırmızıya kayma" problemi denir.</p>
+
+    <p>Ele alacağımız önemli regresyon algoritmaları arasında doğrusal regresyon (<a href="06-linear-regression.html">Derinlemesine: Doğrusal Regresyon</a>), destek vektör makineleri (<a href="07-support-vector-machines.html">Derinlemesine: SVM</a>) ve rastgele orman regresyonu (<a href="08-random-forests.html">Derinlemesine: Karar Ağaçları ve Rastgele Ormanlar</a>) vardır.</p>
+
+    <h3 id="kumeleme">Kümeleme: Etiketsiz Veride Etiket Çıkarsama</h3>
+
+    <p>Az önce gördüğümüz sınıflandırma ve regresyon örnekleri, yeni veri için etiket tahmin edecek model oluşturmaya çalışan <em>denetimli</em> öğrenme algoritmalarıdır.
+    Denetimsiz öğrenme, bilinen etiketlere başvurmadan veriyi tanımlayan modelleri içerir.</p>
+
+    <p>Denetimsiz öğrenmenin yaygın bir durumu "kümeleme"dir; veri otomatik olarak belirli sayıda ayrık gruba atanır.
+    Örneğin aşağıdaki şekildeki gibi iki boyutlu verimiz olabilir:</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.01-clustering-1.png" alt="Kümeleme — etiketsiz iki boyutlu veri" width="700" loading="lazy">
+    </figure>
+    <p>Gözle her noktanın belirgin bir grubun parçası olduğu açıktır.
+    Bu girdiyle bir kümeleme modeli, verinin iç yapısını kullanarak hangi noktaların ilişkili olduğunu belirler.
+    Çok hızlı ve sezgisel <em>k</em>-ortalama algoritmasıyla (<a href="11-k-means.html">Derinlemesine: K-Means Kümeleme</a>) aşağıdaki kümeleri buluruz:</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.01-clustering-2.png" alt="K-means kümeleme sonucu" width="700" loading="lazy">
+    </figure>
+    <p><em>k</em>-ortalama, <em>k</em> küme merkezinden oluşan bir model sığdırır; en uygun merkezler, her noktanın atandığı merkeze uzaklığını minimize edenler varsayılır.
+    İki boyutta bu yine basit görünebilir; veri büyüdükçe ve karmaşıklaştıkça kümeleme algoritmaları veri kümesinden yararlı bilgi çıkarmaya devam eder.</p>
+
+    <p><em>k</em>-ortalama algoritmasını <a href="11-k-means.html">Derinlemesine: K-Means Kümeleme</a> bölümünde daha derin ele alacağız.
+    Diğer önemli kümeleme algoritmaları arasında Gauss karışım modelleri (<a href="12-gaussian-mixtures.html">Derinlemesine: Gauss Karışımları</a>) ve spektral kümeleme (<a href="http://scikit-learn.org/stable/modules/clustering.html" target="_blank" rel="noopener">Scikit-Learn kümeleme dokümantasyonu</a>) vardır.</p>
+
+    <h3 id="boyut-indirgeme">Boyut İndirgeme: Etiketsiz Verinin Yapısını Çıkarsama</h3>
+
+    <p>Boyut indirgeme, etiketlerin veya diğer bilgilerin veri kümesinin yapısından çıkarıldığı denetimsiz bir algoritma örneğidir.
+    Önceki örneklerden biraz daha soyuttur; genelde veri kümesinin ilgili niteliklerini koruyan düşük boyutlu bir temsil çıkarmayı hedefler.
+    Farklı boyut indirgeme yöntemleri bu nitelikleri farklı ölçer (<a href="10-manifold-learning.html">Derinlemesine: Manifold Öğrenme</a>).</p>
+
+    <p>Örnek olarak aşağıdaki veriyi düşünün:</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.01-dimesionality-1.png" alt="Boyut indirgeme — spiral gömülü veri" width="700" loading="lazy">
+    </figure>
+    <p>Görsel olarak bu veride yapı vardır: iki boyutlu uzayda spiral biçiminde düzenlenmiş tek boyutlu bir çizgiden çekilmiştir.
+    Bir bakıma veri aslında "içsel" olarak yalnızca tek boyutludur; bu tek boyutlu veri iki boyutlu uzaya gömülmüştür.
+    Uygun bir boyut indirgeme modeli bu doğrusal olmayan gömülü yapıya duyarlı olur ve daha düşük boyutlu temsili algılayabilir.</p>
+
+    <p>Aşağıdaki şekil tam bunu yapan bir manifold öğrenme algoritması olan Isomap'ın sonuçlarını gösterir.</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.01-dimesionality-2.png" alt="Isomap ile boyut indirgeme sonucu" width="700" loading="lazy">
+    </figure>
+    <p>Renklerin (çıkarılan tek boyutlu gizli değişkeni temsil eden) spiral boyunca düzgün değiştiğine dikkat edin; algoritmanın gözle gördüğümüz yapıyı algıladığını gösterir.
+    Önceki örneklerde olduğu gibi, boyut indirgeme algoritmalarının gücü daha yüksek boyutlarda belirginleşir.
+    Örneğin 100 veya 1000 özniteliği olan bir veri kümesindeki önemli ilişkileri görselleştirmek isteyebiliriz.
+    1000 boyutlu veriyi görselleştirmek zordur; veriyi 2 veya 3 boyuta indirgeyerek yönetilebilir kılabiliriz.</p>
+
+    <p>Ele alacağımız önemli boyut indirgeme algoritmaları arasında temel bileşen analizi (<a href="09-principal-component-analysis.html">Derinlemesine: PCA</a>) ve Isomap ile yerel doğrusal gömme dahil çeşitli manifold öğrenme algoritmaları (<a href="10-manifold-learning.html">Derinlemesine: Manifold Öğrenme</a>) vardır.</p>
+
+    <h2 id="ozet-01">Özet</h2>
+
+    <p>Burada temel makine öğrenmesi yaklaşım türlerinin birkaç basit örneğini gördük.
+    Kuşkusuz göz ardı ettiğimiz önemli pratik ayrıntılar vardır; ancak bu bölüm, makine öğrenmesi yaklaşımlarının hangi problem türlerini çözebileceğine dair temel bir fikir vermek için tasarlandı.</p>
+
+    <p>Kısaca şunları gördük:</p>
+
+    <ul>
+      <li><em>Denetimli öğrenme</em>: Etiketli eğitim verisine dayanarak etiket tahmin eden modeller
+        <ul>
+          <li><em>Sınıflandırma</em>: Etiketleri iki veya daha fazla ayrık kategori olarak tahmin eden modeller</li>
+          <li><em>Regresyon</em>: Sürekli etiket tahmin eden modeller</li>
+        </ul>
+      </li>
+      <li><em>Denetimsiz öğrenme</em>: Etiketsiz veride yapı tanımlayan modeller
+        <ul>
+          <li><em>Kümeleme</em>: Veride belirgin grupları tespit eden modeller</li>
+          <li><em>Boyut indirgeme</em>: Yüksek boyutlu veride daha düşük boyutlu yapıyı bulan modeller</li>
+        </ul>
+      </li>
+    </ul>
+
+    <p>Sonraki bölümlerde bu kategoriler içinde çok daha derine inecek ve bu kavramların nerede yararlı olduğuna dair daha ilginç örnekler göreceğiz.</p>
+
+    <p>Önceki tartışmadaki tüm şekiller gerçek makine öğrenmesi hesaplarına dayanır; arkalarındaki kod <a href="https://github.com/jakevdp/PythonDataScienceHandbook/blob/master/notebooks/06.00-Figure-Code.ipynb" target="_blank" rel="noopener">Ek: Şekil Kodu</a> bölümünde bulunur.</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Denetimli ve denetimsiz</div>
+      <p><strong>Denetimli</strong> öğrenmede modelinize hem <code>X</code> (öznitelikler) hem <code>y</code> (etiket) verirsiniz; <strong>denetimsiz</strong> öğrenmede yalnızca <code>X</code> vardır. Bölüm 5.2'de her ikisi için de Scikit-Learn'de aynı <code>fit</code> / <code>predict</code> / <code>transform</code> kalıbını göreceksiniz.</p>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 İki küme üretin</div>
+      <p>Aşağıda rastgele 2D noktalar üretin; gerçek kümeleme algoritmalarını Bölüm 5.11'de göreceksiniz:</p>
+          <div class="code-block" data-lang="python" data-filename="two_clusters_X.py">
+      <pre><code>import numpy as np
+rng = np.random.RandomState(0)
+A = rng.randn(20, 2) + [2, 2]
+B = rng.randn(20, 2) + [-2, -2]
+X = np.vstack([A, B])
+print("X.shape =", X.shape)</code></pre>
+    </div>
+
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="02-introducing-scikit-learn.html">5.2 Scikit-Learn&#x27;e Giriş →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

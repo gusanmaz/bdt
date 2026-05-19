@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1.4 Girdi ve Çıktı Geçmişi — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="01-ipython" data-section="04-input-output-history">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/01.04-input-output-history.html" target="_blank" rel="noopener">Input and Output History</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+    <h1>1.4 Girdi ve Çıktı Geçmişi</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/01.04-input-output-history.html" target="_blank" rel="noopener">Input and Output History</a></em></p>
+
+    <p>Daha önce IPython kabuğunun önceki komutlara yukarı/aşağı ok veya Ctrl-p/Ctrl-n ile erişmenizi sağladığını gördünüz. Ayrıca hem kabukta hem defterlerde IPython, önceki komutların çıktısını ve komutların string sürümlerini almanın birkaç yolunu sunar. Bunları burada inceleyeceğiz.</p>
+
+    <h2 id="in-out-nesneleri">IPython'un In ve Out Nesneleri</h2>
+
+    <p>IPython'un kullandığı <code>In [1]:</code> / <code>Out[1]:</code> istem stiline alışıyor olmalısınız. Bunlar yalnızca süs değildir: oturumdaki önceki girdi ve çıktılara nasıl erişeceğinize ipucu verirler. Şöyle bir oturum başlatalım:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="session_math.txt">
+      <pre><code>In [1]: import math
+
+In [2]: math.sin(2)
+Out[2]: 0.9092974268256817
+
+In [3]: math.cos(2)
+Out[3]: -0.4161468365471424</code></pre>
+    </div>
+
+    <p>Yerleşik <code>math</code> paketini içe aktardık, sonra 2 sayısının sinüs ve kosinüsünü hesapladık. Bu girdi ve çıktılar kabukta <code>In</code>/<code>Out</code> etiketleriyle gösterilir; ama daha fazlası var — IPython aslında <code>In</code> ve <code>Out</code> adlı Python değişkenleri oluşturur ve bunları geçmişi yansıtacak şekilde otomatik günceller:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="In_Out_vars.txt">
+      <pre><code>In [4]: In
+Out[4]: ['', 'import math', 'math.sin(2)', 'math.cos(2)', 'In']
+
+In [5]: Out
+Out[5]:
+{2: 0.9092974268256817,
+ 3: -0.4161468365471424,
+ 4: ['', 'import math', 'math.sin(2)', 'math.cos(2)', 'In', 'Out']}</code></pre>
+    </div>
+
+    <p><code>In</code> nesnesi bir listedir; komutları sırayla tutar (listenin ilk öğesi yer tutucudur, böylece <code>In [1]</code> ilk komuta referans verebilir):</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="In_1.txt">
+      <pre><code>In [6]: print(In[1])
+import math</code></pre>
+    </div>
+
+    <p><code>Out</code> nesnesi liste değil, girdi numaralarını çıktılarına eşleyen bir sözlüktür (varsa):</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="Out_2.txt">
+      <pre><code>In [7]: print(Out[2])
+0.9092974268256817</code></pre>
+    </div>
+
+    <p>Tüm işlemlerin çıktısı yoktur: örneğin <code>import</code> ve <code>print</code> ifadeleri çıktıyı etkilemez. İkincisi şaşırtıcı gelebilir; <code>print</code> <code>None</code> döndüren bir fonksiyondur — kısalık için <code>None</code> döndüren komutlar <code>Out</code>'a eklenmez.</p>
+
+    <p>Bu, geçmiş sonuçlarla etkileşmek istediğinizde yararlıdır. Örneğin daha önce hesaplanan sonuçlarla <code>sin(2) ** 2 + cos(2) ** 2</code> toplamını kontrol edelim:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="Out_sum.txt">
+      <pre><code>In [8]: Out[2] ** 2 + Out[3] ** 2
+Out[8]: 1.0</code></pre>
+    </div>
+
+    <p>Sonuç bilinen trigonometrik özdeşlikten beklediğimiz gibi <code>1.0</code>'dır. Burada bu sonuçlara gerek olmayabilir; çok pahalı bir hesaplama yapıp sonucu bir değişkene atamayı unuttuğunuzda çok işe yarar.</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Pyodide'da In/Out</div>
+      <p><code>In</code> ve <code>Out</code> yalnızca gerçek IPython oturumunda otomatik doldurulur. Aşağıdaki deneyde değişkenleri elle tutuyoruz.</p>
+    </div>
+
+    <h2 id="alt-cizgi-kisayollari">Alt Çizgi Kısayolları ve Önceki Çıktılar</h2>
+
+    <p>Standart Python kabuğunda önceki çıktıya erişim için tek basit kısayol vardır: <code>_</code> (tek alt çizgi) son çıktıyla güncellenir. IPython'da da böyledir:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="underscore.txt">
+      <pre><code>In [9]: print(_)
+1.0</code></pre>
+    </div>
+
+    <p>IPython biraz daha ileri gider — çift alt çizgi sondan bir önceki, üçlü alt çizgi sondan ikinci önceki çıktıya erişir (çıktısı olmayan komutlar atlanır):</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="double_triple.txt">
+      <pre><code>In [10]: print(__)
+-0.4161468365471424
+
+In [11]: print(___)
+0.9092974268256817</code></pre>
+    </div>
+
+    <p>IPython burada durur: üçten fazla alt çizgi saymak zorlaşır; o noktada satır numarasıyla referans vermek daha kolaydır.</p>
+
+    <p>Bir kısayol daha: <code>Out[X]</code> için kısaltma <code>_X</code> (tek alt çizgi + satır numarası):</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="Out_2_shorthand.txt">
+      <pre><code>In [12]: Out[2]
+Out[12]: 0.9092974268256817
+
+In [13]: _2
+Out[13]: 0.9092974268256817</code></pre>
+    </div>
+
+    <h2 id="ciktiyi-bastirma">Çıktıyı Bastırma</h2>
+
+    <p>Bazen bir ifadenin çıktısını bastırmak isteyebilirsiniz (en yaygın kullanım ileride göreceğimiz çizim komutlarıdır). Ya da komutun sonucunu çıktı geçmişinde saklamak istemezsiniz — bellekte diğer referanslar kalkınca serbest bırakılsın diye. En kolay yol satır sonuna noktalı virgül eklemektir:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="semicolon.txt">
+      <pre><code>In [14]: math.sin(2) + math.cos(2);</code></pre>
+    </div>
+
+    <p>Sonuç sessizce hesaplanır; ekranda gösterilmez ve <code>Out</code> sözlüğüne eklenmez:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="14_not_in_Out.txt">
+      <pre><code>In [15]: 14 in Out
+Out[15]: False</code></pre>
+    </div>
+
+    <h2 id="ilgili-magic-komutlar">İlgili Magic Komutlar</h2>
+
+    <p>Önceki girdilerin bir grubuna birden erişmek için <code>%history</code> magic komutu çok yararlıdır. İlk üç girdiyi yazdırmak:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="history_cmd.txt">
+      <pre><code>In [16]: %history -n 1-3
+   1: import math
+   2: math.sin(2)
+   3: math.cos(2)</code></pre>
+    </div>
+
+    <p>Her zamanki gibi seçenekler için <code>%history?</code> yazabilirsiniz (<code>?</code> işlevi için <a href="01-help-and-documentation.html">1.1 Yardım ve Dokümantasyon</a>). Diğer yararlı magic'ler: komut geçmişinin bir bölümünü yeniden çalıştıran <code>%rerun</code> ve geçmişin bir kısmını dosyaya kaydeden <code>%save</code>.</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin — Trigonometrik özdeşlik</div>
+      <p>Pyodide'da sin/cos hesaplayıp <code>sin² + cos² = 1</code> doğrulayın:</p>
+      <div class="code-block" data-lang="python" data-filename="trig_identity.py">
+        <pre><code>import math
+s = math.sin(2)
+c = math.cos(2)
+print("sin(2) =", s)
+print("cos(2) =", c)
+print("sin² + cos² =", s**2 + c**2)</code></pre>
+      </div>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin — Noktalı virgül</div>
+      <p>IPython'da <code>1+1;</code> çıktı göstermez. Pyodide'da son satıra noktalı virgül ekleyerek veya sonucu değişkene atamadan ifade yazarak farkı gözlemleyin.</p>
+      <div class="code-block" data-lang="python" data-filename="semicolon_py.py">
+        <pre><code>x = 1 + 1  # son satır ifade değilse çıktı yok
+print("x =", x)</code></pre>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

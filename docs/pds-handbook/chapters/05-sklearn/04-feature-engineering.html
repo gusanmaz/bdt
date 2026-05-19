@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Öznitelik Mühendisliği — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="05-sklearn" data-section="04-feature-engineering" data-preload-numpy="true" data-preload-pandas="true" data-preload-matplotlib="true" data-preload-sklearn="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.04-feature-engineering.html" target="_blank" rel="noopener">05.04 Feature Engineering</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>5.4 Öznitelik Mühendisliği</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.04-feature-engineering.html" target="_blank" rel="noopener">05.04 Feature Engineering</a></em></p>
+    <p>Önceki bölümler makine öğrenmesinin temel fikirlerini özetledi; ancak tüm örnekler sayısal verinin düzenli <code>[n_samples, n_features]</code> biçiminde olduğunu varsaydı.
+    Gerçek dünyada veri nadiren bu biçimde gelir.
+    Makine öğrenmesini pratikte kullanmanın daha önemli adımlarından biri <em>öznitelik mühendisliği</em>dir: probleminiz hakkındaki bilgiyi, öznitelik matrisi oluşturmak için kullanabileceğiniz sayılara dönüştürmek.</p>
+    <p>Bu bölümde öznitelik mühendisliğinin birkaç yaygın örneğini ele alacağız: kategorik veri, metin ve görüntüler için öznitelikler.
+    Ayrıca model karmaşıklığını artırmak için türetilmiş öznitelikler ve eksik veri doldurma (imputation) tartışılacak.
+    Bu sürece genelde <em>vektörizasyon</em> denir; keyfi veriyi düzgün vektörlere dönüştürmeyi içerir.</p>
+    <h2 id="kategorik-oznitelikler">Kategorik Öznitelikler</h2>
+    <p>Sayısal olmayan verinin yaygın türlerinden biri <em>kategorik</em> veridir.
+    Örneğin konut fiyatları verisini inceliyorsunuz; "fiyat" ve "oda sayısı" gibi sayısal özniteliklerin yanında "mahalle" bilgisi de vardır.
+    Veriniz kabaca şöyle görünebilir:</p>
+    <div class="code-block" data-lang="python" data-filename="housing_dict_data.py">
+      <pre><code>data = [
+    {'price': 850000, 'rooms': 4, 'neighborhood': 'Queen Anne'},
+    {'price': 700000, 'rooms': 3, 'neighborhood': 'Fremont'},
+    {'price': 650000, 'rooms': 3, 'neighborhood': 'Wallingford'},
+    {'price': 600000, 'rooms': 2, 'neighborhood': 'Fremont'}
+]</code></pre>
+    </div>
+
+    <p>Bu veriyi basit bir sayısal eşlemeyle kodlamak cazip gelebilir:</p>
+    <div class="code-block" data-lang="python" data-filename="neighborhood_map_bad.py">
+      <pre><code>{'Queen Anne': 1, 'Fremont': 2, 'Wallingford': 3};</code></pre>
+    </div>
+
+    <p>Ancak bu Scikit-Learn'de genelde yararlı bir yaklaşım değildir. Paketin modelleri sayısal özniteliklerin cebirsel nicelikleri yansıttığını varsayar; böyle bir eşleme örneğin <em>Queen Anne &lt; Fremont &lt; Wallingford</em> veya <em>Wallingford − Queen Anne = Fremont</em> anlamına gelir ki bu pek anlamlı değildir.</p>
+    <p>Bu durumda kanıtlanmış tekniklerden biri <em>one-hot encoding</em> (tek-sıcak kodlama)dir: kategorinin varlığını veya yokluğunu 1 veya 0 ile gösteren ek sütunlar oluşturur.
+    Veriniz sözlük listesi biçimindeyken Scikit-Learn'ün <code>DictVectorizer</code> sınıfı bunu sizin için yapar:</p>
+    <div class="code-block" data-lang="python" data-filename="dict_vectorizer.py">
+      <pre><code>from sklearn.feature_extraction import DictVectorizer
+vec = DictVectorizer(sparse=False, dtype=int)
+vec.fit_transform(data)</code></pre>
+    </div>
+
+    <p><code>neighborhood</code> sütununun üç ayrı mahalle etiketini temsil eden üç sütuna genişletildiğine dikkat edin; her satır kendi mahalle sütununda 1 içerir.
+    Kategorik öznitelikler bu şekilde kodlandıktan sonra normal şekilde Scikit-Learn modeli uydurabilirsiniz.</p>
+    <p>Her sütunun anlamını görmek için öznitelik adlarına bakabilirsiniz:</p>
+    <div class="code-block" data-lang="python" data-filename="feature_names_out.py">
+      <pre><code>vec.get_feature_names_out()</code></pre>
+    </div>
+
+    <p>Bu yaklaşımın belirgin bir dezavantajı vardır: kategorinizin çok olası değeri varsa veri kümenizin boyutu <em>ciddi</em> artabilir.
+    Ancak kodlanmış veri çoğunlukla sıfır içerdiğinden seyrek çıktı çok verimli bir çözüm olabilir:</p>
+    <div class="code-block" data-lang="python" data-filename="dict_vectorizer_sparse.py">
+      <pre><code>vec = DictVectorizer(sparse=True, dtype=int)
+vec.fit_transform(data)</code></pre>
+    </div>
+
+    <p>Scikit-Learn tahmin edicilerinin neredeyse tamamı uyum ve değerlendirme sırasında böyle seyrek girdileri kabul eder.
+    <code>sklearn.preprocessing.OneHotEncoder</code> ve <code>sklearn.feature_extraction.FeatureHasher</code> bu tür kodlamayı destekleyen ek araçlardır.</p>
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — One-hot ve seyreklik</div>
+      <p>Kategorik sütun sayısı çok büyükse (ör. posta kodu) <code>FeatureHasher</code> veya hedef kodlama gibi alternatiflere bakın. Seyrek matrisler bellek açısından verimlidir.</p>
+    </div>
+
+    <h2 id="metin-oznitelikleri">Metin Öznitelikleri</h2>
+    <p>Öznitelik mühendisliğinde bir başka yaygın ihtiyaç metni temsil edici sayısal değerlere dönüştürmektir.
+    Örneğin sosyal medya verisinin otomatik madenciliği büyük ölçüde metnin sayılara kodlanmasına dayanır.
+    En basit kodlama yöntemlerinden biri <em>kelime sayımı</em>dır: her metin parçasındaki her kelimenin geçiş sayısını sayıp sonucu tabloya koyarsınız.</p>
+    <p>Örneğin aşağıdaki üç cümleyi düşünün:</p>
+    <div class="code-block" data-lang="python" data-filename="text_sample_phrases.py">
+      <pre><code>sample = ['problem of evil',
+          'evil queen',
+          'horizon problem']</code></pre>
+    </div>
+
+    <p>Kelime sayımına dayalı vektörizasyon için "problem", "of", "evil" vb. kelimeleri temsil eden sütunlar oluşturabiliriz.
+    Bu basit örnekte elle yapılabilir; tediumdan kaçınmak için Scikit-Learn'ün <code>CountVectorizer</code> sınıfını kullanırız:</p>
+    <div class="code-block" data-lang="python" data-filename="count_vectorizer.py">
+      <pre><code>from sklearn.feature_extraction.text import CountVectorizer
+
+vec = CountVectorizer()
+X = vec.fit_transform(sample)
+X</code></pre>
+    </div>
+
+    <p>Sonuç her kelimenin kaç kez geçtiğini kaydeden seyrek bir matristir; etiketli sütunlarla <code>DataFrame</code>'e çevirirsek incelemek kolaylaşır:</p>
+    <div class="code-block" data-lang="python" data-filename="count_vectorizer_df.py">
+      <pre><code>import pandas as pd
+pd.DataFrame(X.toarray(), columns=vec.get_feature_names_out())</code></pre>
+    </div>
+
+    <p>Basit ham kelime sayımının sorunları vardır: çok sık geçen kelimelere fazla ağırlık verebilir; bazı sınıflandırma algoritmaları için alt optimal olabilir.
+    Bunu düzeltmek için <em>term frequency–inverse document frequency</em> (<em>TF–IDF</em>) kullanılır; kelime sayımlarını belgelerde ne sıklıkla göründüklerine göre ağırlıklandırır.
+    Bu öznitelikleri hesaplama sözdizimi önceki örneğe benzer:</p>
+    <div class="code-block" data-lang="python" data-filename="tfidf_vectorizer.py">
+      <pre><code>from sklearn.feature_extraction.text import TfidfVectorizer
+vec = TfidfVectorizer()
+X = vec.fit_transform(sample)
+pd.DataFrame(X.toarray(), columns=vec.get_feature_names_out())</code></pre>
+    </div>
+
+    <p>TF–IDF'in sınıflandırma probleminde kullanımına <a href="05-naive-bayes.html">Derinlemesine: Naive Bayes Sınıflandırması</a> bölümünde örnek verilmiştir.</p>
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 </div>
+      <p>Basit TF–IDF vektörizasyonu deneyin:</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_tfidf.py">
+      <pre><code>from sklearn.feature_extraction.text import TfidfVectorizer
+docs = ['problem of evil', 'evil queen', 'problem of heart']
+vec = TfidfVectorizer()
+X = vec.fit_transform(docs)
+print(vec.get_feature_names_out())
+print(X.toarray().round(2))</code></pre>
+    </div>
+
+    </div>
+
+    <h2 id="goruntu-oznitelikleri">Görüntü Öznitelikleri</h2>
+    <p>Bir başka yaygın ihtiyaç görüntüleri makine öğrenmesi analizi için uygun biçimde kodlamaktır.
+    En basit yaklaşım <a href="02-introducing-scikit-learn.html">Scikit-Learn'e Giriş</a> bölümündeki rakam verisinde kullandığımız gibidir: doğrudan piksel değerlerinin kendisi.
+    Ancak uygulamaya göre bu optimal olmayabilir.</p>
+    <p>Görüntüler için öznitelik çıkarma tekniklerinin kapsamlı özeti bu bölümün kapsamını aşar; ancak standart yaklaşımların birçoğu <a href="http://scikit-image.org" target="_blank" rel="noopener">Scikit-Image</a> projesinde mükemmel uygulamalara sahiptir.
+    Scikit-Learn ve Scikit-Image birlikte kullanımına <a href="14-image-features.html">Görüntü Öznitelikleri</a> bölümüne bakın.</p>
+    <h2 id="turetilmis-oznitelikler">Türetilmiş Öznitelikler</h2>
+    <p>Bir başka yararlı öznitelik türü girdi özniteliklerinden matematiksel olarak türetilenlerdir.
+    <a href="03-hyperparameters-and-model-validation.html">Hiperparametreler ve Model Doğrulama</a> bölümünde girdi verisinden <em>polinom öznitelikleri</em> oluşturduğumuz bir örnek gördük.
+    Doğrusal regresyonu polinom regresyona dönüştürmek için modeli değiştirmeden girdiyi dönüştürdük!</p>
+    <p>Örneğin bu veri düz bir çizgiyle iyi tanımlanamaz (Şekil 40-1):</p>
+    <div class="code-block" data-lang="python" data-filename="derived_features_plot1.py" data-readonly="true">
+      <pre><code>%matplotlib inline
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.array([1, 2, 3, 4, 5])
+y = np.array([4, 2, 1, 3, 7])
+plt.scatter(x, y);</code></pre>
+    </div>
+
+    <p><code>LinearRegression</code> ile yine de veriye doğru uydurup optimal sonucu alabiliriz (Şekil 40-2):</p>
+    <div class="code-block" data-lang="python" data-filename="linear_on_nonlinear.py">
+      <pre><code>from sklearn.linear_model import LinearRegression
+X = x[:, np.newaxis]
+model = LinearRegression().fit(X, y)
+yfit = model.predict(X)
+plt.scatter(x, y)
+plt.plot(x, yfit);</code></pre>
+    </div>
+
+    <p>Ancak $x$ ile $y$ arasındaki ilişkiyi tanımlamak için daha gelişmiş bir modele ihtiyacımız olduğu açıktır.</p>
+    <p>Buna bir yaklaşım veriyi dönüştürüp modele daha fazla esneklik verecek ek öznitelik sütunları eklemektir.
+    Örneğin polinom öznitelikleri şöyle ekleyebiliriz:</p>
+    <div class="code-block" data-lang="python" data-filename="polynomial_features.py">
+      <pre><code>from sklearn.preprocessing import PolynomialFeatures
+poly = PolynomialFeatures(degree=3, include_bias=False)
+X2 = poly.fit_transform(X)
+print(X2)</code></pre>
+    </div>
+
+    <p>Türetilmiş öznitelik matrisinde $x$, $x^2$ ve $x^3$'ü temsil eden sütunlar vardır.
+    Bu genişletilmiş girdi üzerinde doğrusal regresyon veriye çok daha yakın bir uyum verir (Şekil 40-3):</p>
+    <div class="code-block" data-lang="python" data-filename="poly_fit_plot.py">
+      <pre><code>model = LinearRegression().fit(X2, y)
+yfit = model.predict(X2)
+plt.scatter(x, y)
+plt.plot(x, yfit);</code></pre>
+    </div>
+
+    <p>Modeli değiştirmeden girdileri dönüştürerek modeli iyileştirme fikri birçok güçlü makine öğrenmesi yönteminin temelidir.
+    <em>temel fonksiyon regresyonu</em> bağlamında <a href="06-linear-regression.html">Derinlemesine: Doğrusal Regresyon</a> bölümünde daha derin ineceğiz.
+    Daha genel olarak bu, <em>çekirdek yöntemleri</em> olarak bilinen güçlü tekniklere giden motivasyon yollarından biridir; <a href="07-support-vector-machines.html">Derinlemesine: Destek Vektör Makineleri</a> bölümünde keşfedeceğiz.</p>
+    <h2 id="eksik-veri-doldurma">Eksik Verinin Doldurulması</h2>
+    <p>Öznitelik mühendisliğinde bir başka yaygın ihtiyaç eksik verinin işlenmesidir.
+    <code>DataFrame</code> nesnelerinde eksik veriyi <a href="../03-pandas/04-missing-values.html">Eksik Veri</a> bölümünde ele aldık; eksik değerler sıkça <code>NaN</code> ile işaretlenir.
+    Örneğin veri kümemiz şöyle görünebilir:</p>
+    <div class="code-block" data-lang="python" data-filename="missing_data_array.py">
+      <pre><code>from numpy import nan
+X = np.array([[ nan, 0,   3  ],
+              [ 3,   7,   9  ],
+              [ 3,   5,   2  ],
+              [ 4,   nan, 6  ],
+              [ 8,   8,   1  ]])
+y = np.array([14, 16, -1,  8, -5])</code></pre>
+    </div>
+
+    <p>Tipik bir makine öğrenmesi modelini böyle veriye uygularken önce eksik değerleri uygun bir doldurma değeriyle değiştirmemiz gerekir.
+    Buna eksik değerlerin <em>imputation</em> (doldurma) denir; stratejiler basit (sütunun ortalamasıyla değiştirme) ile gelişmiş (matris tamamlama veya sağlam model) arasında değişir.</p>
+    <p>Gelişmiş yaklaşımlar genelde uygulamaya özgüdür; burada derinlemesine girmeyeceğiz.
+    Ortalama, medyan veya en sık değerle temel doldurma için Scikit-Learn <code>SimpleImputer</code> sınıfını sağlar:</p>
+    <div class="code-block" data-lang="python" data-filename="simple_imputer.py">
+      <pre><code>from sklearn.impute import SimpleImputer
+imp = SimpleImputer(strategy='mean')
+X2 = imp.fit_transform(X)
+X2</code></pre>
+    </div>
+
+    <p>Sonuç veride iki eksik değerin sütundaki kalan değerlerin ortalamasıyla değiştirildiğini görüyoruz.
+    Bu doldurulmuş veri doğrudan örneğin <code>LinearRegression</code> tahmin edicisine verilebilir:</p>
+    <div class="code-block" data-lang="python" data-filename="impute_then_regress.py">
+      <pre><code>model = LinearRegression().fit(X2, y)
+model.predict(X2)</code></pre>
+    </div>
+
+    <h2 id="oznitelik-pipeline">Öznitelik Pipeline'ları</h2>
+    <p>Önceki örneklerin herhangi birinde dönüşümleri elle yapmak, özellikle birden fazla adımı zincirlemek istediğinizde hızla yorucu olabilir.
+    Örneğin şöyle bir işleme pipeline'ı isteyebiliriz:</p>
+    <ol>
+      <li>Eksik değerleri ortalama ile doldur.</li>
+      <li>Öznitelikleri ikinci dereceye dönüştür.</li>
+      <li>Doğrusal regresyon modeli uydur.</li>
+    </ol>
+    <p>Bu tür pipeline'ı kolaylaştırmak için Scikit-Learn <code>Pipeline</code> nesnesi sunar:</p>
+    <div class="code-block" data-lang="python" data-filename="make_pipeline_impute.py">
+      <pre><code>from sklearn.pipeline import make_pipeline
+
+model = make_pipeline(SimpleImputer(strategy='mean'),
+                      PolynomialFeatures(degree=2),
+                      LinearRegression())</code></pre>
+    </div>
+
+    <p>Bu pipeline standart bir Scikit-Learn nesnesi gibi görünür ve davranır; belirtilen tüm adımları girdi verisine uygular:</p>
+    <div class="code-block" data-lang="python" data-filename="pipeline_fit.py">
+      <pre><code>model.fit(X, y)  # X with missing values, from above
+print(y)
+print(model.predict(X))</code></pre>
+    </div>
+
+    <p>Modelin tüm adımları otomatik uygulanır.
+    Basitlik için bu gösterimde modeli eğitildiği veriye uyguladık; bu yüzden sonucu mükemmel tahmin edebildi (ayrıntılı tartışma için <a href="03-hyperparameters-and-model-validation.html">Hiperparametreler ve Model Doğrulama</a> bölümüne bakın).</p>
+    <p>Scikit-Learn pipeline örnekleri için naive Bayes sınıflandırması bölümüne, ayrıca <a href="06-linear-regression.html">Derinlemesine: Doğrusal Regresyon</a> ve <a href="07-support-vector-machines.html">Derinlemesine: Destek Vektör Makineleri</a> bölümlerine bakın.</p>
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="05-naive-bayes.html">5.5 Naive Bayes Sınıflandırması →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas + Matplotlib + scikit-learn yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

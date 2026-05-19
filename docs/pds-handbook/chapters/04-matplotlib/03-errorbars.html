@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hata Çubukları — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="04-matplotlib" data-section="03-errorbars" data-preload-numpy="true" data-preload-matplotlib="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/04.03-errorbars.html" target="_blank" rel="noopener">04.03 Errorbars</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>Hata Çubukları</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/04.03-errorbars.html" target="_blank" rel="noopener">04.03 Errorbars</a></em></p>
+    <p>Her bilimsel ölçümde belirsizliklerin doğru hesaba katılması, çoğu zaman sayının kendisinin doğru raporlanması kadar — hatta daha da — önemlidir.
+    Örneğin bazı astrofizik gözlemlerle Evren'in yerel genişleme hızı olan Hubble Sabiti'ni tahmin ettiğimi düşünün.
+    Güncel literatür ~70 (km/s)/Mpc öneriyor; yöntemimle 74 (km/s)/Mpc ölçtüm. Değerler tutarlı mı? Verilen bilgiyle tek doğru cevap: bilemeyiz.</p>
+    <p>Bu bilgiye belirsizlikleri ekleyelim: literatür 70 ± 2,5 (km/s)/Mpc, yöntemim 74 ± 5 (km/s)/Mpc ölçtü.
+    Şimdi tutarlılık nicel olarak sorulabilir.</p>
+    <p>Veri ve sonuçların görselleştirilmesinde bu hataların etkili gösterilmesi, grafiğin çok daha eksiksiz bilgi aktarmasını sağlar.</p>
+
+    <h2 id="temel-hata-cubuklari">Temel hata çubukları</h2>    <p>Belirsizlikleri görselleştirmenin standart yollarından biri hata çubuğudur.
+    Temel bir hata çubuğu tek bir Matplotlib fonksiyon çağrısıyla oluşturulabilir (aşağıdaki şekle bakın):</p>
+
+    <div class="code-block" data-lang="python" data-filename="errorbars_setup.py" data-readonly="true">
+      <pre><code>%matplotlib inline
+import matplotlib.pyplot as plt
+plt.style.use('seaborn-whitegrid')
+import numpy as np</code></pre>
+    </div>
+
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — fmt biçim kodları</div>
+      <p><code>fmt='.k'</code> siyah nokta demektir; <code>'o'</code> daire, <code>'-'</code> çizgi. Hata çubuğu uçları (<code>capsize</code>) ve renk (<code>ecolor</code>) ayrı ayarlanır.</p>
+    </div>
+
+
+    <div class="code-block" data-lang="python" data-filename="errorbar_basic.py">
+      <pre><code>x = np.linspace(0, 10, 50)
+dy = 0.8
+y = np.sin(x) + dy * np.random.randn(50)
+
+plt.errorbar(x, y, yerr=dy, fmt='.k');</code></pre>
+    </div>
+
+
+    <p>Burada <code>fmt</code>, çizgi ve noktaların görünümünü kontrol eden bir biçim kodudur;
+    önceki bölümde ve bu bölümün başında özetlenen <code>plt.plot</code> kısaltma sözdizimiyle aynıdır.</p>
+    <p>Temel seçeneklere ek olarak <code>errorbar</code> çıktıyı ince ayarlamak için birçok seçenek sunar.
+    Özellikle kalabalık grafiklerde hata çubuklarını noktalardan daha açık renkte yapmayı yararlı bulurum (aşağıdaki şekle bakın):</p>
+
+    <div class="code-block" data-lang="python" data-filename="errorbar_styled.py">
+      <pre><code>plt.errorbar(x, y, yerr=dy, fmt='o', color='black',
+             ecolor='lightgray', elinewidth=3, capsize=0);</code></pre>
+    </div>
+
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Yatay hata çubukları</div>
+      <p>Aynı veri için <code>xerr</code> ekleyerek yatay belirsizlik gösterin:</p>
+          <div class="code-block" data-lang="python" data-filename="errorbar_xy_deneme.py">
+      <pre><code>import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.linspace(0, 10, 20)
+y = np.sin(x)
+dy = 0.15
+dx = 0.3
+
+plt.errorbar(x, y, xerr=dx, yerr=dy, fmt='o', color='black',
+             ecolor='lightgray', capsize=3)
+plt.title('Yatay ve dikey hata çubukları')</code></pre>
+    </div>
+
+    </div>
+
+
+    <p>Bu seçeneklere ek olarak yatay hata çubukları, tek taraflı hata çubukları ve birçok varyant belirtilebilir.
+    Kullanılabilir seçenekler için <code>plt.errorbar</code> docstring'ine bakın.</p>
+
+    <h2 id="surekli-hatalar">Sürekli hatalar</h2>    <p>Bazı durumlarda sürekli nicelikler üzerinde hata çubukları göstermek istenir.
+    Matplotlib bu tür uygulama için hazır bir kolaylık rutini sunmasa da,
+    <code>plt.plot</code> ve <code>plt.fill_between</code> gibi yapı taşlarını birleştirmek nispeten kolaydır.</p>
+    <p>Burada Scikit-Learn API'siyle basit bir <em>Gaussian süreç regresyonu</em> yapacağız.
+    Bu, sürekli belirsizlik ölçüsüyle veriye çok esnek parametrik olmayan bir fonksiyon uydurma yöntemidir.
+    Gaussian süreç regresyonunun ayrıntılarına girmeyeceğiz; bunun yerine bu tür sürekli hata ölçümünü nasıl görselleştirebileceğimize odaklanacağız:</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Gaussian süreç regresyonu</div>
+      <p><code>GaussianProcessRegressor</code> Scikit-Learn'den gelir; veri noktalarına yakın bölgelerde dar, uzakta geniş belirsizlik bandı üretir. Bu bölümde amaç algoritmayı öğrenmek değil, <code>fill_between</code> ile sürekli güven aralığını göstermektir.</p>
+    </div>
+
+
+    <div class="code-block" data-lang="python" data-filename="gaussian_process_fit.py">
+      <pre><code>from sklearn.gaussian_process import GaussianProcessRegressor
+
+# define the model and draw some data
+model = lambda x: x * np.sin(x)
+xdata = np.array([1, 3, 5, 6, 8])
+ydata = model(xdata)
+
+# Compute the Gaussian process fit
+gp = GaussianProcessRegressor()
+gp.fit(xdata[:, np.newaxis], ydata)
+
+xfit = np.linspace(0, 10, 1000)
+yfit, dyfit = gp.predict(xfit[:, np.newaxis], return_std=True)</code></pre>
+    </div>
+
+
+    <p>Artık verimize sürekli uydurmayı örnekleyen <code>xfit</code>, <code>yfit</code> ve <code>dyfit</code> değişkenlerimiz var.
+    Bunları önceki bölümdeki gibi <code>plt.errorbar</code>'a verebilirdik; ancak 1.000 noktaya 1.000 hata çubuğu çizmek istemeyiz.
+    Bunun yerine sürekli hatayı görselleştirmek için açık renkle <code>plt.fill_between</code> kullanabiliriz (aşağıdaki şekle bakın):</p>
+
+    <div class="code-block" data-lang="python" data-filename="fill_between_errors.py">
+      <pre><code># Visualize the result
+plt.plot(xdata, ydata, 'or')
+plt.plot(xfit, yfit, '-', color='gray')
+plt.fill_between(xfit, yfit - dyfit, yfit + dyfit,
+                 color='gray', alpha=0.2)
+plt.xlim(0, 10);</code></pre>
+    </div>
+
+
+    <p><code>fill_between</code> çağrı imzasına bakın: bir <em>x</em> değeri, alt <em>y</em> sınırı, üst <em>y</em> sınırı verilir; bu bölgeler arası doldurulur.</p>
+    <p>Ortaya çıkan şekil, Gaussian süreç regresyon algoritmasının ne yaptığına sezgisel bir bakış verir:
+    ölçülmüş veri noktasına yakın bölgelerde model güçlü kısıtlanır; model belirsizlikleri küçüktür.
+    Uzak bölgelerde model zayıf kısıtlanır; belirsizlikler artar.</p>
+    <p><code>plt.fill_between</code> (ve yakından ilişkili <code>plt.fill</code>) seçenekleri için fonksiyon docstring'ine veya Matplotlib dokümantasyonuna bakın.</p>
+    <p>Son olarak bu biraz düşük seviyeli geliyorsa,
+    <a href="14-visualization-with-seaborn.html">Seaborn ile Görselleştirme</a> bölümüne bakın;
+    Seaborn bu tür sürekli hata çubuklarını görselleştirmek için daha akıcı bir API sunar.</p>
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="04-density-and-contour-plots.html">4.4 Yoğunluk ve Kontur Grafikleri →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Matplotlib yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

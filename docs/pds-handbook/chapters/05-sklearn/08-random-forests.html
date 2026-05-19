@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rastgele Ormanlar — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="05-sklearn" data-section="08-random-forests" data-preload-numpy="true" data-preload-pandas="true" data-preload-matplotlib="true" data-preload-sklearn="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.08-random-forests.html" target="_blank" rel="noopener">05.08 Random Forests</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>5.8 Derinlemesine: Karar Ağaçları ve Rastgele Ormanlar</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.08-random-forests.html" target="_blank" rel="noopener">05.08 Random Forests</a></em></p>
+    <p>Daha önce basit bir üretici sınıflandırıcıyı (naive Bayes; bkz. <a href="05-naive-bayes.html">5.5 Naive Bayes</a>) ve güçlü bir ayırt edici sınıflandırıcıyı (destek vektör makineleri; bkz. <a href="07-support-vector-machines.html">5.7 SVM</a>) derinlemesine inceledik. Burada <em>rastgele ormanlar</em> adlı güçlü parametrik olmayan bir algoritmaya bakacağız.</p>
+    <p>Rastgele ormanlar, daha basit tahmin edicilerin sonuçlarını birleştiren <em>topluluk</em> (ensemble) yöntemine bir örnektir. Şaşırtıcı biçimde böyle yöntemlerde bütün, parçaların toplamından büyük olabilir: çok sayıda tahmin edicinin çoğunluk oyu, tek tek oylayanların herhangi birinden daha iyi doğruluk verebilir!</p>
+    <p>Standart içe aktarmalarla başlayalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="imports_rf.py">
+      <pre><code>%matplotlib inline
+import numpy as np
+import matplotlib.pyplot as plt
+plt.style.use(&#x27;seaborn-whitegrid&#x27;)</code></pre>
+    </div>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — helpers_05_08</div>
+      <p><code>helpers_05_08</code> modülü yalnızca orijinal kitabın ek deposunda bulunur; Pyodide'da etkileşimli ağaç görselleştirmesi çalışmayabilir. Statik karar ağacı örnekleri bu sayfada çalışır.</p>
+    </div>
+
+
+    <h2 id="karar-agaclari-motivasyon">Rastgele Ormanları Motive Etmek: Karar Ağaçları</h2>
+
+    <p>Rastgele ormanlar, karar ağaçları üzerine kurulu topluluk öğrenicileridir; bu yüzden karar ağaçlarıyla başlayacağız. Karar ağaçları nesneleri sınıflandırmak veya etiketlemek için son derece sezgisel yöntemlerdir: sınıflandırmaya yönelik bir dizi soru sorarsınız. Örneğin yürüyüşte gördüğünüz hayvanları sınıflandırmak için aşağıdaki şekildeki gibi bir ağaç kurabilirsiniz.</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.08-decision-tree.png" alt="Örnek karar ağacı" width="700" loading="lazy">
+    </figure>
+
+    <p>İkili bölme çok verimlidir: iyi kurulmuş bir ağaçta her soru seçenek sayısını kabaca yarıya indirir. Zorluk, her adımda hangi soruların sorulacağına karar vermektir. Makine öğrenmesinde sorular genelde veride eksen hizalı bölümler biçimindedir.</p>
+
+    <h3 id="karar-agaci-olusturma">Karar Ağacı Oluşturma</h3>
+
+    <div class="code-block" data-lang="python" data-filename="make_blobs_tree.py">
+      <pre><code>from sklearn.datasets import make_blobs
+
+X, y = make_blobs(n_samples=300, centers=4,
+                  random_state=0, cluster_std=1.0)
+plt.scatter(X[:, 0], X[:, 1], c=y, s=50, cmap=&#x27;rainbow&#x27;);</code></pre>
+    </div>
+
+    <p>Bu iki boyutlu veri üzerinde basit bir karar ağacı, veriyi eksenlerden birinde bir eşik değerine göre yinelemeli böler ve her bölgede çoğunluk oyuyla etiket atar (aşağıdaki şekil, ilk dört seviye).</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.08-decision-tree-levels.png" alt="Karar ağacının ilk dört seviyesi" width="700" loading="lazy">
+    </figure>
+
+    <p>İlk bölmeden sonra üst daldeki her nokta değişmeden kalır; bu dalı daha fazla bölmeye gerek yoktur. Tek renkten oluşmayan her düğümde bölge yine iki öznitelikten biri boyunca bölünür.</p>
+
+    <p>Bu uydurma Scikit-Learn'de <code>DecisionTreeClassifier</code> ile yapılır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="decision_tree_classifier.py">
+      <pre><code>from sklearn.tree import DecisionTreeClassifier
+tree = DecisionTreeClassifier().fit(X, y)</code></pre>
+    </div>
+
+    <p>Sınıflandırıcı çıktısını görselleştirmek için bir yardımcı fonksiyon yazalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="visualize_classifier.py">
+      <pre><code>def visualize_classifier(model, X, y, ax=None, cmap=&#x27;rainbow&#x27;):
+    ax = ax or plt.gca()
+    
+    # Plot the training points
+    ax.scatter(X[:, 0], X[:, 1], c=y, s=30, cmap=cmap,
+               clim=(y.min(), y.max()), zorder=3)
+    ax.axis(&#x27;tight&#x27;)
+    ax.axis(&#x27;off&#x27;)
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+    
+    # fit the estimator
+    model.fit(X, y)
+    xx, yy = np.meshgrid(np.linspace(*xlim, num=200),
+                         np.linspace(*ylim, num=200))
+    Z = model.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
+
+    # Create a color plot with the results
+    n_classes = len(np.unique(y))
+    contours = ax.contourf(xx, yy, Z, alpha=0.3,
+                           levels=np.arange(n_classes + 1) - 0.5,
+                           cmap=cmap, zorder=1)
+
+    ax.set(xlim=xlim, ylim=ylim)</code></pre>
+    </div>
+
+    <p>Karar ağacı sınıflandırmasının nasıl göründüğüne bakalım (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="visualize_tree.py">
+      <pre><code>visualize_classifier(DecisionTreeClassifier(), X, y)</code></pre>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>İki blob üzerinde karar ağacı:</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_decision_tree.py">
+      <pre><code>from sklearn.datasets import make_blobs
+from sklearn.tree import DecisionTreeClassifier
+X, y = make_blobs(n_samples=100, centers=2, random_state=0)
+clf = DecisionTreeClassifier(max_depth=3)
+clf.fit(X, y)
+print("Doğruluk:", clf.score(X, y))</code></pre>
+    </div>
+
+    </div>
+
+
+    <p>Not defterini canlı çalıştırıyorsanız, çevrimiçi <a href="https://github.com/jakevdp/PythonDataScienceHandbook/blob/master/notebooks/06.00-Figure-Code.ipynb#Helper-Code" target="_blank" rel="noopener">ek bölümdeki</a> yardımcı betikle karar ağacı oluşturma sürecini etkileşimli gösterebilirsiniz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="helpers_tree_depth.py">
+      <pre><code># helpers_05_08 is found in the online appendix
+import helpers_05_08
+helpers_05_08.plot_tree_interactive(X, y);</code></pre>
+    </div>
+
+    <p>Derinlik arttıkça çok garip şekilli sınıflandırma bölgeleri oluşur; bu, gerçek dağılımdan çok örnekleme veya gürültüye bağlıdır — ağaç aşırı uyum yapmaktadır.</p>
+
+    <h3 id="karar-agaci-asiri-uyum">Karar Ağaçları ve Aşırı Uyum</h3>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.08-decision-tree-overfitting.png" alt="Karar ağacı aşırı uyumu" width="700" loading="lazy">
+    </figure>
+
+    <p>Bazı yerlerde iki ağaç tutarlı, bazı yerlerde çok farklı sonuç verir. Tutarsızlıklar genelde sınıflandırmanın belirsiz olduğu yerlerde olur; iki ağacın bilgisini birleştirirsek daha iyi sonuç elde edebiliriz!</p>
+
+    <p>Not defterini canlı çalıştırıyorsanız, verinin rastgele alt kümesiyle eğitilmiş ağaçları etkileşimli gösterebilirsiniz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="helpers_tree_subset.py">
+      <pre><code># helpers_05_08 is found in the online appendix
+import helpers_05_08
+helpers_05_08.randomized_tree_interactive(X, y)</code></pre>
+    </div>
+
+    <p>İki ağaçtan bilgi kullanmak sonucu iyileştirirse, birçok ağaçtan bilgi kullanmanın sonucu daha da iyileştireceğini bekleyebiliriz.</p>
+
+    <h2 id="rastgele-ormanlar">Tahmin Edici Toplulukları: Rastgele Ormanlar</h2>
+
+    <div class="code-block" data-lang="python" data-filename="bagging_classifier.py">
+      <pre><code>from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import BaggingClassifier
+
+tree = DecisionTreeClassifier()
+bag = BaggingClassifier(tree, n_estimators=100, max_samples=0.8,
+                        random_state=1)
+
+bag.fit(X, y)
+visualize_classifier(bag, X, y)</code></pre>
+    </div>
+
+    <p>Birden fazla aşırı uyumlu tahmin edicinin birleştirilmesi <em>bagging</em> topluluk yönteminin temelidir. Paralel tahmin edicilerin ortalaması/alınması aşırı uyumu azaltır. Rastgeleleştirilmiş karar ağaçları topluluğuna <em>rastgele orman</em> denir. Aşağıdaki şekilde <code>BaggingClassifier</code> ile manuel bagging gösterilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="random_forest_classifier.py">
+      <pre><code>from sklearn.ensemble import RandomForestClassifier
+
+model = RandomForestClassifier(n_estimators=100, random_state=0)
+visualize_classifier(model, X, y);</code></pre>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>Digits verisinde rastgele orman:</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_random_forest_digits.py">
+      <pre><code>from sklearn.datasets import load_digits
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+digits = load_digits()
+X_train, X_test, y_train, y_test = train_test_split(
+    digits.data, digits.target, random_state=0)
+rf = RandomForestClassifier(n_estimators=100, random_state=0)
+rf.fit(X_train, y_train)
+print("Test doğruluğu:", rf.score(X_test, y_test))</code></pre>
+    </div>
+
+    </div>
+
+
+    <p>Burada her tahmin edici eğitim noktalarının rastgele %80'iyle eğitildi. Pratikte bölümlerin nasıl seçildiğine stokastisite enjekte etmek daha etkilidir. Scikit-Learn'de <code>RandomForestClassifier</code> bunu otomatik yapar (aşağıdaki şekil):</p>
+
+    <h2 id="rastgele-orman-regresyonu">Rastgele Orman Regresyonu</h2>
+
+    <div class="code-block" data-lang="python" data-filename="regression_data.py">
+      <pre><code>rng = np.random.RandomState(42)
+x = 10 * rng.rand(200)
+
+def model(x, sigma=0.3):
+    fast_oscillation = np.sin(5 * x)
+    slow_oscillation = np.sin(0.5 * x)
+    noise = sigma * rng.randn(len(x))
+
+    return slow_oscillation + fast_oscillation + noise
+
+y = model(x)
+plt.errorbar(x, y, 0.3, fmt=&#x27;o&#x27;);</code></pre>
+    </div>
+
+    <p>Rastgele ormanlar regresyonda da kullanılır (<code>RandomForestRegressor</code>). Aşağıdaki veri hızlı ve yavaş salınımın birleşiminden üretilmiştir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="random_forest_regressor.py">
+      <pre><code>from sklearn.ensemble import RandomForestRegressor
+forest = RandomForestRegressor(200)
+forest.fit(x[:, None], y)
+
+xfit = np.linspace(0, 10, 1000)
+yfit = forest.predict(xfit[:, None])
+ytrue = model(xfit, sigma=0)
+
+plt.errorbar(x, y, 0.3, fmt=&#x27;o&#x27;, alpha=0.5)
+plt.plot(xfit, yfit, &#x27;-r&#x27;);
+plt.plot(xfit, ytrue, &#x27;-k&#x27;, alpha=0.5);</code></pre>
+    </div>
+
+    <p>Gerçek model düzgün gri eğri, rastgele orman modeli kırmızı pürüzlü eğridir. Parametrik olmayan model çok periyotlu veriyi çok periyotlu model belirtmeden uyabilmektedir!</p>
+
+    <h2 id="ornek-rakamlar">Örnek: Rakamları Rastgele Ormanla Sınıflandırma</h2>
+
+    <div class="code-block" data-lang="python" data-filename="load_digits_rf.py">
+      <pre><code>from sklearn.datasets import load_digits
+digits = load_digits()
+digits.keys()</code></pre>
+    </div>
+
+    <p>Scikit-Learn'in digits veri kümesini kullanacağız. İlk birkaç noktayı görselleştirelim (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="plot_digits_rf.py">
+      <pre><code># set up the figure
+fig = plt.figure(figsize=(6, 6))  # figure size in inches
+fig.subplots_adjust(left=0, right=1, bottom=0, top=1, hspace=0.05, wspace=0.05)
+
+# plot the digits: each image is 8x8 pixels
+for i in range(64):
+    ax = fig.add_subplot(8, 8, i + 1, xticks=[], yticks=[])
+    ax.imshow(digits.images[i], cmap=plt.cm.binary, interpolation=&#x27;nearest&#x27;)
+    
+    # label the image with the target value
+    ax.text(0, 7, str(digits.target[i]))</code></pre>
+    </div>
+
+    <p>Rakamları rastgele ormanla şöyle sınıflandırabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="rf_train_test.py">
+      <pre><code>from sklearn.model_selection import train_test_split
+
+Xtrain, Xtest, ytrain, ytest = train_test_split(digits.data, digits.target,
+                                                random_state=0)
+model = RandomForestClassifier(n_estimators=1000)
+model.fit(Xtrain, ytrain)
+ypred = model.predict(Xtest)</code></pre>
+    </div>
+
+    <p>Sınıflandırma raporuna bakalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="classification_report_rf.py">
+      <pre><code>from sklearn import metrics
+print(metrics.classification_report(ypred, ytest))</code></pre>
+    </div>
+
+    <p>Karışıklık matrisini de çizelim (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="confusion_matrix_rf.py">
+      <pre><code>from sklearn.metrics import confusion_matrix
+import seaborn as sns
+mat = confusion_matrix(ytest, ypred)
+sns.heatmap(mat.T, square=True, annot=True, fmt=&#x27;d&#x27;,
+            cbar=False, cmap=&#x27;Blues&#x27;)
+plt.xlabel(&#x27;true label&#x27;)
+plt.ylabel(&#x27;predicted label&#x27;);</code></pre>
+    </div>
+
+    <p>Basit, ayarsız bir rastgele orman digits verisinde oldukça doğru sınıflandırma sağlar.</p>
+
+    <h2 id="ozet">Özet</h2>
+    <p>Bu bölüm topluluk tahmin edicilerine ve özellikle rastgele ormanlara kısa bir giriş sundu.</p>
+    <p>Rastgele ormanların birkaç avantajı:</p>
+    <ul>
+      <li>Karar ağaçlarının basitliği sayesinde eğitim ve tahmin çok hızlıdır; paralelleştirilebilir.</li>
+      <li>Çoklu ağaçlar olasılıksal sınıflandırma sağlar (<code>predict_proba</code>).</li>
+      <li>Parametrik olmayan model esnektir ve yetersiz uyumda iyi performans gösterebilir.</li>
+    </ul>
+    <p>Ana dezavantaj: sonuçlar kolay yorumlanamaz; sınıflandırma modelinin <em>anlamı</em> hakkında sonuç çıkarmak istiyorsanız rastgele ormanlar en iyi seçenek olmayabilir.</p>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="09-principal-component-analysis.html">5.9 Temel Bileşen Analizi →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas + Matplotlib + scikit-learn yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

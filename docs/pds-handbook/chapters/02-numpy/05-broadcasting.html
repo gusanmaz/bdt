@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2.5 Broadcasting (Yayınlama) — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="02-numpy" data-section="05-broadcasting" data-preload-numpy="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.05-computation-on-arrays-broadcasting.html" target="_blank" rel="noopener">05 Computation on Arrays: Broadcasting</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+    
+<h1>2.5 NumPy Dizilerinde Hesaplama: Broadcasting</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.05-computation-on-arrays-broadcasting.html" target="_blank" rel="noopener">05 Computation on Arrays: Broadcasting</a></em></p>
+
+    <p><a href="03-computation-ufuncs.html">2.3 UFuncs</a> bölümünde NumPy'nin evrensel fonksiyonlarının yavaş Python döngülerini kaldırarak işlemleri <em>vektörize</em> ettiğini gördük. Bu bölüm <strong>broadcasting</strong> (yayınlama) kurallarını anlatır: farklı boyut ve şekillerdeki diziler arasında ikili işlemler (toplama, çıkarma, çarpma vb.) nasıl yapılır.</p>
+
+    <h2 id="broadcasting-giris">Broadcasting'e Giriş</h2>
+
+    <p>Aynı boyuttaki dizilerde ikili işlemler eleman eleman yapılır:</p>
+    <div class="code-block" data-lang="python" data-filename="import_numpy.py">
+      <pre><code>import numpy as np</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="a_plus_b.py">
+      <pre><code>a = np.array([0, 1, 2])
+b = np.array([5, 5, 5])
+a + b</code></pre>
+    </div>
+
+    <p>Broadcasting, farklı boyutlardaki dizilerle de bu tür işlemlere izin verir — örneğin bir skaleri (sıfır boyutlu dizi gibi düşünün) bir diziye ekleyebiliriz:</p>
+    <div class="code-block" data-lang="python" data-filename="scalar_broadcast.py">
+      <pre><code>a + 5</code></pre>
+    </div>
+
+    <p>Bunu, <code>5</code> değerinin <code>[5, 5, 5]</code> dizisine “yayıldığı” ve sonuçların toplandığı bir işlem olarak düşünebilirsiniz.</p>
+
+    <p>Aynı fikri daha yüksek boyutlu dizilere genişletebiliriz. Tek boyutlu bir diziyi iki boyutlu bir diziye eklediğimizde:</p>
+    <div class="code-block" data-lang="python" data-filename="ones_matrix.py">
+      <pre><code>M = np.ones((3, 3))
+M</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="matrix_plus_vector.py">
+      <pre><code>M + a</code></pre>
+    </div>
+
+    <p>Burada tek boyutlu <code>a</code> dizisi, <code>M</code> ile şekil eşleşmesi için ikinci boyut boyunca <strong>yayınlanır</strong> (broadcast edilir).</p>
+
+    <p>Daha karmaşık durumlarda her iki dizi de yayınlanabilir:</p>
+    <div class="code-block" data-lang="python" data-filename="broadcast_both.py">
+      <pre><code>a = np.arange(3)
+b = np.arange(3)[:, np.newaxis]
+
+print(a)
+print(b)</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="broadcast_both_result.py">
+      <pre><code>a + b</code></pre>
+    </div>
+
+    <p>Daha önce tek bir değeri diğerinin şekline yaydığımız gibi, burada <em>hem</em> <code>a</code> hem <code>b</code> ortak bir şekle yayılır ve sonuç iki boyutlu bir dizidir!</p>
+
+    <p>Bu örneklerin geometrisi aşağıdaki şekilde görselleştirilmiştir (kaynak: <a href="https://github.com/jakevdp/PythonDataScienceHandbook/blob/master/notebooks/06.00-Figure-Code.ipynb#Broadcasting" target="_blank" rel="noopener">kitap ek kodu</a>, astroML dokümantasyonundan uyarlanmıştır):</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/02.05-broadcasting.png" alt="NumPy broadcasting geometrisi: iki dizinin ortak şekle yayılması" width="700" loading="lazy">
+      <figcaption>Şekil: Broadcasting görseli — açık kutular yayınlanan değerleri temsil eder (kaynak: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.05-computation-on-arrays-broadcasting.html" target="_blank" rel="noopener">PDS Handbook</a>)</figcaption>
+    </figure>
+
+    <p>Açık kutular yayınlanan değerleri temsil eder. Bellek açısından verimlilik endişesi doğurabilir; endişelenmeyin: NumPy broadcasting yayınlanan değerleri bellekte <em>gerçekten kopyalamaz</em>. Yine de broadcasting hakkında düşünürken bu zihinsel model faydalıdır.</p>
+
+    <h2 id="broadcasting-kurallari">Broadcasting Kuralları</h2>
+
+    <p>NumPy'da broadcasting iki dizi arasındaki etkileşimi belirlemek için katı kurallara uyar:</p>
+    <ul>
+      <li><strong>Kural 1:</strong> İki dizinin boyut sayısı farklıysa, daha az boyutlu olanın şekli sol taraftan (baştan) <code>1</code> ile doldurulur (<em>padding</em>).</li>
+      <li><strong>Kural 2:</strong> Herhangi bir boyutta şekiller uyuşmuyorsa, o boyutta boyutu <code>1</code> olan dizi diğerinin boyutuna <em>gerilir</em> (stretch).</li>
+      <li><strong>Kural 3:</strong> Herhangi bir boyutta boyutlar uyuşmuyorsa ve ikisi de <code>1</code> değilse hata oluşur.</li>
+    </ul>
+
+    <h3 id="ornek-1">Broadcasting Örneği 1</h3>
+
+    <p>İki boyutlu bir diziye tek boyutlu bir dizi eklemek isteyelim:</p>
+    <div class="code-block" data-lang="python" data-filename="ornek1_setup.py">
+      <pre><code>M = np.ones((2, 3))
+a = np.arange(3)</code></pre>
+    </div>
+
+    <p>Şekiller:</p>
+    <ul>
+      <li><code>M.shape</code> → <code>(2, 3)</code></li>
+      <li><code>a.shape</code> → <code>(3,)</code></li>
+    </ul>
+    <p>Kural 1: <code>a</code> daha az boyutlu; sol taraftan <code>1</code> ile doldurulur → <code>(1, 3)</code>. Kural 2: ilk boyut uyuşmaz; <code>1</code> → <code>2</code> gerilir. Son şekil: <code>(2, 3)</code>.</p>
+    <div class="code-block" data-lang="python" data-filename="ornek1_result.py">
+      <pre><code>M + a</code></pre>
+    </div>
+
+    <h3 id="ornek-2">Broadcasting Örneği 2</h3>
+
+    <p>Her iki dizinin de yayınlanması gereken durum:</p>
+    <div class="code-block" data-lang="python" data-filename="ornek2_setup.py">
+      <pre><code>a = np.arange(3).reshape((3, 1))
+b = np.arange(3)</code></pre>
+    </div>
+
+    <ul>
+      <li><code>a.shape</code> → <code>(3, 1)</code></li>
+      <li><code>b.shape</code> → <code>(3,)</code> → Kural 1 ile <code>(1, 3)</code></li>
+      <li>Kural 2: her iki taraftaki <code>1</code> boyutları karşı tarafa gerilir → ikisi de <code>(3, 3)</code></li>
+    </ul>
+    <div class="code-block" data-lang="python" data-filename="ornek2_result.py">
+      <pre><code>a + b</code></pre>
+    </div>
+
+    <h3 id="ornek-3">Broadcasting Örneği 3</h3>
+
+    <p>Uyumsuz iki dizi:</p>
+    <div class="code-block" data-lang="python" data-filename="ornek3_setup.py">
+      <pre><code>M = np.ones((3, 2))
+a = np.arange(3)</code></pre>
+    </div>
+
+    <p>İlk örneğe benzer ama <code>M</code> transpoze edilmiş gibi: <code>M.shape = (3, 2)</code>, <code>a</code> → <code>(1, 3)</code> → <code>(3, 3)</code>. Kural 3: ikinci boyut <code>2</code> vs <code>3</code> — uyumsuz!</p>
+    <div class="code-block" data-lang="python" data-filename="ornek3_error.py">
+      <pre><code>try:
+    M + a
+except ValueError as e:
+    print("Hata:", e)</code></pre>
+    </div>
+
+    <p>Kafa karışıklığı: <code>a</code>'yı sağ taraftan <code>1</code> ile doldurarak uyumlu hale getirebileceğinizi hayal edebilirsiniz — ama kurallar böyle çalışmaz! Sağ taraftan padding istiyorsanız açıkça yeniden şekillendirin (<a href="02-basics-of-numpy-arrays.html">2.2 NumPy Dizilerinin Temelleri</a>'ndeki <code>np.newaxis</code> ile):</p>
+    <div class="code-block" data-lang="python" data-filename="newaxis_shape.py">
+      <pre><code>a[:, np.newaxis].shape</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="ornek3_fix.py">
+      <pre><code>M + a[:, np.newaxis]</code></pre>
+    </div>
+
+    <p>Burada <code>+</code> operatörüne odaklandık; bu kurallar <em>herhangi bir</em> ikili ufunc için geçerlidir. Örneğin <code>logaddexp(a, b)</code> — <code>log(exp(a) + exp(b))</code> — daha hassas hesaplar:</p>
+    <div class="code-block" data-lang="python" data-filename="logaddexp.py">
+      <pre><code>np.logaddexp(M, a[:, np.newaxis])</code></pre>
+    </div>
+
+    <p>Evrensel fonksiyonlar için bkz. <a href="03-computation-ufuncs.html">2.3 UFuncs</a>.</p>
+
+    <h2 id="pratikte">Broadcasting Pratikte</h2>
+
+    <p>Broadcasting, kitabın geri kalanında sık karşılaşacağınız birçok örneğin özünü oluşturur.</p>
+
+    <h3 id="merkezleme">Bir Diziyi Ortalamadan Çıkarma</h3>
+
+    <p>Veri biliminde yaygın bir örnek: satır veya sütun ortalamasını çıkarmak. 10 gözlem × 3 özelliklik bir dizi (Scikit-Learn veri temsili geleneği; bkz. kitap Bölüm 5):</p>
+    <div class="code-block" data-lang="python" data-filename="merkezleme_veri.py">
+      <pre><code>rng = np.random.default_rng(seed=1701)
+X = rng.random((10, 3))</code></pre>
+    </div>
+
+    <p>Her sütunun ortalaması (<code>axis=0</code>):</p>
+    <div class="code-block" data-lang="python" data-filename="merkezleme_ortalama.py">
+      <pre><code>Xmean = X.mean(0)
+Xmean</code></pre>
+    </div>
+
+    <p>Ortalamayı çıkararak merkezleme (broadcasting işlemi):</p>
+    <div class="code-block" data-lang="python" data-filename="merkezleme_cikar.py">
+      <pre><code>X_centered = X - Xmean</code></pre>
+    </div>
+
+    <p>Doğrulama — merkezlenmiş dizinin sütun ortalamaları sıfıra yakın olmalı:</p>
+    <div class="code-block" data-lang="python" data-filename="merkezleme_dogrula.py">
+      <pre><code>X_centered.mean(0)</code></pre>
+    </div>
+
+    <p>Makine hassasiyeti içinde ortalama artık sıfırdır.</p>
+
+    <h3 id="2d-fonksiyon">İki Boyutlu Bir Fonksiyonu Çizme</h3>
+
+    <p>Broadcasting, $z = f(x, y)$ gibi iki boyutlu fonksiyonları ızgara üzerinde hesaplamak için idealdir:</p>
+    <div class="code-block" data-lang="python" data-filename="2d_fonksiyon.py">
+      <pre><code># x ve y: 0–5 arası 50 adım
+x = np.linspace(0, 5, 50)
+y = np.linspace(0, 5, 50)[:, np.newaxis]
+
+z = np.sin(x) ** 10 + np.cos(10 + y * x) * np.cos(x)
+print("z.shape:", z.shape)
+print("z min/max:", z.min(), z.max())</code></pre>
+    </div>
+
+    <p>Matplotlib ile bu iki boyutlu dizi görselleştirilebilir (kitap Bölüm 4 — <em>Density and Contour Plots</em>). Pyodide ortamında grafik yerine şekil ve değer aralığını yazdırıyoruz; tam kod:</p>
+    <div class="code-block" data-lang="python" data-filename="2d_fonksiyon_plot.py" data-readonly="true">
+      <pre><code># Matplotlib ile (notebook ortamında):
+# import matplotlib.pyplot as plt
+# plt.imshow(z, origin='lower', extent=[0, 5, 0, 5])
+# plt.colorbar()</code></pre>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin — 2D ızgara</div>
+      <p>Yukarıdaki <code>x</code>, <code>y</code> ızgarasıyla <code>z = np.sin(x)**2 + np.cos(y)</code> hesaplayın; <code>z.shape</code> ve bir köşe değerini yazdırın.</p>
+    <div class="code-block" data-lang="python" data-filename="deneme_2d.py">
+      <pre><code>import numpy as np
+x = np.linspace(0, 5, 50)
+y = np.linspace(0, 5, 50)[:, np.newaxis]
+z = np.sin(x) ** 2 + np.cos(y)
+print(z.shape, z[0, 0])</code></pre>
+    </div>
+
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="06-boolean-masks.html">2.6 Karşılaştırma, Maskeler ve Boolean Mantık →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

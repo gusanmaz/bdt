@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bölüm 5 — Makine Öğrenmesi — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="05-sklearn" data-section="" data-preload-numpy="true" data-preload-pandas="true" data-preload-matplotlib="true" data-preload-sklearn="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <h1>Bölüm 5 — Makine Öğrenmesi</h1>
+    <p class="subtitle">scikit-learn · model doğrulama · sınıflandırma · regresyon · kümeleme · boyut indirgeme</p>
+    <p>Bu bölümdeki konular — kitaptaki sırayla:</p>
+    <ul class="handbook-topic-list">
+        <li><a href="00-introduction.html">Makine Öğrenmesine Giriş</a></li>
+        <li><a href="01-what-is-machine-learning.html">5.1 Makine Öğrenmesi Nedir?</a></li>
+        <li><a href="02-introducing-scikit-learn.html">5.2 Scikit-Learn'e Giriş</a></li>
+        <li><a href="03-hyperparameters-and-model-validation.html">5.3 Hiperparametreler ve Model Doğrulama</a></li>
+        <li><a href="04-feature-engineering.html">5.4 Öznitelik Mühendisliği</a></li>
+        <li><a href="05-naive-bayes.html">5.5 Naive Bayes Sınıflandırması</a></li>
+        <li><a href="06-linear-regression.html">5.6 Doğrusal Regresyon</a></li>
+        <li><a href="07-support-vector-machines.html">5.7 Destek Vektör Makineleri</a></li>
+        <li><a href="08-random-forests.html">5.8 Rastgele Ormanlar</a></li>
+        <li><a href="09-principal-component-analysis.html">5.9 Temel Bileşen Analizi (PCA)</a></li>
+        <li><a href="10-manifold-learning.html">5.10 Manifold Öğrenme</a></li>
+        <li><a href="11-k-means.html">5.11 K-Means Kümeleme</a></li>
+        <li><a href="12-gaussian-mixtures.html">5.12 Gauss Karışımları</a></li>
+        <li><a href="13-kernel-density-estimation.html">5.13 Çekirdek Yoğunluk Tahmini</a></li>
+        <li><a href="14-image-features.html">5.14 Görüntü Öznitelikleri</a></li>
+        <li><a href="15-learning-more.html">5.15 Daha Fazla Kaynak</a></li>
+    </ul>
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Uyarlama ilkesi</div>
+      <p>Orijinal PDS Handbook metnindeki <strong>tüm bölüm başlıkları, kod örnekleri ve örnek senaryolar</strong> korunur.
+      Türkçe sürümde ek olarak ders notu kutuları, şimdi deneyin alıştırmaları ve zor kavramlar için genişletilmiş açıklamalar vardır.</p>
+      <p>scikit-learn tarayıcıda Pyodide ile yüklenir (NumPy + SciPy + Pandas + Matplotlib). İlk yükleme uzun sürebilir; ağır modeller ve <code>fetch_openml</code> gibi internet gerektiren örnekler için Jupyter <strong>.ipynb</strong> önerilir.</p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas + Matplotlib + scikit-learn yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

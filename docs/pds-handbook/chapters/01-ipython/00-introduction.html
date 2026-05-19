@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IPython: Sıradan Python'un Ötesinde — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="01-ipython" data-section="00-introduction">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/01.00-ipython-beyond-normal-python.html" target="_blank" rel="noopener">IPython: Beyond Normal Python</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+    <h1>IPython: Sıradan Python'un Ötesinde</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/01.00-ipython-beyond-normal-python.html" target="_blank" rel="noopener">Jupyter: Beyond Normal Python</a></em></p>
+
+    <p>Python için birçok geliştirme ortamı seçeneği vardır; kendi işimde hangisini kullandığım sık sorulur. Cevabım bazen insanları şaşırtır: tercih ettiğim ortam <a href="http://ipython.org/" target="_blank" rel="noopener">IPython</a> artı bir metin düzenleyicidir (bende ruh halime göre Emacs veya VSCode).</p>
+
+    <p>Jupyter, 2001'de Fernando Perez tarafından geliştirilmiş gelişmiş bir Python yorumlayıcısı olan IPython kabuğu olarak başladı; o zamandan beri Perez'in deyişiyle <em>“araştırma bilişiminin tüm yaşam döngüsü için araçlar”</em> sunmayı hedefleyen bir projeye dönüştü. Python veri bilimi görevimizin motoruysa, Jupyter'i etkileşimli kontrol paneli olarak düşünebilirsiniz.</p>
+
+    <p>Jupyter yalnızca Python'a kullanışlı bir etkileşimli arayüz değildir; dile bir dizi yararlı sözdizimi eklentisi de getirir — bu bölümde en yararlı olanları ele alacağız. Jupyter projesinin sağladığı en tanıdık arayüz muhtemelen <strong>Jupyter Notebook</strong>'tur: tarayıcı tabanlı, geliştirme, iş birliği, paylaşım ve hatta veri bilimi sonuçlarının yayımlanması için uygun bir ortamdır. Defter formatının yararlılığına örnek olarak şu an okuduğunuz sayfadan öteye bakmanıza gerek yok: bu kitabın tüm el yazması bir dizi Jupyter defteri olarak oluşturulmuştur.</p>
+
+    <p>Kitabın bu kısmı, veri bilimi uygulamasında yararlı olan Jupyter ve IPython özelliklerini adım adım işleyerek başlayacak; özellikle Python'un standart özelliklerinin ötesinde sundukları sözdizimine odaklanacağız. Ardından, veri bilimi kodu yazma ve kullanmada yaygın görevleri hızlandıran daha yararlı <em>magic komutların</em> bir kısmına biraz daha derinlemesine gireceğiz. Son olarak, veriyi anlamayı ve sonuçları paylaşmayı kolaylaştıran defter özelliklerine değineceğiz.</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Bu handbook vs Jupyter</div>
+      <p>Bu sayfada kod çalıştırma zorunlu değildir; tam Jupyter deneyimi için VS Code, Google Colab veya JupyterLab kullanın. Sonraki alt bölümlerde Pyodide ile deneyebileceğiniz örnekler de vardır.</p>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin — Ortamınızı kontrol edin</div>
+      <p>Terminalde <code>python --version</code> ve (kuruluysa) <code>ipython --version</code> veya <code>jupyter --version</code> çıktısına bakın. Bu bölümdeki komutları kendi makinenizde denemek, okumaktan çok daha kalıcı öğrenme sağlar.</p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

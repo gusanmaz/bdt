@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Metin ve Açıklama — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="04-matplotlib" data-section="09-text-and-annotation" data-preload-numpy="true" data-preload-matplotlib="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/04.09-text-and-annotation.html" target="_blank" rel="noopener">04.09 Text and Annotation</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/04.09-text-and-annotation.html" target="_blank" rel="noopener">04.09 Text and Annotation</a></em></p>
+<h1>Metin ve Açıklama</h1>
+
+    <p>İyi bir görselleştirme okuyucuyu yönlendirerek figürün bir hikâye anlatmasını sağlar.
+    Bazen hikâye tamamen görsel olabilir; bazen küçük metin ipuçları ve etiketler gerekir.
+    En temel açıklamalar eksen etiketleri ve başlıklardır; seçenekler bununla sınırlı değildir.
+    Veriye bakalım ve ilginç bilgiyi iletmek için nasıl görselleştirip açıklayabileceğimize bakalım.
+    Çizim için not defterini hazırlayıp kullanacağımız işlevleri içe aktararak başlayalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="imports_text.py">
+      <pre><code>%matplotlib inline
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+plt.style.use(&#x27;seaborn-whitegrid&#x27;)
+import numpy as np
+import pandas as pd</code></pre>
+    </div>
+
+    <h2 id="ornek-tatil-dogumlari">Örnek: Tatillerin ABD doğumlarına etkisi</h2>    <p>Daha önce
+    <a href="../03-pandas/09-pivot-tables.html#ornek-dogum">Örnek: Doğum oranı verisi</a> bölümünde çalıştığımız veriye dönelim; takvim yılı boyunca ortalama doğumları çizmiştik.
+    Aynı temizleme adımlarıyla başlayıp sonucu çizelim (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="download_births.py">
+      <pre><code># shell command to download the data:
+# !cd data &amp;&amp; curl -O \
+#   https://raw.githubusercontent.com/jakevdp/data-CDCbirths/master/births.csv</code></pre>
+    </div>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — births.csv verisi</div>
+      <p><code>data/births.csv</code> dosyası handbook deposunda veya yorum satırındaki <code>curl</code> ile indirilebilir. Pyodide ortamında dosya yolu çalışma dizinine bağlıdır.</p>
+    </div>
+
+
+    <div class="code-block" data-lang="python" data-filename="births_clean.py">
+      <pre><code>from datetime import datetime
+
+births = pd.read_csv(&#x27;data/births.csv&#x27;)
+
+quartiles = np.percentile(births[&#x27;births&#x27;], [25, 50, 75])
+mu, sig = quartiles[1], 0.74 * (quartiles[2] - quartiles[0])
+births = births.query(&#x27;(births &gt; @mu - 5 * @sig) &amp; (births &lt; @mu + 5 * @sig)&#x27;)
+
+births[&#x27;day&#x27;] = births[&#x27;day&#x27;].astype(int)
+
+births.index = pd.to_datetime(10000 * births.year +
+                              100 * births.month +
+                              births.day, format=&#x27;%Y%m%d&#x27;)
+births_by_date = births.pivot_table(&#x27;births&#x27;,
+                                    [births.index.month, births.index.day])
+births_by_date.index = [datetime(2012, month, day)
+                        for (month, day) in births_by_date.index]</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="births_plot.py">
+      <pre><code>fig, ax = plt.subplots(figsize=(12, 4))
+births_by_date.plot(ax=ax);</code></pre>
+    </div>
+
+    <p>Bu tür veriyi görselleştirirken okuyucunun dikkatini çekmek için çizimin belirli özelliklerini elle açıklamak yararlıdır.
+  Bu, <code>plt.text</code> / <code>ax.text</code> ile belirli <em>x</em>/<em>y</em> konumlarına metin yerleştirerek yapılır (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="births_text_labels.py">
+      <pre><code>fig, ax = plt.subplots(figsize=(12, 4))
+births_by_date.plot(ax=ax)
+
+# Add labels to the plot
+style = dict(size=10, color=&#x27;gray&#x27;)
+
+ax.text(&#x27;2012-1-1&#x27;, 3950, &quot;New Year&#x27;s Day&quot;, **style)
+ax.text(&#x27;2012-7-4&#x27;, 4250, &quot;Independence Day&quot;, ha=&#x27;center&#x27;, **style)
+ax.text(&#x27;2012-9-4&#x27;, 4850, &quot;Labor Day&quot;, ha=&#x27;center&#x27;, **style)
+ax.text(&#x27;2012-10-31&#x27;, 4600, &quot;Halloween&quot;, ha=&#x27;right&#x27;, **style)
+ax.text(&#x27;2012-11-25&#x27;, 4450, &quot;Thanksgiving&quot;, ha=&#x27;center&#x27;, **style)
+ax.text(&#x27;2012-12-25&#x27;, 3850, &quot;Christmas &quot;, ha=&#x27;right&#x27;, **style)
+
+# Label the axes
+ax.set(title=&#x27;USA births by day of year (1969-1988)&#x27;,
+       ylabel=&#x27;average daily births&#x27;)
+
+# Format the x-axis with centered month labels
+ax.xaxis.set_major_locator(mpl.dates.MonthLocator())
+ax.xaxis.set_minor_locator(mpl.dates.MonthLocator(bymonthday=15))
+ax.xaxis.set_major_formatter(plt.NullFormatter())
+ax.xaxis.set_minor_formatter(mpl.dates.DateFormatter(&#x27;%h&#x27;));</code></pre>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Türkçe tatil etiketi</div>
+      <p>Grafiğe kendi dilinizde bir etiket ekleyin.</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_text_tr.py">
+      <pre><code>ax.text('2012-5-1', 4000, 'İşçi Bayramı', ha='center', size=10, color='gray')</code></pre>
+    </div>
+
+    </div>
+
+
+    <p><code>ax.text</code> bir <em>x</em> konumu, <em>y</em> konumu, bir dize ve isteğe bağlı olarak renk, boyut, stil, hizalama gibi metin özelliklerini alır.
+    Burada <code>ha='right'</code> ve <code>ha='center'</code> kullandık; <code>ha</code> <em>horizontal alignment</em> (yatay hizalama) kısaltmasıdır.
+    Seçenekler için <code>plt.text</code> ve <code>mpl.text.Text</code> docstring'lerine bakın.</p>
+
+    <h2 id="donusumler-metin">Dönüşümler ve metin konumu</h2>    <p>Önceki örnekte metni veri konumlarına sabitledik. Bazen metni veriden bağımsız olarak eksen veya figürün sabit bir konumuna sabitlemek iyidir.
+    Matplotlib'de bu <em>transform</em> (dönüşüm) değiştirilerek yapılır.</p>
+    <p>Matplotlib birkaç koordinat sistemi kullanır: $(x, y) = (1, 1)$ veri noktası eksen veya figürde belirli bir konuma, o da ekranda belirli bir piksele karşılık gelir.
+    Matematiksel olarak bu sistemler arası dönüşüm görece basittir; Matplotlib bunu <code>matplotlib.transforms</code> alt modülünde yapar.</p>
+    <p>Tipik kullanıcı dönüşüm ayrıntılarıyla nadiren uğraşır; metin yerleşiminde şu üç önceden tanımlı dönüşüm yararlıdır:</p>
+    <ul>
+      <li><code>ax.transData</code>: Veri koordinatlarıyla ilişkili dönüşüm</li>
+      <li><code>ax.transAxes</code>: Eksen boyutlarının birimi cinsinden eksenle ilişkili dönüşüm</li>
+      <li><code>fig.transFigure</code>: Figür boyutlarının birimi cinsinden figürle ilişkili dönüşüm</li>
+    </ul>
+    <p>Bu dönüşümleri kullanarak çeşitli konumlara metin çizen bir örneğe bakalım (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="transforms_demo.py">
+      <pre><code>fig, ax = plt.subplots(facecolor=&#x27;lightgray&#x27;)
+ax.axis([0, 10, 0, 10])
+
+# transform=ax.transData is the default, but we&#x27;ll specify it anyway
+ax.text(1, 5, &quot;. Data: (1, 5)&quot;, transform=ax.transData)
+ax.text(0.5, 0.1, &quot;. Axes: (0.5, 0.1)&quot;, transform=ax.transAxes)
+ax.text(0.2, 0.2, &quot;. Figure: (0.2, 0.2)&quot;, transform=fig.transFigure);</code></pre>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 transAxes ile başlık</div>
+      <p>Eksenin üst ortasına figürden bağımsız bir not ekleyin.</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_trans_axes.py">
+      <pre><code>ax.text(0.5, 1.02, 'Üst not', transform=ax.transAxes, ha='center', va='bottom')</code></pre>
+    </div>
+
+    </div>
+
+
+    <p>Matplotlib'in varsayılan metin hizalaması, her dizenin başındaki "." karakterinin belirtilen koordinata yaklaşık oturmasını sağlar.</p>
+    <p><code>transData</code> x ve y eksen etiketleriyle ilişkili veri koordinatlarını verir.
+    <code>transAxes</code> eksenin sol alt köşesinden (burada beyaz kutu) eksen boyutunun kesri olarak konum verir.
+    <code>transFigure</code> benzerdir; konum figürün sol alt köşesinden (gri kutu) figür boyutunun kesri olarak verilir.</p>
+    <p>Eksen sınırlarını değiştirirsek yalnızca <code>transData</code> koordinatlarının etkilendiğini, diğerlerinin sabit kaldığını görün (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="transforms_limits.py">
+      <pre><code>ax.set_xlim(0, 2)
+ax.set_ylim(-6, 6)
+fig</code></pre>
+    </div>
+
+    <p>Bu davranış eksen sınırlarını etkileşimli değiştirerek daha net görülebilir: kodu not defterinde çalıştırıyorsanız <code>%matplotlib inline</code> yerine <code>%matplotlib notebook</code> kullanıp menüyle etkileşime geçebilirsiniz.</p>
+
+    <h2 id="oklar-annotate">Oklar ve annotate</h2>    <p>İşaret çizgileri ve metinle birlikte yararlı bir başka açıklama basit oklardır.</p>
+    <p><code>plt.arrow</code> vardır ancak önermem: oluşturduğu oklar SVG nesneleridir, en-boy oranı değişince hizalamak zorlaşır.
+    Bunun yerine metin ve oku esnek tanımlayan <code>plt.annotate</code> önerilir.</p>
+    <p>İşte <code>annotate</code>'in birkaç seçeneğiyle gösterimi (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="annotate_demo.py">
+      <pre><code>fig, ax = plt.subplots()
+
+x = np.linspace(0, 20, 1000)
+ax.plot(x, np.cos(x))
+ax.axis(&#x27;equal&#x27;)
+
+ax.annotate(&#x27;local maximum&#x27;, xy=(6.28, 1), xytext=(10, 4),
+            arrowprops=dict(facecolor=&#x27;black&#x27;, shrink=0.05))
+
+ax.annotate(&#x27;local minimum&#x27;, xy=(5 * np.pi, -1), xytext=(2, -6),
+            arrowprops=dict(arrowstyle=&quot;-&gt;&quot;,
+                            connectionstyle=&quot;angle3,angleA=0,angleB=-90&quot;));</code></pre>
+    </div>
+
+    <p>Ok stili <code>arrowprops</code> sözlüğüyle kontrol edilir; çok sayıda seçenek vardır.
+    Matplotlib çevrimiçi belgelerinde iyi belgelenmiştir; burada birkaç örnekle gösterelim.
+    Önceki doğum grafiğinde olası seçeneklerin bir kısmını kullanalım (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="births_annotate.py">
+      <pre><code>fig, ax = plt.subplots(figsize=(12, 4))
+births_by_date.plot(ax=ax)
+
+# Add labels to the plot
+ax.annotate(&quot;New Year&#x27;s Day&quot;, xy=(&#x27;2012-1-1&#x27;, 4100),  xycoords=&#x27;data&#x27;,
+            xytext=(50, -30), textcoords=&#x27;offset points&#x27;,
+            arrowprops=dict(arrowstyle=&quot;-&gt;&quot;,
+                            connectionstyle=&quot;arc3,rad=-0.2&quot;))
+
+ax.annotate(&quot;Independence Day&quot;, xy=(&#x27;2012-7-4&#x27;, 4250),  xycoords=&#x27;data&#x27;,
+            bbox=dict(boxstyle=&quot;round&quot;, fc=&quot;none&quot;, ec=&quot;gray&quot;),
+            xytext=(10, -40), textcoords=&#x27;offset points&#x27;, ha=&#x27;center&#x27;,
+            arrowprops=dict(arrowstyle=&quot;-&gt;&quot;))
+
+ax.annotate(&#x27;Labor Day Weekend&#x27;, xy=(&#x27;2012-9-4&#x27;, 4850), xycoords=&#x27;data&#x27;,
+            ha=&#x27;center&#x27;, xytext=(0, -20), textcoords=&#x27;offset points&#x27;)
+ax.annotate(&#x27;&#x27;, xy=(&#x27;2012-9-1&#x27;, 4850), xytext=(&#x27;2012-9-7&#x27;, 4850),
+            xycoords=&#x27;data&#x27;, textcoords=&#x27;data&#x27;,
+            arrowprops={&#x27;arrowstyle&#x27;: &#x27;|-|,widthA=0.2,widthB=0.2&#x27;, })
+
+ax.annotate(&#x27;Halloween&#x27;, xy=(&#x27;2012-10-31&#x27;, 4600),  xycoords=&#x27;data&#x27;,
+            xytext=(-80, -40), textcoords=&#x27;offset points&#x27;,
+            arrowprops=dict(arrowstyle=&quot;fancy&quot;,
+                            fc=&quot;0.6&quot;, ec=&quot;none&quot;,
+                            connectionstyle=&quot;angle3,angleA=0,angleB=-90&quot;))
+
+ax.annotate(&#x27;Thanksgiving&#x27;, xy=(&#x27;2012-11-25&#x27;, 4500),  xycoords=&#x27;data&#x27;,
+            xytext=(-120, -60), textcoords=&#x27;offset points&#x27;,
+            bbox=dict(boxstyle=&quot;round4,pad=.5&quot;, fc=&quot;0.9&quot;),
+            arrowprops=dict(arrowstyle=&quot;-&gt;&quot;,
+                            connectionstyle=&quot;angle,angleA=0,angleB=80,rad=20&quot;))
+
+
+ax.annotate(&#x27;Christmas&#x27;, xy=(&#x27;2012-12-25&#x27;, 3850),  xycoords=&#x27;data&#x27;,
+             xytext=(-30, 0), textcoords=&#x27;offset points&#x27;,
+             size=13, ha=&#x27;right&#x27;, va=&quot;center&quot;,
+             bbox=dict(boxstyle=&quot;round&quot;, alpha=0.1),
+             arrowprops=dict(arrowstyle=&quot;wedge,tail_width=0.5&quot;, alpha=0.1));
+
+# Label the axes
+ax.set(title=&#x27;USA births by day of year (1969-1988)&#x27;,
+       ylabel=&#x27;average daily births&#x27;)
+
+# Format the x-axis with centered month labels
+ax.xaxis.set_major_locator(mpl.dates.MonthLocator())
+ax.xaxis.set_minor_locator(mpl.dates.MonthLocator(bymonthday=15))
+ax.xaxis.set_major_formatter(plt.NullFormatter())
+ax.xaxis.set_minor_formatter(mpl.dates.DateFormatter(&#x27;%h&#x27;));
+
+ax.set_ylim(3600, 5400);</code></pre>
+    </div>
+
+    <p>Seçenek çeşitliliği <code>annotate</code>'i güçlü ve esnek kılar; neredeyse istediğiniz ok stilini oluşturabilirsiniz.
+    Ne yazık ki bu özellikler çoğu zaman elle ince ayar gerektirir; yayın kalitesi grafiklerde zaman alıcı olabilir!
+    Son olarak, yukarıdaki stil karışımı veri sunumu için en iyi uygulama değildir; mevcut seçeneklerin gösterimi içindir.</p>
+    <p>Ok ve açıklama stilleri için Matplotlib
+    <a href="https://matplotlib.org/stable/tutorials/text/annotations.html" target="_blank" rel="noopener">Annotations öğreticisi</a>nde daha fazla tartışma ve örnek vardır.</p>
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="10-customizing-ticks.html">4.10 Eksen İşaretleri Özelleştirme →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Matplotlib yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pandas Nesnelerine Giriş — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="03-pandas" data-section="01-introducing-pandas-objects" data-preload-numpy="true" data-preload-pandas="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.01-introducing-pandas-objects.html" target="_blank" rel="noopener">03.01 Introducing Pandas Objects</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>Pandas Nesnelerine Giriş</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.01-introducing-pandas-objects.html" target="_blank" rel="noopener">Introducing Pandas Objects</a></em></p>
+
+    <p><a href="00-introduction.html">Bölüm 3 girişinde</a> Pandas'ın genel rolünü ele aldık; burada <code>Series</code>, <code>DataFrame</code> ve <code>Index</code> yapılarına odaklanıyoruz.</p>
+
+    <p>En temel düzeyde Pandas nesneleri, satır ve sütunların basit tamsayı indeksleri yerine etiketlerle tanımlandığı NumPy yapılandırılmış dizilerinin geliştirilmiş sürümleri olarak düşünülebilir. Bu bölüm boyunca göreceğimiz gibi Pandas, temel veri yapılarının üzerine birçok yararlı araç, yöntem ve işlev sunar; ancak bundan sonraki hemen her şey bu yapıların ne olduğunu anlamayı gerektirir. Bu yüzden daha ileri gitmeden önce üç temel Pandas veri yapısına bakalım: <code>Series</code>, <code>DataFrame</code> ve <code>Index</code>.</p>
+    <p>Kod oturumlarına standart NumPy ve Pandas içe aktarmalarıyla başlayacağız:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_2.py">
+      <pre><code>import numpy as np
+import pandas as pd</code></pre>
+    </div>
+
+    <h2 id="pandas-series-nesnesi">Pandas Series Nesnesi</h2>
+    <p>Pandas <code>Series</code>, indekslenmiş veriden oluşan tek boyutlu bir dizidir. Liste veya dizi ile şöyle oluşturulabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_4.py">
+      <pre><code>data = pd.Series([0.25, 0.5, 0.75, 1.0])
+data</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [2]:
+0    0.25
+1    0.50
+2    0.75
+3    1.00
+dtype: float64</code></pre>
+    </div>
+
+    <p><code>Series</code>, bir değer dizisini açık bir indeks dizisiyle birleştirir; <code>values</code> ve <code>index</code> öznitelikleriyle erişilir. <code>values</code> tanıdık bir NumPy dizisidir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_6.py">
+      <pre><code>data.values</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [3]:
+array([0.25, 0.5 , 0.75, 1.  ])</code></pre>
+    </div>
+
+    <p><code>index</code>, <code>pd.Index</code> tipinde dizi benzeri bir nesnedir; birazdan ayrıntılandıracağız:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_8.py">
+      <pre><code>data.index</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [4]:
+RangeIndex(start=0, stop=4, step=1)</code></pre>
+    </div>
+
+    <p>NumPy dizisinde olduğu gibi, veriye ilişkili indeks üzerinden Python köşeli parantez gösterimiyle erişilebilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_10.py">
+      <pre><code>data[1]</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [5]:
+0.5</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_11.py">
+      <pre><code>data[1:3]</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [6]:
+1    0.50
+2    0.75
+dtype: float64</code></pre>
+    </div>
+
+    <p>Göreceğimiz üzere Pandas <code>Series</code>, taklit ettiği tek boyutlu NumPy dizisinden çok daha genel ve esnektir.</p>
+
+    <h3 id="series-genellestirilmis-numpy-dizisi">Series, Genelleştirilmiş NumPy Dizisi</h3>
+
+    <p>Şimdiye kadar gördüklerimizden <code>Series</code> nesnesi tek boyutlu bir NumPy dizisiyle neredeyse değiştirilebilir görünebilir. Temel fark şudur: NumPy dizisinde değerlere erişmek için <em>örtük</em> tamsayı indeks kullanılır; Pandas <code>Series</code>'te ise değerlerle birlikte <em>açık</em> bir indeks tanımlıdır.</p>
+    <p>Bu açık indeks, <code>Series</code>'e ek yetenekler verir. Örneğin indeks tamsayı olmak zorunda değildir; istenen herhangi bir türde olabilir. İstersek string indeks kullanabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_15.py">
+      <pre><code>data = pd.Series([0.25, 0.5, 0.75, 1.0],
+                 index=['a', 'b', 'c', 'd'])
+data</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [7]:
+a    0.25
+b    0.50
+c    0.75
+d    1.00
+dtype: float64</code></pre>
+    </div>
+
+    <p>Öğe erişimi beklendiği gibi çalışır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_17.py">
+      <pre><code>data['b']</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [8]:
+0.5</code></pre>
+    </div>
+
+    <p>Ardışık olmayan veya sıralı olmayan indeksler de kullanılabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_19.py">
+      <pre><code>data = pd.Series([0.25, 0.5, 0.75, 1.0],
+                 index=[2, 5, 3, 7])
+data</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [9]:
+2    0.25
+5    0.50
+3    0.75
+7    1.00
+dtype: float64</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_20.py">
+      <pre><code>data[5]</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [10]:
+0.5</code></pre>
+    </div>
+
+    <h3 id="series-ozellestirilmis-sozluk">Series, Özelleştirilmiş Sözlük</h3>
+    <p>Bu bakışla Pandas <code>Series</code>, Python sözlüğünün bir özelleşmesi gibi düşünülebilir. Sözlük key → değer eşlemesi yapar; <code>Series</code> ise tipli anahtarları tipli değerlere eşler. Bu tip bilgisi önemlidir: NumPy dizisinin arkasındaki tip odaklı derlenmiş kod, belirli işlemlerde Python listesinden daha verimli kılar; <code>Series</code>'in tip bilgisi de benzer şekilde Python sözlüklerinden daha verimli olmasını sağlar.</p>
+    <p><code>Series</code>-sözlük benzetmesi, doğrudan Python sözlüğünden <code>Series</code> oluşturarak netleşir — burada 2020 nüfus sayımına göre ABD'nin en kalabalık beş eyaleti:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_22.py">
+      <pre><code>population_dict = {'California': 39538223, 'Texas': 29145505,
+                   'Florida': 21538187, 'New York': 20201249,
+                   'Pennsylvania': 13002700}
+population = pd.Series(population_dict)
+population</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [11]:
+California      39538223
+Texas           29145505
+Florida         21538187
+New York        20201249
+Pennsylvania    13002700
+dtype: int64</code></pre>
+    </div>
+
+    <p>Buradan tipik sözlük tarzı öğe erişimi yapılabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_24.py">
+      <pre><code>population['California']</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [12]:
+39538223</code></pre>
+    </div>
+
+    <p>Sözlükten farklı olarak <code>Series</code> dilimleme gibi dizi tarzı işlemleri de destekler:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_26.py">
+      <pre><code>population['California':'Florida']</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [13]:
+California    39538223
+Texas         29145505
+Florida       21538187
+dtype: int64</code></pre>
+    </div>
+
+    <p>Pandas indeksleme ve dilimlemenin bazı inceliklerini <a href="02-data-indexing-and-selection.html">Veri İndeksleme ve Seçimi</a> bölümünde ele alacağız.</p>
+
+    <h3 id="series-nesneleri-olusturma">Series Nesneleri Oluşturma</h3>
+    <p>Sıfırdan <code>Series</code> oluşturmanın birkaç yolunu gördük; hepsi şu kalıba benzer:</p>
+    <div data-lang="python" data-filename="ornek.py">
+      <pre><code>pd.Series(data, index=index)</code></pre>
+    </div>
+    <p><code>index</code> isteğe bağlıdır; <code>data</code> birçok türden biri olabilir.</p>
+    <p>Örneğin <code>data</code> liste veya NumPy dizisi olabilir; bu durumda <code>index</code> varsayılan olarak tamsayı dizisidir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_29.py">
+      <pre><code>pd.Series([2, 4, 6])</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [14]:
+0    2
+1    4
+2    6
+dtype: int64</code></pre>
+    </div>
+
+    <p>Ya da <code>data</code> bir skaler olabilir; belirtilen indekste tekrarlanır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_31.py">
+      <pre><code>pd.Series(5, index=[100, 200, 300])</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [15]:
+100    5
+200    5
+300    5
+dtype: int64</code></pre>
+    </div>
+
+    <p>Ya da sözlük olabilir; <code>index</code> varsayılan olarak sözlük anahtarlarıdır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_33.py">
+      <pre><code>pd.Series({2:'a', 1:'b', 3:'c'})</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [16]:
+2    a
+1    b
+3    c
+dtype: object</code></pre>
+    </div>
+
+    <p>Her durumda indeks, sırayı veya kullanılacak anahtar alt kümesini açıkça belirlemek için ayarlanabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_35.py">
+      <pre><code>pd.Series({2:'a', 1:'b', 3:'c'}, index=[1, 2])</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [17]:
+1    b
+2    a
+dtype: object</code></pre>
+    </div>
+
+    <h2 id="pandas-dataframe-nesnesi">Pandas DataFrame Nesnesi</h2>
+    <p>Pandas'taki bir sonraki temel yapı <code>DataFrame</code>'dir. Önceki bölümdeki <code>Series</code> gibi <code>DataFrame</code> hem NumPy dizisinin genellemesi hem de Python sözlüğünün özelleşmesi olarak düşünülebilir. Her iki bakış açısını da inceleyeceğiz.</p>
+
+    <h3 id="dataframe-genellestirilmis-numpy-dizisi">DataFrame, Genelleştirilmiş NumPy Dizisi</h3>
+    <p><code>Series</code> açık indeksli tek boyutlu dizi analoguysa, <code>DataFrame</code> açık satır ve sütun indeksli iki boyutlu dizi analogudur. İki boyutlu diziyi hizalı tek boyutlu sütunların sıralı dizisi gibi düşünürseniz, <code>DataFrame</code>'i hizalı <code>Series</code> nesnelerinin dizisi olarak düşünebilirsiniz. “Hizalı” derken aynı indeksi paylaştıklarını kastediyoruz.</p>
+    <p>Bunu göstermek için önceki bölümdeki beş eyaletin alanını (km²) listeleyen yeni bir <code>Series</code> oluşturalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_38.py">
+      <pre><code>area_dict = {'California': 423967, 'Texas': 695662, 'Florida': 170312, 
+             'New York': 141297, 'Pennsylvania': 119280}
+area = pd.Series(area_dict)
+area</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [18]:
+California      423967
+Texas           695662
+Florida         170312
+New York        141297
+Pennsylvania    119280
+dtype: int64</code></pre>
+    </div>
+
+    <p>Bunu ve önceki <code>population</code> <code>Series</code>'ini kullanarak bu bilgiyi içeren tek bir iki boyutlu nesne oluşturabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_40.py">
+      <pre><code>states = pd.DataFrame({'population': population,
+                       'area': area})
+states</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [19]:
+              population    area
+California      39538223  423967
+Texas           29145505  695662
+Florida         21538187  170312
+New York        20201249  141297
+Pennsylvania    13002700  119280</code></pre>
+    </div>
+
+    <p><code>Series</code> gibi <code>DataFrame</code>'in de indeks etiketlerine erişen bir <code>index</code> özniteliği vardır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_42.py">
+      <pre><code>states.index</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [20]:
+Index(['California', 'Texas', 'Florida', 'New York', 'Pennsylvania'], dtype='object')</code></pre>
+    </div>
+
+    <p>Ayrıca sütun etiketlerini tutan <code>Index</code> tipinde bir <code>columns</code> özniteliği vardır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_44.py">
+      <pre><code>states.columns</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [21]:
+Index(['population', 'area'], dtype='object')</code></pre>
+    </div>
+
+    <p>Böylece <code>DataFrame</code>, hem satır hem sütunların veriye erişim için genelleştirilmiş indekse sahip olduğu iki boyutlu NumPy dizisinin genellemesi olarak görülebilir.</p>
+
+    <h3 id="dataframe-ozellestirilmis-sozluk">DataFrame, Özelleştirilmiş Sözlük</h3>
+    <p>Benzer şekilde <code>DataFrame</code> bir sözlük özelleşmesi olarak da düşünülebilir. Sözlük anahtar → değer eşler; <code>DataFrame</code> sütun adı → sütun verisinin <code>Series</code>'i eşler. Örneğin <code>'area'</code> istendiğinde daha önce gördüğümüz alan <code>Series</code>'i döner:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_47.py">
+      <pre><code>states['area']</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [22]:
+California      423967
+Texas           695662
+Florida         170312
+New York        141297
+Pennsylvania    119280
+Name: area, dtype: int64</code></pre>
+    </div>
+
+    <p>Burada kafa karıştırıcı bir nokta olabilir: iki boyutlu NumPy dizisinde <code>data[0]</code> ilk <em>satırı</em> döndürür; <code>DataFrame</code>'de <code>data['col0']</code> ilk <em>sütunu</em> döndürür. Bu yüzden <code>DataFrame</code>'i genelleştirilmiş dizi yerine genelleştirilmiş sözlük olarak düşünmek genelde daha iyidir; her iki bakış da yararlı olabilir. <code>DataFrame</code> için daha esnek indekslemeyi <a href="02-data-indexing-and-selection.html">Veri İndeksleme ve Seçimi</a> bölümünde inceleyeceğiz.</p>
+
+    <h3 id="dataframe-nesneleri-olusturma">DataFrame Nesneleri Oluşturma</h3>
+    <p>Pandas <code>DataFrame</code> birçok yolla oluşturulabilir. Burada birkaç örneği ele alıyoruz.</p>
+
+    <h4 id="tek-bir-series-nesnesinden">Tek bir Series nesnesinden</h4>
+    <p><code>DataFrame</code>, <code>Series</code> nesnelerinin koleksiyonudur; tek sütunlu <code>DataFrame</code> tek bir <code>Series</code>'ten oluşturulabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_51.py">
+      <pre><code>pd.DataFrame(population, columns=['population'])</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [23]:
+              population
+California      39538223
+Texas           29145505
+Florida         21538187
+New York        20201249
+Pennsylvania    13002700</code></pre>
+    </div>
+
+    <h4 id="sozluk-listesinden">Sözlük listesinden</h4>
+    <p>Herhangi bir sözlük listesi <code>DataFrame</code> yapılabilir. Basit bir list comprehension ile veri üretelim:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_53.py">
+      <pre><code>data = [{'a': i, 'b': 2 * i}
+        for i in range(3)]
+pd.DataFrame(data)</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [24]:
+   a  b
+0  0  0
+1  1  2
+2  2  4</code></pre>
+    </div>
+
+    <p>Sözlüklerde bazı anahtarlar eksik olsa bile Pandas eksikleri <code>NaN</code> (Not a Number) ile doldurur; bkz. <a href="04-missing-values.html">Eksik Veri</a>:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_55.py">
+      <pre><code>pd.DataFrame([{'a': 1, 'b': 2}, {'b': 3, 'c': 4}])</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [25]:
+     a  b    c
+0  1.0  2  NaN
+1  NaN  3  4.0</code></pre>
+    </div>
+
+    <p>Daha önce gördüğümüz gibi <code>DataFrame</code>, <code>Series</code> sözlüğünden de oluşturulabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_57.py">
+      <pre><code>pd.DataFrame({'population': population,
+              'area': area})</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [26]:
+              population    area
+California      39538223  423967
+Texas           29145505  695662
+Florida         21538187  170312
+New York        20201249  141297
+Pennsylvania    13002700  119280</code></pre>
+    </div>
+
+    <h4 id="iki-boyutlu-numpy-dizisinden">İki boyutlu NumPy dizisinden</h4>
+    <p>İki boyutlu veri dizisi verildiğinde istenen sütun ve indeks adlarıyla <code>DataFrame</code> oluşturulabilir. Belirtilmezse her biri için tamsayı indeks kullanılır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_59.py">
+      <pre><code>pd.DataFrame(np.random.rand(3, 2),
+             columns=['foo', 'bar'],
+             index=['a', 'b', 'c'])</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [27]:
+        foo       bar
+a  0.471098  0.317396
+b  0.614766  0.305971
+c  0.533596  0.512377</code></pre>
+    </div>
+
+    <h4 id="numpy-yapilandirilmis-dizisinden">NumPy yapılandırılmış dizisinden</h4>
+    <p>Yapılandırılmış dizileri <a href="../02-numpy/09-structured-arrays.html">Yapılandırılmış Veri: NumPy Yapılandırılmış Dizileri</a> bölümünde ele aldık. Pandas <code>DataFrame</code> yapılandırılmış diziye çok benzer çalışır ve doğrudan ondan oluşturulabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_61.py">
+      <pre><code>A = np.zeros(3, dtype=[('A', 'i8'), ('B', 'f8')])
+A</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [28]:
+array([(0, 0.), (0, 0.), (0, 0.)], dtype=[('A', '&lt;i8'), ('B', '&lt;f8')])</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_62.py">
+      <pre><code>pd.DataFrame(A)</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [29]:
+   A    B
+0  0  0.0
+1  0  0.0
+2  0  0.0</code></pre>
+    </div>
+
+    <h2 id="pandas-index-nesnesi">Pandas Index Nesnesi</h2>
+    <p>Gördüğünüz gibi <code>Series</code> ve <code>DataFrame</code> veriye referans ve değişiklik için açık bir <em>indeks</em> içerir. <code>Index</code> kendi başına ilginç bir yapıdır; <em>değiştirilemez dizi</em> veya <em>sıralı küme</em> (teknik olarak çok küme — <code>Index</code> tekrarlı değer içerebilir) olarak düşünülebilir. Bu görünümler <code>Index</code> üzerindeki işlemlere ilginç sonuçlar verir. Basit örnek: tamsayı listesinden <code>Index</code> oluşturalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_64.py">
+      <pre><code>ind = pd.Index([2, 3, 5, 7, 11])
+ind</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [30]:
+Int64Index([2, 3, 5, 7, 11], dtype='int64')</code></pre>
+    </div>
+
+    <h3 id="index-degistirilemez-dizi">Index, Değiştirilemez Dizi</h3>
+    <p><code>Index</code> birçok yönden dizi gibi davranır. Standart Python indeks gösterimiyle değer veya dilim alınabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_66.py">
+      <pre><code>ind[1]</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [31]:
+3</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_67.py">
+      <pre><code>ind[::2]</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [32]:
+Int64Index([2, 5, 11], dtype='int64')</code></pre>
+    </div>
+
+    <p><code>Index</code> nesneleri NumPy dizilerinden tanıdık birçok özniteliğe de sahiptir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_69.py">
+      <pre><code>print(ind.size, ind.shape, ind.ndim, ind.dtype)</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [33]:
+5 (5,) 1 int64</code></pre>
+    </div>
+
+    <p><code>Index</code> ile NumPy dizisi arasındaki farklardan biri indekslerin değiştirilemez olmasıdır — normal yollarla değiştirilemezler:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_71.py">
+      <pre><code>ind[1] = 0</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [34]:
+TypeError: Index does not support mutable operations</code></pre>
+    </div>
+
+    <p>Bu değişmezlik, birden fazla <code>DataFrame</code> ve dizi arasında indeks paylaşmayı daha güvenli kılar; istemeden indeks değişikliğinin yan etkileri olmaz.</p>
+
+    <h3 id="index-sirali-kume">Index, Sıralı Küme</h3>
+    <p>Pandas nesneleri veri kümeleri arasında birleştirme gibi küme aritmetiğine dayanan işlemleri kolaylaştıracak şekilde tasarlanmıştır. <code>Index</code>, Python'un yerleşik <code>set</code> yapısının birçok kuralını izler; birleşim, kesişim, fark ve diğer kombinasyonlar tanıdık biçimde hesaplanabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_74.py">
+      <pre><code>indA = pd.Index([1, 3, 5, 7, 9])
+indB = pd.Index([2, 3, 5, 7, 11])</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_75.py">
+      <pre><code>indA.intersection(indB)</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [36]:
+Int64Index([3, 5, 7], dtype='int64')</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_76.py">
+      <pre><code>indA.union(indB)</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [37]:
+Int64Index([1, 2, 3, 5, 7, 9, 11], dtype='int64')</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="hucere_77.py">
+      <pre><code>indA.symmetric_difference(indB)</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_cikti.txt" data-readonly="true">
+      <pre><code>In [38]:
+Int64Index([1, 2, 9, 11], dtype='int64')</code></pre>
+    </div>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Series vs NumPy</div>
+      <p><code>Series.values</code> her zaman NumPy dizisidir; indeks bilgisi <code>Series.index</code>'te kalır. Hesap için çoğu zaman <code>.values</code> veya doğrudan vektörize Pandas işlemleri kullanılır.</p>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>String indeksli bir <code>Series</code> oluşturup <code>loc</code> ile dilimleyin:</p>
+          <div class="code-block" data-lang="python" data-filename="series_loc_deneme.py">
+      <pre><code>import pandas as pd
+s = pd.Series([10, 20, 30], index=list('abc'))
+print(s.loc['a':'b'])</code></pre>
+    </div>
+    </div>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — DataFrame sütun vs satır</div>
+      <p>NumPy'de <code>arr[0]</code> ilk satırdır; <code>DataFrame</code>'de <code>df['sütun']</code> bir sütun <code>Series</code>'idir. Karışıklığı önlemek için sütun seçiminde her zaman köşeli parantez kullanın.</p>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>İki sütunlu küçük bir <code>DataFrame</code> oluşturup <code>states['area']</code> ile sütun seçin:</p>
+          <div class="code-block" data-lang="python" data-filename="dataframe_sutun.py">
+      <pre><code>import pandas as pd
+states = pd.DataFrame({
+    'nufus': pd.Series({'A': 100, 'B': 200}),
+    'alan': pd.Series({'A': 50, 'B': 80}),
+})
+print(states['alan'])</code></pre>
+    </div>
+    </div>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Index değişmezliği</div>
+      <p><code>Index</code> öğeleri atama ile değiştirilemez; bu paylaşılan indekslerde yan etkiyi azaltır. Değişiklik gerekiyorsa yeni <code>Index</code> oluşturun.</p>
+    </div>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Index küme işlemleri</div>
+      <p><code>indA &amp; indB</code> kesişim, <code>|</code> birleşim, <code>^</code> simetrik fark verir. Aynı işlemler <code>.intersection()</code>, <code>.union()</code>, <code>.symmetric_difference()</code> ile de yapılır.</p>
+    </div>
+
+    <div class="alert alert-info"><div class="alert-title">🔗 Sonraki konu</div><p><a href="02-data-indexing-and-selection.html">3.2 Veri İndeksleme ve Seçimi →</a></p></div>
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kod Atölyesi — ETL, Streaming & Güvenlik (Bölüm 5) | Büyük Veri Teknolojileri</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body>
+
+<header class="top-nav">
+  <a href="hafta1.html" class="nav-brand">📊 Büyük Veri Teknolojileri</a>
+  <div class="nav-links">
+    <a href="uygulamalar2.html">🧪 Uygulamalar</a>
+    <a href="odev1.html">📝 Ödev 1</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<section class="hero">
+  <span class="week-badge">📅 BÖLÜM 5</span>
+  <h1>Kod Atölyesi — Bölüm 3 & 4'ü Elle Yazarak Pekiştirme</h1>
+  <p class="subtitle">ETL, Parquet, PySpark, Kafka ve güvenlik tekniklerini kısa örneklerle tanıyın; gerçek hayat senaryolarında uçtan uca uygulayın. Teori yoğun iki bölümün ardından "kodu okumak değil, yazmak" zamanı.</p>
+  <div class="meta-info">
+    <span>📖 Teori: 1 saat (tekrar)</span>
+    <span>💻 Kod: 4 saat</span>
+    <span>🧪 Seviye: Uygulamalı</span>
+  </div>
+</section>
+
+<div class="main-container">
+
+  <aside class="sidebar">
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list">
+      <a href="hafta1.html">📘 Dağıtık Sistemler & Python</a>
+      <a href="hafta2.html">📗 Veri Modelleme & Pandas</a>
+      <a href="hafta3.html">📙 ETL & PySpark</a>
+      <a href="hafta4.html">📕 Streaming & Güvenlik</a>
+      <a href="hafta5.html" class="current-page">🧪 Kod Atölyesi</a>
+      <a href="hafta6.html">📊 Analiz & ML</a>
+      <a href="../pds-handbook/index.html" target="_blank" rel="noopener">📚 PDS Handbook</a>
+      <a href="uygulamalar2.html">🧪 Uygulamalar</a>
+      <a href="odev1.html">📝 Ödev 1</a>
+    </div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav>
+      <ul>
+        <li><a href="#kazanimlar">🎯 Kazanımlar</a></li>
+        <li><a href="#hikaye">🗺️ Hikaye Haritası</a></li>
+        <li><a href="#ortamlar">💻 Ortamlar Rehberi</a></li>
+        <li><a href="#pandas-etl">🛠️ Bölüm 1: Pandas ETL (kısa)</a></li>
+        <li><a href="#parquet">📦 Bölüm 2: Parquet (kısa)</a></li>
+        <li><a href="#api-extract">🌐 Bölüm 2b: API'den veri çekme</a></li>
+        <li><a href="#pyspark-etl">⚡ Bölüm 3: PySpark ETL</a></li>
+        <li><a href="#stream-sim">🌊 Bölüm 4: Stream simülasyonu</a></li>
+        <li><a href="#spark-streaming">⚡ Bölüm 4b: Spark Structured Streaming</a></li>
+        <li><a href="#kafka-fraud">🚨 Bölüm 5: Kafka fraud senaryosu</a></li>
+        <li><a href="#guvenlik-kod">🔐 Bölüm 6: Güvenlik kodu</a></li>
+        <li><a href="#senaryo-eticaret">🏪 Bölüm 7: E-ticaret uçtan uca</a></li>
+        <li><a href="#senaryo-iot">📡 Bölüm 8: IoT sensör hattı</a></li>
+        <li><a href="#senaryo-log">📋 Bölüm 9: Web log analizi</a></li>
+        <li><a href="#ozet">📝 Özet</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="content">
+
+    <h2 id="kazanimlar">🎯 Bu Bölümün Kazanımları</h2>
+
+    <ul class="objectives-list">
+      <li><span class="obj-icon">✅</span> Bölüm 3'teki ETL adımlarını (Extract → Transform → Load) Pandas ile sıfırdan yazabilir</li>
+      <li><span class="obj-icon">✅</span> CSV ile Parquet arasındaki farkı kodla görebilir; Parquet okuma/yazma yapabilir</li>
+      <li><span class="obj-icon">✅</span> Aynı ETL mantığını PySpark DataFrame API ile ifade edebilir</li>
+      <li><span class="obj-icon">✅</span> Streaming mantığını (window, watermark) Pandas ile simüle edebilir</li>
+      <li><span class="obj-icon">✅</span> Kafka producer/consumer ile gerçek zamanlı fraud kuralı uygulayabilir</li>
+      <li><span class="obj-icon">✅</span> Hash, maskeleme, k-anonymity ve diferansiyel gürültüyü Python'da uygulayabilir</li>
+      <li><span class="obj-icon">✅</span> REST API'den veri çekip Pandas DataFrame'e dönüştürebilir (sayfalama dahil)</li>
+      <li><span class="obj-icon">✅</span> Spark Structured Streaming ile Kafka → window → aggregate akışını yazabilir</li>
+      <li><span class="obj-icon">✅</span> Gerçek bir e-ticaret senaryosunda ETL + anonimleştirme + depolama akışını kurabilir</li>
+      <li><span class="obj-icon">✅</span> IoT sensör ve web log senaryolarında ham metni yapılandırılmış tabloya çevirebilir</li>
+    </ul>
+
+    <hr>
+
+    <h2 id="hikaye">🗺️ Hikaye Haritası — Teoriden Koda</h2>
+
+    <div class="mermaid story-map">
+flowchart LR
+  A["Bölüm 3<br/>ETL teorisi"] --> B["Pandas + Parquet"]
+  B --> API["REST API extract"]
+  API --> C["PySpark ETL"]
+  D["Bölüm 4<br/>Kafka + güvenlik"] --> E["Stream sim"]
+  E --> SS["Spark Streaming"]
+  SS --> F["Kafka fraud"]
+  D --> G["Hash / k-anon / DP"]
+  B --> H["E-ticaret"]
+  G --> H
+  H --> IOT["IoT + log"]
+  IOT --> I["Bölüm 6<br/>EDA & grafik"]
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">📌 Bu bölüm neden var?</div>
+      <p>Bölüm 3 ve 4'te çok kavram geçti: ETL, Parquet, Spark, Kafka, KVKK, k-anonymity… Bu sayfa <strong>aynı konuları kodla tekrar eder</strong>. Kısa örnekler (5–30 satır) hızlı kavrama; uzun senaryolar (100+ satır) gerçek iş akışını gösterir. Analiz ve grafiklere <a href="hafta6.html">Bölüm 6</a>'da geçeceğiz.</p>
+    </div>
+
+    <hr>
+
+    <h2 id="ortamlar">💻 Ortamlar Rehberi — Nerede Çalıştırırım?</h2>
+
+    <div class="env-legend">
+      <div class="env-card env-browser">
+        <strong>🌐 Tarayıcı (Pyodide)</strong>
+        <p>Bu sayfadaki <em>▶️ Çalıştır</em> butonu. Pandas, NumPy, hashlib desteklenir. Dosya sistemi ve Kafka yok.</p>
+      </div>
+      <div class="env-card env-colab">
+        <strong>📓 Google Colab / Jupyter</strong>
+        <p>Parquet (<code>pyarrow</code>), PySpark, <code>kafka-python</code>, büyük dosyalar. Uzun senaryolar için önerilir.</p>
+      </div>
+      <div class="env-card env-docker">
+        <strong>🐳 Docker (lokal)</strong>
+        <p>Kafka örnekleri için. Bölüm 4'teki tek satırlık Kafka container komutu yeterli.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">🏷️ Kod bloklarındaki etiketler</div>
+      <ul>
+        <li><span class="run-badge">▶️ Tarayıcıda çalışır</span> — Pyodide ile deneyebilirsiniz</li>
+        <li><span class="colab-badge">📓 Colab önerilir</span> — PySpark, Kafka veya dosya I/O gerektirir</li>
+      </ul>
+    </div>
+
+    <hr>
+
+    <h2 id="pandas-etl">🛠️ Bölüm 1: Pandas ETL — Kısa Örnek (Tarayıcıda Çalışır)</h2>
+
+    <p>Bölüm 3'teki SuperMarket ETL'inin <strong>bellek içi</strong> versiyonu. Dosya okumak yerine <code>StringIO</code> kullanıyoruz; mantık aynı: temizle → birleştir → özetle.</p>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import pandas as pd
+from io import StringIO
+
+orders_csv = """order_id,customer_id,amount,ts
+1001,42,120.50,2024-06-01 09:14
+1002,17,340.00,2024-06-01 10:02
+1003,42,-50.00,2024-06-01 11:30
+1004,,89.90,2024-06-01 12:11"""
+
+customers_csv = """customer_id,name,city,email
+17,Ali,Ankara,ali@ex.com
+42,Ayşe,İzmir,ayse@ex.com
+91,Veli,Ankara,veli@ex.com"""
+
+# 1) EXTRACT
+orders = pd.read_csv(StringIO(orders_csv))
+customers = pd.read_csv(StringIO(customers_csv))
+print(f"Ham: {len(orders)} sipariş, {len(customers)} müşteri")
+
+# 2) TRANSFORM
+orders = orders.dropna(subset=["customer_id", "amount"])
+orders = orders[orders["amount"] &gt; 0]
+orders["ts"] = pd.to_datetime(orders["ts"])
+customers = customers.drop(columns=["email"])  # KVKK: e-postayı düşür
+
+df = orders.merge(customers, on="customer_id", how="inner")
+report = (df.groupby("city")
+            .agg(siparis=("order_id", "count"),
+                 ort_sepet=("amount", "mean"),
+                 ciro=("amount", "sum"))
+            .reset_index()
+            .sort_values("ciro", ascending=False))
+
+# 3) LOAD (burada ekrana — gerçekte Parquet'e yazılır)
+print("\n📊 Şehir raporu:")
+print(report.to_string(index=False))</code></pre>
+    </div>
+
+    <hr>
+
+    <h2 id="parquet">📦 Bölüm 2: Parquet — Okuma/Yazma (Colab veya Jupyter)</h2>
+
+    <p>Bölüm 3'te Parquet'in neden tercih edildiğini konuştuk. Aşağıdaki kod aynı raporu diske yazar, boyut ve okuma hızını karşılaştırır.</p>
+
+    <div class="alert alert-warning">
+      <div class="alert-title"><span class="colab-badge">📓 Colab önerilir</span></div>
+      <p><code>pip install pyarrow</code> gerekir. Tarayıcıdaki Pyodide ortamında dosya sistemi kısıtlıdır.</p>
+    </div>
+
+    <div class="code-block" data-lang="python" data-colab-only="true">
+      <pre><code>import pandas as pd
+import os
+
+report = pd.DataFrame({
+    "city": ["Ankara", "İzmir"],
+    "siparis": [1, 1],
+    "ort_sepet": [340.0, 120.5],
+    "ciro": [340.0, 120.5],
+})
+
+csv_path = "city_sales.csv"
+pq_path  = "city_sales.parquet"
+
+report.to_csv(csv_path, index=False)
+report.to_parquet(pq_path, index=False)
+
+csv_kb = os.path.getsize(csv_path) / 1024
+pq_kb  = os.path.getsize(pq_path) / 1024
+
+print(f"CSV boyutu:     {csv_kb:.2f} KB")
+print(f"Parquet boyutu: {pq_kb:.2f} KB  ({csv_kb/pq_kb:.1f}x küçük)")
+
+# Okuma — sadece ihtiyaç duyulan kolonlar (sütunsal avantaj)
+subset = pd.read_parquet(pq_path, columns=["city", "ciro"])
+print(subset)</code></pre>
+    </div>
+
+    <hr>
+
+    <h2 id="api-extract">🌐 Bölüm 2b: REST API'den Veri Çekme</h2>
+
+    <p>Gerçek projelerde veri her zaman CSV'de değildir. Hava durumu, açık veri portalları, e-ticaret sipariş API'leri… Extract adımı sıklıkla <strong>HTTP GET</strong> ile başlar. Bölüm 3'teki ETL'in "E" harfi burada API olur.</p>
+
+    <h3>2b-1) Kısa örnek — JSON API → DataFrame (tarayıcıda denenebilir)</h3>
+
+    <p><a href="https://jsonplaceholder.typicode.com/" target="_blank" rel="noopener">JSONPlaceholder</a> ücretsiz test API'si. CORS açık olduğu için Pyodide ile de çalışır.</p>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import json
+import urllib.request
+import pandas as pd
+
+# EXTRACT — HTTP GET
+url = "https://jsonplaceholder.typicode.com/users"
+with urllib.request.urlopen(url, timeout=10) as resp:
+    users = json.load(resp)
+
+# TRANSFORM — düzleştir (nested JSON → tablo)
+rows = []
+for u in users:
+    rows.append({
+        "id": u["id"],
+        "name": u["name"],
+        "city": u["address"]["city"],
+        "email": u["email"],  # gerçek projede hash'leyin veya düşürün
+    })
+df = pd.DataFrame(rows)
+
+# KVKK: e-postayı analizde tutmayın
+df_anon = df.drop(columns=["email"])
+print(df_anon.head())
+print(f"\n{df_anon['city'].nunique()} farklı şehir")</code></pre>
+    </div>
+
+    <h3>2b-2) Uzun örnek — sayfalı API + rate limit (Colab)</h3>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">🎬 Senaryo: Open-Meteo hava kalitesi</div>
+      <p>Bir belediye, şehir bazında PM2.5 ortalamasını günlük raporlamak istiyor. API sayfalı değil ama <strong>birden fazla koordinat</strong> için döngü + <code>time.sleep</code> ile rate limit'e saygı gösteriyoruz — production ETL'de sık görülen pattern.</p>
+    </div>
+
+    <div class="code-block" data-lang="python" data-colab-only="true">
+      <pre><code>import requests
+import pandas as pd
+import time
+from datetime import datetime, timezone
+
+# Koordinatlar: Ankara, İstanbul, İzmir
+cities = {
+    "Ankara": (39.93, 32.85),
+    "İstanbul": (41.01, 28.97),
+    "İzmir": (38.42, 27.14),
+}
+
+rows = []
+for city, (lat, lon) in cities.items():
+    url = (
+        "https://air-quality-api.open-meteo.com/v1/air-quality"
+        f"?latitude={lat}&amp;longitude={lon}"
+        "&hourly=pm2_5&amp;timezone=Europe%2FIstanbul&amp;forecast_days=1"
+    )
+    r = requests.get(url, timeout=15)
+    r.raise_for_status()
+    data = r.json()
+    pm = data["hourly"]["pm2_5"]
+    rows.append({
+        "city": city,
+        "pm25_ort": sum(pm) / len(pm),
+        "pm25_max": max(pm),
+        "ornek_sayisi": len(pm),
+        "extracted_at": datetime.now(timezone.utc).isoformat(),
+    })
+    time.sleep(0.5)  # API'yi yormamak için
+
+report = pd.DataFrame(rows).sort_values("pm25_ort", ascending=False)
+print(report.to_string(index=False))
+report.to_parquet("warehouse/air_quality.parquet", index=False)</code></pre>
+    </div>
+
+    <hr>
+
+    <h2 id="pyspark-etl">⚡ Bölüm 3: Aynı ETL — PySpark ile (Colab)</h2>
+
+    <p>Bölüm 3'ün mesajı: <strong>aynı mantık, farklı motor</strong>. Pandas'taki <code>merge → groupby → agg</code> zinciri Spark'ta neredeyse aynı isimlerle yazılır; fark, veri büyüdüğünde cluster'a dağıtılmasıdır.</p>
+
+    <div class="alert alert-warning">
+      <div class="alert-title"><span class="colab-badge">📓 Colab önerilir</span></div>
+      <p>Colab'da: <code>!pip install pyspark</code> · Spark session başlat · CSV'leri Drive'a yükleyin veya aşağıdaki gibi bellek içi oluşturun.</p>
+    </div>
+
+    <div class="code-block" data-lang="python" data-colab-only="true">
+      <pre><code>from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+spark = SparkSession.builder.appName("city-etl").getOrCreate()
+
+orders = spark.createDataFrame([
+    (1001, 42, 120.50, "2024-06-01 09:14"),
+    (1002, 17, 340.00, "2024-06-01 10:02"),
+], ["order_id", "customer_id", "amount", "ts"])
+
+customers = spark.createDataFrame([
+    (17, "Ali", "Ankara"),
+    (42, "Ayşe", "İzmir"),
+], ["customer_id", "name", "city"])
+
+# Transform — Pandas'taki filtre + join + groupby
+clean = orders.filter(F.col("amount") &gt; 0)
+joined = clean.join(customers, "customer_id", "inner")
+
+report = (joined.groupBy("city")
+          .agg(F.count("order_id").alias("siparis"),
+               F.avg("amount").alias("ort_sepet"),
+               F.sum("amount").alias("ciro"))
+          .orderBy(F.desc("ciro")))
+
+report.show()
+# report.write.mode("overwrite").parquet("warehouse/city_sales/")  # LOAD</code></pre>
+    </div>
+
+    <div class="comparison">
+      <div class="side">
+        <div class="side-title">🐼 Pandas</div>
+        <p>Tek makine, bellek sınırı ~ birkaç GB. Prototip ve orta boy analiz.</p>
+      </div>
+      <div class="side">
+        <div class="side-title">⚡ PySpark</div>
+        <p>Lazy evaluation, partition'lara bölünmüş iş. TB ölçeğinde aynı kod yapısı.</p>
+      </div>
+    </div>
+
+    <hr>
+
+    <h2 id="stream-sim">🌊 Bölüm 4: Streaming Mantığı — Pandas ile Simülasyon (Kısa)</h2>
+
+    <p>Kafka kurmadan Bölüm 4'teki <strong>5 dakikalık pencere</strong> fikrini anlamak için: olayları zaman damgasına göre gruplayıp "son 5 dakikada kaç işlem?" sorusunu yanıtlayalım.</p>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import pandas as pd
+
+# Sentetik kart işlemleri (Bölüm 4 fraud sorusunun mini versiyonu)
+events = pd.DataFrame({
+    "card_id": ["C1","C1","C1","C2","C1","C1"],
+    "city":    ["Ank","Ist","Ank","Ank","Ist","Izmir"],
+    "amount":  [100, 200, 150, 50, 300, 80],
+    "ts": pd.to_datetime([
+        "2025-05-19 10:00", "2025-05-19 10:02", "2025-05-19 10:04",
+        "2025-05-19 10:01", "2025-05-19 10:06", "2025-05-19 10:07"
+    ])
+})
+
+# 5 dakikalık tumbling window — Spark'taki window() mantığı
+events = events.sort_values("ts")
+events["window_start"] = events["ts"].dt.floor("5min")
+
+# Kural: aynı kart, aynı pencerede 3+ farklı şehir → şüpheli
+suspicious = (events.groupby(["card_id", "window_start"])["city"]
+              .nunique()
+              .reset_index(name="sehir_sayisi"))
+suspicious = suspicious[suspicious["sehir_sayisi"] &gt;= 3]
+
+print("Şüpheli kartlar (3+ şehir / 5 dk):")
+print(suspicious if len(suspicious) else "  (bu mini veride yok — C1 için 10:00–10:05 penceresinde Ank+Ist=2 şehir)")</code></pre>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Bölüm 4 bağlantısı</div>
+      <p>Spark Structured Streaming'de aynı kural <code>groupBy(window("ts", "5 minutes"), "card_id")</code> ile yazılır. Aşağıda Bölüm 4'teki tam Spark kodu var.</p>
+    </div>
+
+    <hr>
+
+    <h2 id="spark-streaming">⚡ Bölüm 4b: Spark Structured Streaming — Fraud Penceresi</h2>
+
+    <p>Bölüm 4'te teoriyi gördünüz. Burada <strong>Kafka → parse → 5 dk window → şehir sayısı → alarm</strong> hattının Spark versiyonu. Pandas simülasyonu (Bölüm 4) ile aynı kural; fark motorun sürekli akışı işlemesi.</p>
+
+    <div class="alert alert-warning">
+      <div class="alert-title"><span class="colab-badge">📓 Colab + Kafka Docker</span></div>
+      <p>Spark başlatırken Kafka connector paketi gerekir:<br>
+      <code>SparkSession.builder.config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0")</code></p>
+    </div>
+
+    <div class="code-block" data-lang="python" data-colab-only="true">
+      <pre><code>from pyspark.sql import SparkSession, functions as F
+from pyspark.sql.types import StructType, StringType, DoubleType, TimestampType
+
+spark = (SparkSession.builder
+         .appName("fraud-stream")
+         .config("spark.jars.packages",
+                 "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0")
+         .getOrCreate())
+
+schema = (StructType()
+    .add("txn_id", StringType())
+    .add("card_id", StringType())
+    .add("city", StringType())
+    .add("amount", DoubleType())
+    .add("ts", TimestampType()))
+
+raw = (spark.readStream
+       .format("kafka")
+       .option("kafka.bootstrap.servers", "localhost:9092")
+       .option("subscribe", "card_txns")
+       .load())
+
+events = (raw
+    .select(F.from_json(F.col("value").cast("string"), schema).alias("e"))
+    .select("e.*"))
+
+# 5 dk tumbling window + kart başına kaç farklı şehir?
+by_window = (events
+    .withWatermark("ts", "2 minutes")
+    .groupBy(F.window("ts", "5 minutes"), "card_id")
+    .agg(F.countDistinct("city").alias("sehir_sayisi"),
+         F.collect_set("city").alias("sehirler")))
+
+# Sadece şüpheli kartları filtrele
+alarms = by_window.filter(F.col("sehir_sayisi") &gt;= 3)
+
+query = (alarms.writeStream
+         .outputMode("update")
+         .format("console")
+         .option("truncate", False)
+         .start())
+
+query.awaitTermination()</code></pre>
+    </div>
+
+    <div class="comparison">
+      <div class="side">
+        <div class="side-title">🐍 Kafka consumer (Bölüm 5)</div>
+        <p>Manuel <code>deque</code>, tek process. Hızlı prototip; ölçek için birden fazla instance + consumer group.</p>
+      </div>
+      <div class="side">
+        <div class="side-title">⚡ Spark Streaming</div>
+        <p>Dağıtık state, checkpoint, SQL benzeri window. TB/s ölçeğinde aynı mantık.</p>
+      </div>
+    </div>
+
+    <hr>
+
+    <h2 id="kafka-fraud">🚨 Bölüm 5: Uzun Senaryo — Banka Fraud Tespiti (Kafka)</h2>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">🎬 Senaryo</div>
+      <p>Bir bankanın POS işlemleri Kafka topic'ine akıyor. Fraud ekibi kuralı: <strong>5 dakika içinde aynı kartla 3 farklı şehirden işlem</strong> → anında alarm. Bölüm 4'teki düşünme sorusunun tam kodu.</p>
+    </div>
+
+    <div class="alert alert-warning">
+      <div class="alert-title"><span class="colab-badge">📓 Colab + Docker</span></div>
+      <p>Terminal 1: Bölüm 4'teki Kafka Docker komutu · Terminal 2: consumer · Terminal 3: producer. Veya Confluent Cloud free tier.</p>
+    </div>
+
+    <h3>📤 Producer — işlem olayları</h3>
+
+    <div class="code-block" data-lang="python" data-colab-only="true">
+      <pre><code>from kafka import KafkaProducer
+import json, time, random
+from datetime import datetime, timezone
+
+producer = KafkaProducer(
+    bootstrap_servers="localhost:9092",
+    value_serializer=lambda v: json.dumps(v).encode("utf-8"),
+    key_serializer=lambda k: k.encode("utf-8"),
+)
+
+cities = ["Ankara", "İstanbul", "İzmir", "Bursa", "Antalya"]
+
+# Kart C999: kasıtlı fraud — 5 dk içinde 3 şehir
+fraud_pattern = [
+    ("C999", "Ankara"), ("C999", "İstanbul"), ("C999", "İzmir"),
+]
+for i, (card, city) in enumerate(fraud_pattern + [("C100", "Ankara")] * 5):
+    event = {
+        "txn_id": 5000 + i,
+        "card_id": card,
+        "city": city,
+        "amount": round(random.uniform(50, 800), 2),
+        "ts": datetime.now(timezone.utc).isoformat(),
+    }
+    producer.send("card_txns", key=card, value=event)
+    print("→", event)
+    time.sleep(1)
+
+producer.flush()</code></pre>
+    </div>
+
+    <h3>📥 Consumer — sliding window + alarm</h3>
+
+    <div class="code-block" data-lang="python" data-colab-only="true">
+      <pre><code>from kafka import KafkaConsumer
+from collections import defaultdict, deque
+from datetime import datetime, timezone, timedelta
+import json
+
+WINDOW = timedelta(minutes=5)
+consumer = KafkaConsumer(
+    "card_txns",
+    bootstrap_servers="localhost:9092",
+    group_id="fraud-detector-v1",
+    auto_offset_reset="earliest",
+    value_deserializer=lambda v: json.loads(v.decode("utf-8")),
+)
+
+# card_id → deque of (timestamp, city)
+history = defaultdict(deque)
+
+def parse_ts(s):
+    return datetime.fromisoformat(s.replace("Z", "+00:00"))
+
+for msg in consumer:
+    e = msg.value
+    card = e["card_id"]
+    ts = parse_ts(e["ts"])
+    city = e["city"]
+
+    q = history[card]
+    q.append((ts, city))
+    # Eski olayları pencereden at (watermark benzeri)
+    while q and ts - q[0][0] &gt; WINDOW:
+        q.popleft()
+
+    cities_in_window = {c for _, c in q}
+    if len(cities_in_window) &gt;= 3:
+        print(f"🚨 ALARM | kart={card} | şehirler={cities_in_window} | son {WINDOW}")
+        # Gerçek sistemde: Slack webhook, SMS, işlemi blokla...</code></pre>
+    </div>
+
+    <hr>
+
+    <h2 id="guvenlik-kod">🔐 Bölüm 6: Güvenlik Kodu — Hash, Maskeleme, k-Anon, DP (Kısa)</h2>
+
+    <p>Bölüm 4'teki anonimleştirme tekniklerinin çalışan mini versiyonları. Hepsi tarayıcıda denenebilir.</p>
+
+    <h3>6a) SHA-256 hash (geri döndürülemez)</h3>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import hashlib
+
+def hash_email(email: str, salt: str = "bdt2025") -&gt; str:
+    raw = (salt + email.strip().lower()).encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()[:16]  # kısa gösterim
+
+print(hash_email("ayse@ex.com"))
+print(hash_email("ayse@ex.com"))  # aynı girdi → aynı hash
+print(hash_email("veli@ex.com"))  # farklı girdi → farklı hash</code></pre>
+    </div>
+
+    <h3>6b) Maskeleme + k-anonymity (genelleştirme)</h3>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import pandas as pd
+
+df = pd.DataFrame({
+    "yas": [34, 36, 28, 55, 34],
+    "sehir": ["Ankara", "Ankara", "İzmir", "Ankara", "Ankara"],
+    "hastalik": ["grip", "grip", "grip", "diyabet", "grip"],
+})
+
+# k=2 için: yaş aralığına indirgeme
+df["yas_grup"] = pd.cut(df["yas"], bins=[0, 30, 40, 100], labels=["≤30", "31-40", "41+"])
+anon = df.drop(columns=["yas"])
+
+# Her (yas_grup, sehir) en az 2 kişi mi?
+counts = anon.groupby(["yas_grup", "sehir"]).size()
+print("Grup büyüklükleri:\n", counts)
+print("k-anonymity sağlandı mı?", (counts &gt;= 2).all())</code></pre>
+    </div>
+
+    <h3>6c) Diferansiyel gizlilik — Laplace gürültüsü</h3>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import numpy as np
+
+gercek_ortalama_maas = 42_000
+epsilon = 1.0  # küçük ε → daha fazla gürültü, daha güçlü gizlilik
+duyarlilik = 5_000  # tek kişi eklenince/çıkınca ortalamadaki max değişim (basitleştirilmiş)
+
+gurultu = np.random.laplace(loc=0, scale=duyarlilik / epsilon)
+yayimlanan = gercek_ortalama_maas + gurultu
+
+print(f"Gerçek ortalama:     {gercek_ortalama_maas:,.0f} TL")
+print(f"Eklenen gürültü:     {gurultu:+,.0f} TL")
+print(f"Yayımlanan (DP):     {yayimlanan:,.0f} TL")</code></pre>
+    </div>
+
+    <hr>
+
+    <h2 id="senaryo-eticaret">🏪 Bölüm 7: Uzun Senaryo — E-Ticaret Veri Hattı (Uçtan Uca)</h2>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">🎬 Senaryo: TrendShop</div>
+      <p>Her gece iki kaynaktan veri geliyor: <code>orders</code> (CSV) ve <code>customers</code> (JSON). Pazarlama "KVKK uyumlu şehir raporu" istiyor. Akış: temizle → anonimleştir → Parquet'e yaz → ertesi gün Spark/Pandas ile oku.</p>
+    </div>
+
+    <div class="code-block" data-lang="python" data-colab-only="true">
+      <pre><code>"""
+TrendShop nightly ETL — Bölüm 3 + 4 + 5 birleşimi
+Colab'da çalıştırın: !pip install pyarrow
+"""
+import pandas as pd
+import hashlib
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+# ── EXTRACT ──
+orders = pd.read_csv("data/orders.csv")
+with open("data/customers.json") as f:
+    customers = pd.DataFrame(json.load(f))
+
+print(f"Extract: {len(orders)} sipariş, {len(customers)} müşteri")
+
+# ── TRANSFORM ──
+# 1) Veri kalitesi
+orders = orders.dropna(subset=["customer_id", "amount"])
+orders = orders[orders["amount"] &gt; 0]
+orders["ts"] = pd.to_datetime(orders["ts"])
+
+# 2) KVKK — doğrudan kimlik ve e-posta düşür; customer_id hash'le
+def pseudo_id(val, salt="trendshop"):
+    return hashlib.sha256(f"{salt}:{val}".encode()).hexdigest()[:12]
+
+customers = customers.drop(columns=["email", "name"], errors="ignore")
+customers["customer_id"] = customers["customer_id"].apply(pseudo_id)
+orders["customer_id"] = orders["customer_id"].apply(pseudo_id)
+
+# 3) Join + aggregate
+df = orders.merge(customers, on="customer_id", how="inner")
+report = (df.groupby("city")
+            .agg(siparis=("order_id", "count"),
+                 ort_sepet=("amount", "mean"),
+                 ciro=("amount", "sum"))
+            .reset_index())
+
+report["etl_run_at"] = datetime.now(timezone.utc).isoformat()
+report["k_anon_not"] = "city düzeyinde; birey yok"
+
+# ── LOAD ──
+out = Path("warehouse/city_sales")
+out.mkdir(parents=True, exist_ok=True)
+pq_file = out / f"report_{datetime.now():%Y%m%d}.parquet"
+report.to_parquet(pq_file, index=False)
+
+print(f"Load: {pq_file} ({pq_file.stat().st_size} byte)")
+print(report)
+
+# ── Ertesi gün analiz (Bölüm 6'ya köprü) ──
+loaded = pd.read_parquet(pq_file)
+print("\nEn yüksek ciro:", loaded.loc[loaded["ciro"].idxmax(), "city"])</code></pre>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🧩 Parçaları birleştirin</div>
+      <ol>
+        <li>Bölüm 1'deki Pandas ETL → burada dosya + JSON + hash eklendi</li>
+        <li>Bölüm 2'deki Parquet → <code>warehouse/</code> katmanına yazıldı</li>
+        <li>Bölüm 6 (güvenlik kodu)'daki hash/k-anon → müşteri kimliği korundu</li>
+        <li><a href="hafta6.html">Bölüm 6</a>'da <code>loaded</code> üzerinde grafik ve EDA yapılacak</li>
+      </ol>
+    </div>
+
+    <hr>
+
+    <h2 id="senaryo-iot">📡 Bölüm 8: Uzun Senaryo — Akıllı Şehir IoT Sensör Hattı</h2>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">🎬 Senaryo: CitySense</div>
+      <p>Binlerce sıcaklık sensörü her dakika JSON satırı üretiyor. Batch ETL gece çalışıyor: ham log → temiz tablo → bölge ortalaması → Parquet. Bölüm 3 ETL + Bölüm 4 streaming arasındaki köprü: <em>şimdilik batch, yarın Kafka'ya geçeriz</em>.</p>
+    </div>
+
+    <div class="code-block" data-lang="python" data-colab-only="true">
+      <pre><code>import json
+import pandas as pd
+import numpy as np
+from pathlib import Path
+from datetime import datetime, timezone
+
+np.random.seed(7)
+# Ham sensör satırları (gerçekte Kafka / dosya akışından gelir)
+raw_lines = []
+for i in range(500):
+    raw_lines.append(json.dumps({
+        "sensor_id": f"S{i%50:03d}",
+        "district": np.random.choice(["Cankaya", "Kecioren", "Yenimahalle"]),
+        "temp_c": round(np.random.normal(22, 4), 2),
+        "ts": pd.Timestamp("2025-05-19") + pd.Timedelta(minutes=i),
+    }))
+
+# EXTRACT
+records = [json.loads(line) for line in raw_lines]
+df = pd.DataFrame(records)
+
+# TRANSFORM — aykırı sıcaklık, eksik sensör
+df = df[(df["temp_c"] &gt;= -10) &amp; (df["temp_c"] &lt;= 50)]
+df["hour"] = df["ts"].dt.floor("h")
+
+hourly = (df.groupby(["district", "hour"])
+            .agg(okuma=("temp_c", "count"),
+                 ort_sicaklik=("temp_c", "mean"),
+                 max_sicaklik=("temp_c", "max"))
+            .reset_index())
+
+hourly["etl_run_at"] = datetime.now(timezone.utc).isoformat()
+
+# LOAD
+out = Path("warehouse/iot_hourly")
+out.mkdir(parents=True, exist_ok=True)
+hourly.to_parquet(out / "district_hourly.parquet", index=False)
+print(hourly.groupby("district")["ort_sicaklik"].mean().sort_values(ascending=False))</code></pre>
+    </div>
+
+    <hr>
+
+    <h2 id="senaryo-log">📋 Bölüm 9: Web Sunucu Log Analizi — Kısa + Orta</h2>
+
+    <p>Nginx/Apache logları metin dosyasıdır; ETL'in Extract adımı "satır oku", Transform "regex ile ayıkla" demektir. Bölüm 3'te CSV okuduk; format farklı, mantık aynı.</p>
+
+    <h3>9a) Kısa — regex ile parse (tarayıcıda)</h3>
+
+    <div class="code-block" data-lang="python">
+      <pre><code>import re
+import pandas as pd
+from io import StringIO
+
+# Tipik combined log format (IP gizlenmiş)
+log = """192.168.1.1 - - [19/May/2025:10:00:01 +0300] "GET /api/orders HTTP/1.1" 200 1234
+192.168.1.2 - - [19/May/2025:10:00:02 +0300] "POST /login HTTP/1.1" 401 89
+192.168.1.1 - - [19/May/2025:10:00:05 +0300] "GET /api/orders HTTP/1.1" 200 1230
+192.168.1.3 - - [19/May/2025:10:00:08 +0300] "GET /health HTTP/1.1" 200 12"""
+
+pattern = re.compile(
+    r'"(\w+) (\S+) HTTP.*?" (\d+) (\d+)'
+)
+
+rows = []
+for line in log.strip().split("\n"):
+    m = pattern.search(line)
+    if m:
+        rows.append({
+            "method": m.group(1),
+            "path": m.group(2),
+            "status": int(m.group(3)),
+            "bytes": int(m.group(4)),
+        })
+
+df = pd.DataFrame(rows)
+print("Endpoint başına istek:")
+print(df.groupby("path").size().sort_values(ascending=False))
+print("\n4xx/5xx oranı:", (df["status"] &gt;= 400).mean())</code></pre>
+    </div>
+
+    <h3>9b) Orta — büyük log dosyası chunk okuma (Colab)</h3>
+
+    <div class="code-block" data-lang="python" data-colab-only="true">
+      <pre><code>import pandas as pd
+
+chunks = []
+for chunk in pd.read_csv(
+    "access.log",
+    sep=r"\s+",
+    header=None,
+    names=["ip", "dash1", "dash2", "ts", "tz", "request", "status", "bytes"],
+    chunksize=100_000,
+    engine="python",
+    on_bad_lines="skip",
+):
+    chunk["status"] = pd.to_numeric(chunk["status"], errors="coerce")
+    summary = chunk.groupby("status").size()
+    chunks.append(summary)
+
+total = pd.concat(chunks, axis=1).fillna(0).sum(axis=1)
+print("HTTP status dağılımı:\n", total.sort_index())</code></pre>
+    </div>
+
+    <h3>🛠️ Bu bölümde geçen kütüphaneler</h3>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🐼</div>
+        <div class="card-title"><a href="https://pandas.pydata.org/docs/" target="_blank" rel="noopener">Pandas</a></div>
+        <div class="card-desc">ETL, groupby, merge — Bölüm 2–3'ten devam.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📦</div>
+        <div class="card-title"><a href="https://arrow.apache.org/docs/python/parquet.html" target="_blank" rel="noopener">PyArrow / Parquet</a></div>
+        <div class="card-desc">Sütunsal depolama; warehouse katmanı.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <div class="card-title"><a href="https://spark.apache.org/docs/latest/api/python/" target="_blank" rel="noopener">PySpark</a></div>
+        <div class="card-desc">Dağıtık ETL; lazy DataFrame API.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🟦</div>
+        <div class="card-title"><a href="https://github.com/dpkp/kafka-python" target="_blank" rel="noopener">kafka-python</a></div>
+        <div class="card-desc">Producer/consumer; fraud senaryosu.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔐</div>
+        <div class="card-title"><a href="https://docs.python.org/3/library/hashlib.html" target="_blank" rel="noopener">hashlib</a></div>
+        <div class="card-desc">SHA-256; pseudonymization.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔢</div>
+        <div class="card-title"><a href="https://numpy.org/doc/" target="_blank" rel="noopener">NumPy</a></div>
+        <div class="card-desc">Laplace gürültüsü; DP simülasyonu.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌐</div>
+        <div class="card-title"><a href="https://requests.readthedocs.io/" target="_blank" rel="noopener">requests</a></div>
+        <div class="card-desc">REST API extract; hava kalitesi senaryosu.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📡</div>
+        <div class="card-title"><a href="https://docs.python.org/3/library/re.html" target="_blank" rel="noopener">re (regex)</a></div>
+        <div class="card-desc">Web log parse; yapılandırılmamış metin → tablo.</div>
+      </div>
+    </div>
+
+    <hr>
+
+    <h2 id="ozet">📝 Özet</h2>
+
+    <div class="alert alert-success">
+      <div class="alert-title">🎓 Bu Bölümde Ne Yaptık?</div>
+      <ul>
+        <li><strong>Kısa örnekler:</strong> Pandas ETL, API extract, stream sim, log regex, hash/k-anon/DP — tarayıcıda denenebilir.</li>
+        <li><strong>Orta örnekler:</strong> Parquet, PySpark ETL, Spark Structured Streaming, chunked log okuma.</li>
+        <li><strong>Uzun senaryolar:</strong> Kafka fraud, Open-Meteo API, TrendShop ETL, CitySense IoT.</li>
+        <li><strong>Köprü:</strong> Bölüm 3–4 teorisi → elle yazılmış kod → Bölüm 6 analiz & grafik.</li>
+      </ul>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🤔 Düşünme Soruları</div>
+      <ol>
+        <li>Spark Streaming'de <code>countDistinct("city")</code> ile Pandas'taki <code>nunique()</code> aynı fraud kuralını mı uygular?</li>
+        <li>API extract'ta rate limit için <code>sleep</code> yerine ne kullanırsınız?</li>
+        <li>Web log ETL'de IP adresini hash'lemek yeterli mi?</li>
+        <li>Parquet dosyasını CSV'ye göre ne zaman tercih edersiniz, ne zaman etmezsiniz?</li>
+      </ol>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔜 Sıradaki Bölüm</div>
+      <p>Kod yazdınız, veri hazır — şimdi <strong>keşfet, görselleştir, basit model kur</strong>. Grafik türleri galerisi ve EDA:</p>
+      <p>👉 <a href="hafta6.html" style="color: var(--accent); font-weight: 700;">📊 Bölüm 6: EDA, Görselleştirme ve Temel ML →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="hafta4.html">← Bölüm 4: Streaming & Güvenlik</a>
+    <a href="hafta6.html">Bölüm 6: Analiz & ML →</a>
+  </div>
+  <p class="footer-text">Büyük Veri Teknolojileri Ders Notları — 2025-2026 Bahar Dönemi</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python motoru yükleniyor...</span>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

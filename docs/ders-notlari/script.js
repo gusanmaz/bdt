@@ -38,16 +38,166 @@ function updateThemeButton() {
 }
 
 // ─── Build Code Blocks (uses Highlight.js) ───
-function buildCodeBlocks() {
-  // Map our data-lang values to highlight.js language names
-  const langMap = {
-    'python': 'python', 'py': 'python',
-    'json': 'json',
-    'sql': 'sql',
-    'bash': 'bash', 'shell': 'bash', 'sh': 'bash',
-    'csv': 'plaintext', 'text': 'plaintext'
+function getBlockRawCode(block) {
+  const editor = block.querySelector('.code-editor');
+  if (editor) return editor.value;
+  return block.dataset.raw || '';
+}
+
+function syncBlockRaw(block) {
+  const editor = block.querySelector('.code-editor');
+  if (editor) {
+    block.dataset.raw = editor.value;
+    block.classList.toggle('code-modified', editor.value !== block.dataset.original);
+  }
+}
+
+function isEditableBlock(block, lang) {
+  if (block.dataset.readonly === 'true') return false;
+  if (block.dataset.editable === 'false') return false;
+  return lang === 'python' || lang === 'py';
+}
+
+const CODE_LANG_MAP = {
+  'python': 'python', 'py': 'python',
+  'json': 'json',
+  'sql': 'sql',
+  'bash': 'bash', 'shell': 'bash', 'sh': 'bash',
+  'csv': 'plaintext', 'text': 'plaintext'
+};
+
+function getHljsLang(block) {
+  const lang = (block.dataset.lang || 'text').toLowerCase();
+  return CODE_LANG_MAP[lang] || 'plaintext';
+}
+
+function highlightEditorCode(block) {
+  const editor = block.querySelector('.code-editor');
+  const codeEl = block.querySelector('.code-editor-highlight code');
+  if (!editor || !codeEl) return;
+
+  const source = editor.value;
+  const hljsLang = getHljsLang(block);
+
+  if (window.hljs && hljsLang !== 'plaintext') {
+    try {
+      let html = hljs.highlight(source, { language: hljsLang }).value;
+      if (source.endsWith('\n')) html += '\n';
+      codeEl.innerHTML = html;
+      return;
+    } catch (e) {
+      /* fall through to plain text */
+    }
+  }
+
+  codeEl.textContent = source;
+}
+
+function syncEditorScroll(block) {
+  const editor = block.querySelector('.code-editor');
+  const gutter = block.querySelector('.code-line-gutter');
+  const highlight = block.querySelector('.code-editor-highlight');
+  if (!editor) return;
+
+  if (gutter) gutter.scrollTop = editor.scrollTop;
+  if (highlight) {
+    highlight.scrollTop = editor.scrollTop;
+    highlight.scrollLeft = editor.scrollLeft;
+  }
+}
+
+function countEditorLines(text) {
+  if (!text) return 1;
+  return text.split('\n').length;
+}
+
+function updateCodeEditorLayout(block) {
+  const editor = block.querySelector('.code-editor');
+  const gutter = block.querySelector('.code-line-gutter');
+  const highlight = block.querySelector('.code-editor-highlight');
+  if (!editor || !gutter) return;
+
+  const lineCount = countEditorLines(editor.value);
+  gutter.textContent = Array.from({ length: lineCount }, (_, i) => i + 1).join('\n');
+
+  editor.style.height = '0';
+  editor.style.height = `${editor.scrollHeight}px`;
+  gutter.style.minHeight = `${editor.scrollHeight}px`;
+  if (highlight) highlight.style.minHeight = `${editor.scrollHeight}px`;
+}
+
+function setupCodeEditor(block, raw) {
+  const pre = block.querySelector('pre');
+  if (!pre) return;
+
+  block.dataset.original = raw;
+  block.dataset.raw = raw;
+  block.classList.add('code-editable');
+
+  const shell = document.createElement('div');
+  shell.className = 'code-editor-shell';
+
+  const gutter = document.createElement('div');
+  gutter.className = 'code-line-gutter';
+  gutter.setAttribute('aria-hidden', 'true');
+
+  const area = document.createElement('div');
+  area.className = 'code-editor-area';
+
+  const highlightPre = document.createElement('pre');
+  highlightPre.className = 'code-editor-highlight';
+  highlightPre.setAttribute('aria-hidden', 'true');
+  const highlightCode = document.createElement('code');
+  highlightCode.className = `language-${getHljsLang(block)}`;
+  highlightPre.appendChild(highlightCode);
+
+  const editor = document.createElement('textarea');
+  editor.className = 'code-editor';
+  editor.spellcheck = false;
+  editor.autocomplete = 'off';
+  editor.autocapitalize = 'off';
+  editor.value = raw;
+  editor.setAttribute('aria-label', 'Düzenlenebilir kod editörü');
+  editor.rows = 1;
+
+  const onEditorChange = () => {
+    syncBlockRaw(block);
+    highlightEditorCode(block);
+    updateCodeEditorLayout(block);
   };
 
+  editor.addEventListener('input', onEditorChange);
+  editor.addEventListener('scroll', () => syncEditorScroll(block));
+
+  editor.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const start = editor.selectionStart;
+      const end = editor.selectionEnd;
+      editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(end);
+      editor.selectionStart = editor.selectionEnd = start + 2;
+      onEditorChange();
+    }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      block.querySelector('.run-btn')?.click();
+    }
+  });
+
+  area.appendChild(highlightPre);
+  area.appendChild(editor);
+  shell.appendChild(gutter);
+  shell.appendChild(area);
+
+  pre.classList.add('code-editor-fallback');
+  pre.hidden = true;
+  pre.insertAdjacentElement('afterend', shell);
+
+  highlightEditorCode(block);
+  requestAnimationFrame(() => updateCodeEditorLayout(block));
+}
+
+function buildCodeBlocks() {
   document.querySelectorAll('.code-block').forEach(block => {
     const pre = block.querySelector('pre');
     const codeEl = pre?.querySelector('code');
@@ -56,37 +206,50 @@ function buildCodeBlocks() {
     const lang = block.dataset.lang || 'text';
     const raw = codeEl.textContent;
 
-    // Store raw code first
-    block.dataset.raw = raw;
+    const editable = isEditableBlock(block, lang);
 
-    // Apply highlight.js
-    const hljsLang = langMap[lang.toLowerCase()] || 'plaintext';
-    codeEl.className = `language-${hljsLang}`;
-    if (window.hljs) {
-      hljs.highlightElement(codeEl);
+    if (editable) {
+      setupCodeEditor(block, raw);
+    } else {
+      // Store raw code first
+      block.dataset.raw = raw;
+      block.dataset.original = raw;
+
+      // Apply highlight.js
+      const hljsLang = CODE_LANG_MAP[lang.toLowerCase()] || 'plaintext';
+      codeEl.className = `language-${hljsLang}`;
+      if (window.hljs) {
+        hljs.highlightElement(codeEl);
+      }
+
+      // Add line numbers by wrapping each line
+      const highlighted = codeEl.innerHTML;
+      const lines = highlighted.split('\n');
+      if (lines.length > 0 && lines[lines.length - 1].trim() === '') lines.pop();
+      const wrappedLines = lines.map(line =>
+        `<span class="line">${line || '\u00A0'}</span>`
+      ).join('\n');
+      codeEl.innerHTML = wrappedLines;
+      pre.classList.add('line-numbers');
     }
-
-    // Add line numbers by wrapping each line
-    const highlighted = codeEl.innerHTML;
-    const lines = highlighted.split('\n');
-    // Remove trailing empty line if exists
-    if (lines.length > 0 && lines[lines.length - 1].trim() === '') lines.pop();
-    const wrappedLines = lines.map(line =>
-      `<span class="line">${line || '\u00A0'}</span>`
-    ).join('\n');
-    codeEl.innerHTML = wrappedLines;
-    pre.classList.add('line-numbers');
 
     // Build header
     const header = block.querySelector('.code-header');
     if (!header) {
+      const filename = block.dataset.filename || '';
+      const canRun = (lang === 'python' || lang === 'py') && editable;
       const h = document.createElement('div');
       h.className = 'code-header';
       h.innerHTML = `
-        <span class="code-lang lang-${lang}">${lang}</span>
+        <div class="code-header-left">
+          ${filename ? `<span class="code-filename" title="Kaynak dosya">${filename}</span>` : ''}
+          <span class="code-lang lang-${lang}">${lang}</span>
+          ${editable ? '<span class="code-editable-badge" title="Kodu düzenleyebilirsiniz">✏️ düzenlenebilir</span>' : ''}
+        </div>
         <div class="code-actions">
+          ${editable ? '<button onclick="resetCode(this)" title="Varsayılan koda dön" class="reset-btn">↩️ Sıfırla</button>' : ''}
           <button onclick="copyCode(this)" title="Kopyala">📋 Kopyala</button>
-          ${(lang === 'python' || lang === 'py') ? `<button onclick="runCode(this)" title="Çalıştır" class="run-btn">▶️ Çalıştır</button>` : ''}
+          ${canRun ? `<button onclick="runCode(this)" title="Çalıştır (Ctrl+Enter)" class="run-btn">▶️ Çalıştır</button>` : ''}
         </div>
       `;
       block.insertBefore(h, pre);
@@ -94,10 +257,29 @@ function buildCodeBlocks() {
   });
 }
 
+// ─── KaTeX (math formulas) ───
+function initMath() {
+  if (!window.renderMathInElement) return;
+  renderMathInElement(document.querySelector('.content') || document.body, {
+    delimiters: [
+      { left: '\\[', right: '\\]', display: true },
+      { left: '\\(', right: '\\)', display: false },
+    ],
+    throwOnError: false,
+    ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+  });
+}
+
+function scheduleMath() {
+  if (window.renderMathInElement) initMath();
+  else window.addEventListener('load', initMath, { once: true });
+}
+
 // ─── Copy Code ───
 function copyCode(btn) {
   const block = btn.closest('.code-block');
-  const raw = block.dataset.raw;
+  syncBlockRaw(block);
+  const raw = getBlockRawCode(block);
   navigator.clipboard.writeText(raw).then(() => {
     btn.classList.add('copied');
     btn.innerHTML = '✅ Kopyalandı!';
@@ -106,6 +288,27 @@ function copyCode(btn) {
       btn.innerHTML = '📋 Kopyala';
     }, 2000);
   });
+}
+
+// ─── Reset Code to Original ───
+function resetCode(btn) {
+  const block = btn.closest('.code-block');
+  const editor = block.querySelector('.code-editor');
+  if (!editor) return;
+
+  editor.value = block.dataset.original;
+  syncBlockRaw(block);
+  highlightEditorCode(block);
+  updateCodeEditorLayout(block);
+  editor.focus();
+
+  btn.classList.add('copied');
+  const prev = btn.innerHTML;
+  btn.innerHTML = '✅ Sıfırlandı';
+  setTimeout(() => {
+    btn.classList.remove('copied');
+    btn.innerHTML = prev;
+  }, 1500);
 }
 
 // ─── Pyodide (Run Python in Browser) ───
@@ -146,7 +349,8 @@ function updatePyodideStatus(text) {
 
 async function runCode(btn) {
   const block = btn.closest('.code-block');
-  const raw = block.dataset.raw;
+  syncBlockRaw(block);
+  const raw = getBlockRawCode(block);
 
   // Show loading
   btn.innerHTML = '⏳ Çalışıyor...';
@@ -311,13 +515,36 @@ function initMermaid() {
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
   buildCodeBlocks();
+  scheduleMath();
   buildTOC();
   initScrollTop();
   initMermaid();
 
+  window.addEventListener('load', () => {
+    document.querySelectorAll('.code-editable').forEach(block => {
+      highlightEditorCode(block);
+      updateCodeEditorLayout(block);
+    });
+  });
+
   // Start loading Pyodide in background
   const hasPython = document.querySelector('.code-block[data-lang="python"]');
-  if (hasPython) {
+  const preloadNumpy = document.body.dataset.preloadNumpy === 'true'
+    || document.querySelector('.handbook-content');
+  if (preloadNumpy && hasPython) {
+    setTimeout(async () => {
+      const pyodide = await loadPyodide_();
+      if (pyodide) {
+        try {
+          await pyodide.loadPackage(['numpy']);
+          updatePyodideStatus('NumPy hazır ✓');
+          document.querySelector('.pyodide-status')?.classList.add('ready');
+        } catch (e) {
+          console.warn('NumPy ön yükleme:', e);
+        }
+      }
+    }, 800);
+  } else if (hasPython) {
     setTimeout(() => loadPyodide_(), 2000);
   }
 });

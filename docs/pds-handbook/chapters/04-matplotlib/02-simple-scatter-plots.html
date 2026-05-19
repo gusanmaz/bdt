@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Basit Saçılım Grafikleri — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="04-matplotlib" data-section="02-simple-scatter-plots" data-preload-numpy="true" data-preload-matplotlib="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/04.02-simple-scatter-plots.html" target="_blank" rel="noopener">04.02 Simple Scatter Plots</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>Basit Saçılım Grafikleri</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/04.02-simple-scatter-plots.html" target="_blank" rel="noopener">04.02 Simple Scatter Plots</a></em></p>
+    <p>Yaygın kullanılan bir grafik türü de basit saçılım grafiğidir; çizgi grafiğinin yakın akrabasıdır.
+    Burada noktalar çizgi parçalarıyla birleştirilmez; her nokta nokta, daire veya başka bir şekille ayrı gösterilir.
+    Önce not defterini çizim için hazırlayıp kullanacağımız paketleri içe aktaracağız:</p>
+
+    <div class="code-block" data-lang="python" data-filename="scatter_setup.py" data-readonly="true">
+      <pre><code>%matplotlib inline
+import matplotlib.pyplot as plt
+plt.style.use('seaborn-whitegrid')
+import numpy as np</code></pre>
+    </div>
+
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — seaborn-whitegrid stili</div>
+      <p><code>seaborn-whitegrid</code> eksenlerde ızgara gösterir. Güncel Matplotlib sürümlerinde ad <code>seaborn-v0_8-whitegrid</code> olabilir; uyarı alırsanız <code>plt.style.available</code> ile mevcut stilleri listeleyin.</p>
+    </div>
+
+
+    <h2 id="plt-plot-ile-sacilim">plt.plot ile saçılım grafikleri</h2>    <p>Önceki bölümde çizgi grafikleri için <code>plt.plot</code>/<code>ax.plot</code> kullanmıştık.
+    Aynı işlev saçılım grafikleri de üretebilir (aşağıdaki şekle bakın):</p>
+
+    <div class="code-block" data-lang="python" data-filename="scatter_plot_o.py">
+      <pre><code>x = np.linspace(0, 10, 30)
+y = np.sin(x)
+
+plt.plot(x, y, 'o', color='black');</code></pre>
+    </div>
+
+
+    <p>Fonksiyon çağrısındaki üçüncü argüman, çizimde kullanılan sembol türünü temsil eden bir karakterdir.
+    Çizgi stilini <code>'-'</code> veya <code>'--'</code> ile belirttiğiniz gibi, işaretçi stilinin de kısa dize kodları vardır.
+    Kullanılabilir sembollerin tam listesi <code>plt.plot</code> dokümantasyonunda veya Matplotlib'in
+    <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.markers.MarkerStyle.html" target="_blank" rel="noopener">çevrimiçi dokümantasyonunda</a> görülebilir.
+    Çoğu sezgiseldir; daha yaygın olanların bir kısmı burada gösterilmiştir (aşağıdaki şekle bakın):</p>
+
+    <div class="code-block" data-lang="python" data-filename="marker_styles_demo.py">
+      <pre><code>rng = np.random.default_rng(0)
+for marker in ['o', '.', ',', 'x', '+', 'v', '^', '&lt;', '&gt;', 's', 'd']:
+    plt.plot(rng.random(2), rng.random(2), marker, color='black',
+             label="marker='{0}'".format(marker))
+plt.legend(numpoints=1, fontsize=13)
+plt.xlim(0, 1.8);</code></pre>
+    </div>
+
+
+    <p>Daha fazla seçenek için bu karakter kodları, noktaları birleştiren çizgiyle birlikte kullanılabilir (aşağıdaki şekle bakın):</p>
+
+    <div class="code-block" data-lang="python" data-filename="scatter_line_marker.py">
+      <pre><code>plt.plot(x, y, '-ok');</code></pre>
+    </div>
+
+
+    <p><code>plt.plot</code>'a verilen ek anahtar sözcük argümanları çizgi ve işaretçilerin geniş özellik aralığını belirler (aşağıdaki şekle bakın):</p>
+
+    <div class="code-block" data-lang="python" data-filename="scatter_styled_markers.py">
+      <pre><code>plt.plot(x, y, '-p', color='gray',
+         markersize=15, linewidth=4,
+         markerfacecolor='white',
+         markeredgecolor='gray',
+         markeredgewidth=2)
+plt.ylim(-1.2, 1.2);</code></pre>
+    </div>
+
+
+    <p>Bu tür seçenekler <code>plt.plot</code>'u Matplotlib'de iki boyutlu grafikler için temel araç yapar.
+    Kullanılabilir seçeneklerin tam açıklaması için
+    <a href="https://matplotlib.org/3.5.0/api/_as_gen/matplotlib.pyplot.plot.html" target="_blank" rel="noopener"><code>plt.plot</code> dokümantasyonuna</a> bakın.</p>
+
+    <h2 id="plt-scatter-ile-sacilim">plt.scatter ile saçılım grafikleri</h2>    <p>Saçılım grafiği oluşturmanın ikinci, daha güçlü yolu <code>plt.scatter</code> işlevidir;
+    <code>plt.plot</code>'a çok benzer kullanılır (aşağıdaki şekle bakın):</p>
+
+    <div class="code-block" data-lang="python" data-filename="scatter_basic.py">
+      <pre><code>plt.scatter(x, y, marker='o');</code></pre>
+    </div>
+
+
+    <p><code>plt.scatter</code>'ın <code>plt.plot</code>'tan temel farkı, her noktanın özelliklerinin
+    (boyut, yüz rengi, kenar rengi vb.) ayrı ayrı kontrol edilebilmesi veya veriye eşlenebilmesidir.</p>
+    <p>Çok renkli ve boyutlu rastgele bir saçılım grafiği oluşturalım.
+    Üst üste binen sonuçları daha iyi görmek için <code>alpha</code> anahtar sözcüğüyle saydamlığı ayarlayacağız (aşağıdaki şekle bakın):</p>
+
+    <div class="code-block" data-lang="python" data-filename="scatter_color_size.py">
+      <pre><code>rng = np.random.default_rng(0)
+x = rng.normal(size=100)
+y = rng.normal(size=100)
+colors = rng.random(100)
+sizes = 1000 * rng.random(100)
+
+plt.scatter(x, y, c=colors, s=sizes, alpha=0.3)
+plt.colorbar();  # show color scale</code></pre>
+    </div>
+
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — alpha ve renk ölçeği</div>
+      <p><code>c=colors</code> sürekli bir renk haritasına eşlenir; kategorik veri için <code>c=iris.target</code> gibi tamsayı etiketler ve <code>cmap='viridis'</code> kullanın. <code>alpha</code> üst üste binen noktaların yoğunluğunu okumayı kolaylaştırır.</p>
+    </div>
+
+
+    <p><code>color</code> argümanının otomatik olarak bir renk ölçeğine eşlendiğine dikkat edin
+    (burada <code>colorbar</code> komutuyla gösterilir); <code>s</code> (size) argümanı piksel cinsindendir.
+    Böylece renk ve nokta boyutu görselleştirmede bilgi taşıyabilir; çok boyutlu veriyi görselleştirmek için kullanılır.</p>
+    <p>Örneğin Scikit-Learn'deki Iris veri setini kullanabiliriz: her örnek, taç yaprak ve çanak yaprak boyutları dikkatle ölçülmüş üç çiçek türünden biridir (aşağıdaki şekle bakın):</p>
+
+    <div class="code-block" data-lang="python" data-filename="iris_scatter.py">
+      <pre><code>from sklearn.datasets import load_iris
+iris = load_iris()
+features = iris.data.T
+
+plt.scatter(features[0], features[1], alpha=0.4,
+            s=100*features[3], c=iris.target, cmap='viridis')
+plt.xlabel(iris.feature_names[0])
+plt.ylabel(iris.feature_names[1]);</code></pre>
+    </div>
+
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Renk ve boyutla saçılım deneyin</div>
+      <p>Rastgele 50 nokta üretin; rengi ve boyutu ayrı değişkenlerle eşleyip colorbar ekleyin:</p>
+          <div class="code-block" data-lang="python" data-filename="scatter_renk_boyut_deneme.py">
+      <pre><code>import matplotlib.pyplot as plt
+import numpy as np
+
+rng = np.random.default_rng(42)
+x = rng.normal(size=50)
+y = rng.normal(size=50)
+c = rng.random(50)
+s = 500 * rng.random(50)
+
+plt.scatter(x, y, c=c, s=s, alpha=0.5, cmap='viridis')
+plt.colorbar()
+plt.xlabel('x')
+plt.ylabel('y')</code></pre>
+    </div>
+
+    </div>
+
+
+    <p>Bu grafiğin tam renkli sürümü kitabın <a href="http://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">çevrimiçi sürümünde</a> mevcuttur.</p>
+    <p>Bu saçılım grafiği verinin dört farklı boyutunu aynı anda keşfetmemizi sağladı:
+    her noktanın (<em>x</em>, <em>y</em>) konumu çanak yaprak uzunluğu ve genişliğine karşılık gelir;
+    nokta boyutu taç yaprak genişliğiyle, renk ise çiçek türüyle ilişkilidir.
+    Bu tür çok renkli ve çok özellikli saçılım grafikleri hem keşif hem sunum için yararlıdır.</p>
+
+    <h2 id="plot-vs-scatter-verimlilik">plot ve scatter: verimlilik notu</h2>    <p><code>plt.plot</code> ve <code>plt.scatter</code>'daki farklı özellikler dışında neden birini diğerine tercih edersiniz?
+    Küçük veri kümelerinde pek fark etmez; ancak birkaç bin noktadan büyük veri kümelerinde <code>plt.plot</code>,
+    <code>plt.scatter</code>'dan belirgin şekilde daha verimli olabilir.
+    Nedeni: <code>plt.scatter</code> her nokta için farklı boyut ve/veya renk çizebilir; oluşturucu her noktayı ayrı ayrı inşa etmek zorundadır.
+    <code>plt.plot</code>'ta ise her noktanın işaretçileri aynıdır; görünüm yalnızca bir kez belirlenir.
+    Büyük veri kümelerinde bu fark performansı büyük ölçüde etkileyebilir; bu yüzden büyük veri kümelerinde <code>plt.plot</code> tercih edilmelidir.</p>
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="03-errorbars.html">4.3 Hata Çubukları →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Matplotlib yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

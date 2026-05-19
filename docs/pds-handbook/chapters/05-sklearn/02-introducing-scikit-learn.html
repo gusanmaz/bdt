@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scikit-Learn&#x27;e Giriş — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="05-sklearn" data-section="02-introducing-scikit-learn" data-preload-numpy="true" data-preload-pandas="true" data-preload-matplotlib="true" data-preload-sklearn="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.02-introducing-scikit-learn.html" target="_blank" rel="noopener">05.02 Introducing Scikit-Learn</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>Scikit-Learn'e Giriş</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.02-introducing-scikit-learn.html" target="_blank" rel="noopener">05.02 Introducing Scikit-Learn</a></em></p>
+
+    <p>Bir dizi makine öğrenmesi algoritmasının sağlam uygulamalarını sunan birkaç Python kütüphanesi vardır.
+    En bilinenlerinden biri, yaygın algoritmaların çoğunun verimli sürümlerini sağlayan <a href="http://scikit-learn.org" target="_blank" rel="noopener">Scikit-Learn</a>'dir.
+    Scikit-Learn temiz, tutarlı ve akıcı bir API ile çok yararlı ve eksiksiz çevrimiçi dokümantasyonla öne çıkar.
+    Bu tutarlılığın yararı, bir model türü için Scikit-Learn'ün temel kullanımını ve sözdizimini anladığınızda yeni bir modele veya algoritmaya geçmenin kolay olmasıdır.</p>
+
+    <p>Bu bölüm Scikit-Learn API'sine genel bir bakış sunar. Bu API öğelerinin sağlam anlayışı, sonraki bölümlerdeki makine öğrenmesi algoritmalarının ve yaklaşımlarının daha uygulamalı tartışmasının temelini oluşturur.</p>
+
+    <p>Scikit-Learn'de veri temsilinden başlayacak, Estimator API'sine inecek ve son olarak el yazısı rakam görüntüleri kümesini keşfetmek için bu araçları kullanan daha ilginç bir örneğe geçeceğiz.</p>
+
+    <h2 id="veri-temsili">Scikit-Learn'de Veri Temsili</h2>
+
+    <p>Makine öğrenmesi veriden model oluşturmaktır; bu yüzden verinin nasıl temsil edilebileceğini tartışarak başlayacağız.
+    Scikit-Learn içinde veriyi düşünmenin en iyi yolu <em>tablolar</em> üzerinden yapılır.</p>
+
+    <p>Temel bir tablo, satırların veri kümesindeki tek tek öğeleri, sütunların ise bu öğelerle ilişkili nicelikleri temsil ettiği iki boyutlu bir veri ızgarasıdır.
+    Örneğin 1936'da Ronald Fisher tarafından ünlü biçimde analiz edilen <a href="https://en.wikipedia.org/wiki/Iris_flower_data_set" target="_blank" rel="noopener">Iris veri kümesini</a> düşünün.
+    Bu veri kümesini <a href="http://seaborn.pydata.org/" target="_blank" rel="noopener">Seaborn</a> kütüphanesiyle Pandas <code>DataFrame</code> olarak indirip ilk birkaç satıra bakabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="seaborn_iris_load.py">
+      <pre><code>import seaborn as sns
+iris = sns.load_dataset('iris')
+iris.head()</code></pre>
+    </div>
+
+    <p>Burada her satır tek bir gözlemlenen çiçeği ifade eder; satır sayısı veri kümesindeki toplam çiçek sayısıdır.
+    Genelde matrisin satırlarına <em>örnek</em> (<code>samples</code>), satır sayısına <code>n_samples</code> deriz.</p>
+
+    <p>Benzer şekilde her sütun, her örneği tanımlayan belirli bir nicel bilgi parçasıdır.
+    Genelde sütunlara <em>öznitelik</em> (<code>features</code>), sütun sayısına <code>n_features</code> deriz.</p>
+
+    <h3 id="ozellik-matrisi">Öznitelik Matrisi</h3>
+
+    <p>Tablo düzeni, bilginin iki boyutlu sayısal dizi veya matris olarak düşünülebileceğini gösterir; buna <em>öznitelik matrisi</em> (<code>features matrix</code>) deriz.
+    Gelenek gereği bu matris çoğu zaman <code>X</code> adlı değişkende tutulur.
+    Öznitelik matrisi iki boyutlu, <code>[n_samples, n_features]</code> şeklinde varsayılır ve çoğunlukla NumPy dizisi veya Pandas <code>DataFrame</code> içinde bulunur; bazı Scikit-Learn modelleri SciPy seyrek matrislerini de kabul eder.</p>
+
+    <p>Örnekler (satırlar) her zaman veri kümesinde tanımlanan tek tek nesnelere karşılık gelir: bir çiçek, kişi, belge, görüntü, ses dosyası, video, astronomik cisim veya nicel ölçümlerle tanımlayabileceğiniz başka herhangi bir şey.</p>
+
+    <p>Öznitelikler (sütunlar) her örneği nicel olarak tanımlayan farklı gözlemlerdir. Öznitelikler çoğu zaman gerçek sayılıdır; bazı durumlarda Boolean veya ayrık değerli olabilir.</p>
+
+    <h3 id="hedef-dizisi">Hedef Dizisi</h3>
+
+    <p>Öznitelik matrisi <code>X</code>'e ek olarak genelde <em>etiket</em> veya <em>hedef</em> dizisiyle çalışırız; gelenek gereği bunu <code>y</code> adlandırırız.
+    Hedef dizisi genelde <code>n_samples</code> uzunluğunda tek boyutludur ve çoğunlukla NumPy dizisi veya Pandas <code>Series</code> içinde bulunur.
+    Hedef dizisi sürekli sayısal değerler veya ayrık sınıflar/etiketler içerebilir.
+    Bazı Scikit-Learn tahmin edicileri <code>[n_samples, n_targets]</code> biçiminde çoklu hedefi desteklese de, çoğunlukla tek boyutlu hedef dizisiyle çalışacağız.</p>
+
+    <p>Yaygın bir karışıklık, hedef dizisinin diğer öznitelik sütunlarından nasıl farklılaştığıdır. Hedef dizisinin ayırt edici özelliği, genelde özniteliklerden <em>tahmin etmek istediğimiz</em> nicelik olmasıdır; istatistikte bağımlı değişkendir.
+    Önceki veride örneğin diğer ölçümlere dayanarak çiçek türünü tahmin edecek bir model kurmak isteyebiliriz; bu durumda <code>species</code> sütunu hedef dizisi sayılır.</p>
+
+    <p>Bu hedef dizisiyle Seaborn'u (<a href="../04-matplotlib/14-visualization-with-seaborn.html">Seaborn ile Görselleştirme</a> bölümünde tartışıldı) kullanarak veriyi görselleştirebiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="iris_pairplot.py" data-readonly="true">
+      <pre><code>%matplotlib inline
+import seaborn as sns
+sns.pairplot(iris, hue='species', height=1.5);</code></pre>
+    </div>
+
+    <p>Scikit-Learn için öznitelik matrisi ve hedef dizisini <code>DataFrame</code>'den çıkaracağız; bunu <a href="../03-pandas/00-introduction.html">Bölüm 3</a>'teki Pandas <code>DataFrame</code> işlemleriyle yapabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="X_iris.py">
+      <pre><code>X_iris = iris.drop('species', axis=1)
+X_iris.shape</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="y_iris.py">
+      <pre><code>y_iris = iris['species']
+y_iris.shape</code></pre>
+    </div>
+
+    <p>Özetle, öznitelik ve hedef değerlerinin beklenen düzeni aşağıdaki şekilde görselleştirilir.</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.02-samples-features.png" alt="Scikit-Learn öznitelik matrisi X ve hedef dizisi y düzeni" width="700" loading="lazy">
+      <figcaption>Kaynak: <a href="https://github.com/jakevdp/PythonDataScienceHandbook/blob/master/notebooks/06.00-Figure-Code.ipynb#Features-and-Labels-Grid" target="_blank" rel="noopener">Ek — Şekil kodu</a></figcaption>
+    </figure>
+    <p>Veri bu biçimde olduktan sonra Scikit-Learn'ün Estimator API'sine geçebiliriz.</p>
+
+    <h2 id="estimator-api">Estimator API</h2>
+
+    <p>Scikit-Learn API'si <a href="http://arxiv.org/abs/1309.0238" target="_blank" rel="noopener">Scikit-Learn API makalesinde</a> özetlenen şu ilkelere göre tasarlanmıştır:</p>
+
+    <ul>
+      <li><em>Tutarlılık</em>: Tüm nesneler sınırlı bir yöntem kümesinden türetilen ortak bir arayüzü paylaşır; dokümantasyon tutarlıdır.</li>
+      <li><em>Denetlenebilirlik</em>: Belirtilen tüm parametre değerleri genel nitelikler olarak açıktır.</li>
+      <li><em>Sınırlı nesne hiyerarşisi</em>: Yalnızca algoritmalar Python sınıflarıyla temsil edilir; veri kümeleri standart biçimlerde (NumPy, Pandas, SciPy seyrek) temsil edilir; parametre adları standart Python dizeleridir.</li>
+      <li><em>Birleşim</em>: Birçok görev daha temel algoritmaların dizileri olarak ifade edilebilir; Scikit-Learn bunu mümkün olduğunca kullanır.</li>
+      <li><em>Mantıklı varsayılanlar</em>: Kullanıcı parametresi gerektiğinde kütüphane uygun bir varsayılan tanımlar.</li>
+    </ul>
+
+    <p>Pratikte bu ilkeler, temel ilkeler anlaşıldıktan sonra Scikit-Learn'ü çok kullanışlı kılar.
+    Scikit-Learn'deki her makine öğrenmesi algoritması, geniş uygulama yelpazesi için tutarlı bir arayüz sunan Estimator API ile uygulanır.</p>
+
+    <h3 id="api-temelleri">API'nin Temelleri</h3>
+
+    <p>En yaygın olarak Scikit-Learn Estimator API kullanım adımları şöyledir:</p>
+
+    <ol>
+      <li>Scikit-Learn'den uygun tahmin edici sınıfını içe aktararak bir model sınıfı seçin.</li>
+      <li>Bu sınıfı istenen değerlerle örnekleyerek model hiperparametrelerini seçin.</li>
+      <li>Veriyi bu bölümün başında anlatıldığı gibi öznitelik matrisi ve hedef vektörüne düzenleyin.</li>
+      <li>Model örneğinin <code>fit</code> yöntemini çağırarak modeli veriye uydurun.</li>
+      <li>Modeli yeni veriye uygulayın:
+        <ul>
+          <li>Denetimli öğrenmede genelde <code>predict</code> ile bilinmeyen veri için etiket tahmin edilir.</li>
+          <li>Denetimsiz öğrenmede genelde <code>transform</code> veya <code>predict</code> ile veri dönüştürülür veya özellikleri çıkarılır.</li>
+        </ul>
+      </li>
+    </ol>
+
+    <p>Şimdi denetimli ve denetimsiz öğrenme yöntemlerinin birkaç basit uygulama örneğine geçeceğiz.</p>
+
+    <h3 id="denetimli-dogrusal-regresyon">Denetimli Öğrenme Örneği: Basit Doğrusal Regresyon</h3>
+
+    <p>Bu sürecin örneği olarak basit doğrusal regresyona — yani $(x, y)$ verisine doğru sığdırma durumuna — bakalım.
+    Regresyon örneğimiz için aşağıdaki basit veriyi kullanacağız:</p>
+
+    <div class="code-block" data-lang="python" data-filename="linear_reg_data.py">
+      <pre><code>import matplotlib.pyplot as plt
+import numpy as np
+
+rng = np.random.RandomState(42)
+x = 10 * rng.rand(50)
+y = 2 * x - 1 + rng.randn(50)
+plt.scatter(x, y);</code></pre>
+    </div>
+
+    <p>Veri hazır olduktan sonra daha önce özetlenen tarifi kullanabiliriz. Süreci adım adım izleyelim:</p>
+
+    <h4 id="adim-1-model-sinifi">1. Model sınıfını seçin</h4>
+
+    <p>Scikit-Learn'de her model sınıfı bir Python sınıfıyla temsil edilir.
+    Örneğin basit bir <code>LinearRegression</code> modeli hesaplamak için doğrusal regresyon sınıfını içe aktarabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="import_linear_regression.py">
+      <pre><code>from sklearn.linear_model import LinearRegression</code></pre>
+    </div>
+
+    <p>Daha genel doğrusal regresyon modelleri de vardır; ayrıntılar için <a href="http://scikit-learn.org/stable/modules/linear_model.html" target="_blank" rel="noopener"><code>sklearn.linear_model</code> modül dokümantasyonuna</a> bakın.</p>
+
+    <h4 id="adim-2-hiperparametreler">2. Model hiperparametrelerini seçin</h4>
+
+    <p>Önemli bir nokta: <em>model sınıfı, model örneğiyle aynı şey değildir</em>.</p>
+
+    <p>Model sınıfına karar verdikten sonra hâlâ seçeneklerimiz vardır. Kullandığımız modele göre şu sorulardan bir veya birkaçına yanıt vermemiz gerekebilir:</p>
+
+    <ul>
+      <li>Ofseti (<em>y</em>-kesişini) sığdırmak istiyor muyuz?</li>
+      <li>Model normalize edilsin mi?</li>
+      <li>Öznitelikleri ön işleyerek model esnekliği artsın mı?</li>
+      <li>Ne düzeyde düzenlileştirme (regularization) kullanılsın?</li>
+      <li>Kaç model bileşeni kullanılsın?</li>
+    </ul>
+
+    <p>Bunlar model sınıfı seçildikten <em>sonra</em> verilmesi gereken önemli seçimlerdir.
+    Bu seçimler genelde <em>hiperparametre</em> olarak adlandırılır; model veriye uydurulmadan önce ayarlanır.
+    Scikit-Learn'de hiperparametreler model örneği oluşturulurken verilir.
+    Hiperparametreleri nicel seçmeyi <a href="03-hyperparameters-and-model-validation.html">Hiperparametreler ve Model Doğrulama</a> bölümünde ele alacağız.</p>
+
+    <p>Doğrusal regresyon örneğinde <code>fit_intercept</code> hiperparametresiyle kesişimi sığdırmak istediğimizi belirterek <code>LinearRegression</code> örneği oluşturabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="linear_model_instance.py">
+      <pre><code>model = LinearRegression(fit_intercept=True)
+model</code></pre>
+    </div>
+
+    <p>Model örneklendiğinde yalnızca hiperparametre değerlerinin saklandığını unutmayın.
+    Özellikle model henüz hiçbir veriye uygulanmamıştır: Scikit-Learn API, <em>model seçimi</em> ile <em>modelin veriye uygulanması</em> arasındaki ayrımı çok net yapar.</p>
+
+    <h4 id="adim-3-x-y">3. Veriyi öznitelik matrisi ve hedef vektörüne düzenleyin</h4>
+
+    <p>Daha önce Scikit-Learn veri temsilini inceledik; iki boyutlu öznitelik matrisi ve tek boyutlu hedef dizisi gerekir.
+    Burada hedef <code>y</code> zaten doğru biçimdedir (<code>n_samples</code> uzunluğunda dizi); <code>x</code> verisini <code>[n_samples, n_features]</code> boyutuna getirmemiz gerekir.
+    Bu durumda tek boyutlu diziyi yeniden şekillendirmek yeterlidir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="X_reshape.py">
+      <pre><code>X = x[:, np.newaxis]
+X.shape</code></pre>
+    </div>
+
+    <h4 id="adim-4-fit">4. Modeli veriye uydurun</h4>
+
+    <p>Şimdi modeli veriye uygulama zamanı. Bunu modelin <code>fit</code> yöntemiyle yaparız:</p>
+
+    <div class="code-block" data-lang="python" data-filename="model_fit.py">
+      <pre><code>model.fit(X, y)</code></pre>
+    </div>
+
+    <p>Bu <code>fit</code> komutu modele bağlı bir dizi iç hesaplama tetikler; sonuçlar kullanıcının inceleyebileceği, sondaki alt çizgiyle biten model özniteliklerinde saklanır.
+    Scikit-Learn'de gelenek gereği <code>fit</code> sırasında öğrenilen tüm model parametreleri sondaki alt çizgiyle biter; bu doğrusal modelde örneğin:</p>
+
+    <div class="code-block" data-lang="python" data-filename="model_coef.py">
+      <pre><code>model.coef_</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="model_intercept.py">
+      <pre><code>model.intercept_</code></pre>
+    </div>
+
+    <p>Bu iki parametre veriye basit doğrusal uyumun eğim ve kesişimini temsil eder.
+    Sonuçları veri tanımıyla karşılaştırırsak, veriyi üretmek için kullanılan değerlere (eğim 2, kesişim –1) yakın olduklarını görürüz.</p>
+
+    <p>İç model parametrelerindeki belirsizlik sıkça sorulur.
+    Genel olarak Scikit-Learn, iç parametrelerden doğrudan çıkarım araçları sunmaz: parametre yorumu daha çok <em>istatistiksel modelleme</em> sorusudur; makine öğrenmesi modelin <em>ne tahmin ettiğine</em> odaklanır.
+    Uyum parametrelerinin anlamına inmek isterseniz <a href="http://statsmodels.sourceforge.net/" target="_blank" rel="noopener"><code>statsmodels</code></a> gibi başka araçlar vardır.</p>
+
+    <h4 id="adim-5-predict">5. Bilinmeyen veri için etiket tahmin edin</h4>
+
+    <p>Model eğitildikten sonra denetimli makine öğrenmesinin ana görevi, eğitim kümesinin parçası olmayan yeni veri hakkında ne söylediğine göre değerlendirmektir.
+    Scikit-Learn'de bunu <code>predict</code> yöntemiyle yaparız.
+    Bu örnekte "yeni veri" bir <em>x</em> değerleri ızgarasıdır; modelin hangi <em>y</em> değerlerini tahmin ettiğini sorarız:</p>
+
+    <div class="code-block" data-lang="python" data-filename="xfit_linspace.py">
+      <pre><code>xfit = np.linspace(-1, 11)</code></pre>
+    </div>
+
+    <p>Daha önce olduğu gibi bu <em>x</em> değerlerini <code>[n_samples, n_features]</code> öznitelik matrisine dönüştürmemiz, ardından modele vermemiz gerekir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="predict_yfit.py">
+      <pre><code>Xfit = xfit[:, np.newaxis]
+yfit = model.predict(Xfit)</code></pre>
+    </div>
+
+    <p>Son olarak ham veriyi ve model uyumunu çizerek sonuçları görselleştirelim:</p>
+
+    <div class="code-block" data-lang="python" data-filename="plot_linear_fit.py">
+      <pre><code>plt.scatter(x, y)
+plt.plot(xfit, yfit);</code></pre>
+    </div>
+
+    <p>Genelde modelin etkinliği, sonuçların bilinen bir tem çizgisiyle karşılaştırılmasıyla değerlendirilir; bunu sonraki örnekte göreceğiz.</p>
+
+    <h3 id="iris-siniflandirma">Denetimli Öğrenme Örneği: Iris Sınıflandırması</h3>
+
+    <p>Daha önce tartıştığımız Iris veri kümesiyle sürecin başka bir örneğine bakalım.
+    Sorumuz: Iris verisinin bir bölümüyle eğitilen model, kalan etiketleri ne kadar iyi tahmin eder?</p>
+
+    <p>Bu görev için her sınıfın eksen hizalı bir Gauss dağılımından çekildiğini varsayan <em>Gauss naive Bayes</em> üretici modelini kullanacağız (ayrıntılar: <a href="05-naive-bayes.html">Derinlemesine: Naive Bayes</a>).
+    Hızlı olduğu ve seçilecek hiperparametre olmadığı için Gauss naive Bayes sıkça temel sınıflandırma modeli olarak kullanılır.</p>
+
+    <p>Modeli görmediği veride değerlendirmek istiyoruz; veriyi <em>eğitim</em> ve <em>test</em> kümelerine ayırırız.
+    Elle yapılabilir; <code>train_test_split</code> yardımcı işlevi daha uygundur:</p>
+
+    <div class="code-block" data-lang="python" data-filename="iris_train_test_split.py">
+      <pre><code>from sklearn.model_selection import train_test_split
+Xtrain, Xtest, ytrain, ytest = train_test_split(X_iris, y_iris,
+                                                random_state=1)</code></pre>
+    </div>
+
+    <p>Veri düzenlendikten sonra etiketleri tahmin etmek için tarifimizi uygularız:</p>
+
+    <div class="code-block" data-lang="python" data-filename="iris_gaussian_nb.py">
+      <pre><code>from sklearn.naive_bayes import GaussianNB # 1. choose model class
+model = GaussianNB()                       # 2. instantiate model
+model.fit(Xtrain, ytrain)                  # 3. fit model to data
+y_model = model.predict(Xtest)             # 4. predict on new data</code></pre>
+    </div>
+
+    <p>Son olarak tahmin edilen etiketlerin gerçek değerlerle eşleşme oranını görmek için <code>accuracy_score</code> yardımcısını kullanırız:</p>
+
+    <div class="code-block" data-lang="python" data-filename="iris_accuracy.py">
+      <pre><code>from sklearn.metrics import accuracy_score
+accuracy_score(ytest, y_model)</code></pre>
+    </div>
+
+    <p>%97'nin üzerinde doğrulukla, bu çok basit sınıflandırma algoritmasının bile bu veri kümesi için etkili olduğunu görüyoruz!</p>
+
+    <h3 id="iris-boyut-indirgeme">Denetimsiz Öğrenme Örneği: Iris Boyut İndirgeme</h3>
+
+    <p>Denetimsiz öğrenme örneği olarak Iris verisinin boyutunu indirerek görselleştirmeyi kolaylaştıralım.
+    Iris verisi dört boyutludur: her örnek için dört öznitelik kaydedilmiştir.</p>
+
+    <p>Boyut indirgeme görevi, verinin temel özniteliklerini koruyan uygun daha düşük boyutlu bir temsil olup olmadığını belirlemeye odaklanır.
+    Sıkça görselleştirme yardımcısı olarak kullanılır: dört boyutta çizmek, iki veya üç boyutta çizmekten çok daha zordur!</p>
+
+    <p>Burada hızlı doğrusal boyut indirgeme tekniği <em>temel bileşen analizi</em> (PCA; <a href="09-principal-component-analysis.html">Derinlemesine: PCA</a>) kullanacağız.
+    Modele iki bileşen — yani verinin iki boyutlu temsili — döndürmesini isteyeceğiz.</p>
+
+    <p>Daha önce özetlenen adım dizisini izleyerek:</p>
+
+    <div class="code-block" data-lang="python" data-filename="iris_pca.py">
+      <pre><code>from sklearn.decomposition import PCA  # 1. Choose the model class
+model = PCA(n_components=2)            # 2. Instantiate the model
+model.fit(X_iris)                      # 3. Fit to data
+X_2D = model.transform(X_iris)         # 4. Transform the data</code></pre>
+    </div>
+
+    <p>Şimdi sonuçları çizelim. Hızlı bir yol, sonuçları orijinal Iris <code>DataFrame</code>'ine ekleyip Seaborn <code>lmplot</code> ile göstermektir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="iris_pca_plot.py">
+      <pre><code>iris['PCA1'] = X_2D[:, 0]
+iris['PCA2'] = X_2D[:, 1]
+sns.lmplot(x="PCA1", y="PCA2", hue='species', data=iris, fit_reg=False);</code></pre>
+    </div>
+
+    <p>İki boyutlu temsilde türler oldukça iyi ayrılmış; PCA algoritması tür etiketlerini bilmiyordu!
+    Bu, veri kümesinde nispeten basit bir sınıflandırmanın etkili olacağını — daha önce gördüğümüz gibi — düşündürür.</p>
+
+    <h3 id="iris-kumeleme">Denetimsiz Öğrenme Örneği: Iris Kümeleme</h3>
+
+    <p>Şimdi Iris verisine kümeleme uygulayalım.
+    Kümeleme algoritması herhangi bir etikete başvurmadan verinin belirgin gruplarını bulmaya çalışır.
+    Burada <a href="12-gaussian-mixtures.html">Derinlemesine: Gauss Karışımları</a> bölümünde ayrıntılı ele alınan <em>Gauss karışım modeli</em> (GMM) kullanacağız.
+    GMM veriyi Gauss "lekeleri" koleksiyonu olarak modellemeye çalışır.</p>
+
+    <p>Gauss karışım modelini şöyle uydurabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="iris_gmm.py">
+      <pre><code>from sklearn.mixture import GaussianMixture      # 1. Choose the model class
+model = GaussianMixture(n_components=3,
+                        covariance_type='full')  # 2. Instantiate the model
+model.fit(X_iris)                                # 3. Fit to data
+y_gmm = model.predict(X_iris)                    # 4. Determine labels</code></pre>
+    </div>
+
+    <p>Yine küme etiketini Iris <code>DataFrame</code>'ine ekleyip Seaborn ile çizeceğiz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="iris_gmm_plot.py">
+      <pre><code>iris['cluster'] = y_gmm
+sns.lmplot(x="PCA1", y="PCA2", data=iris, hue='species',
+           col='cluster', fit_reg=False);</code></pre>
+    </div>
+
+    <p>Veriyi küme numarasına göre ayırınca GMM algoritmasının alt etiketleri ne kadar iyi kurtardığını görürüz: <em>setosa</em> türü küme 0 içinde mükemmel ayrılmış; <em>versicolor</em> ile <em>virginica</em> arasında küçük bir karışma var.
+    Yani uzman olmadan bile çiçek ölçümleri, farklı tür gruplarının varlığını basit bir kümeleme algoritmasıyla <em>otomatik</em> tanımlamaya yeterince ayırt edicidir!
+    Bu tür algoritma, alandaki uzmanlara örnekler arasındaki ilişkilere ipucu verebilir.</p>
+
+    <h2 id="el-yazisi-rakamlar">Uygulama: El Yazısı Rakamları</h2>
+
+    <p>Bu ilkeleri daha ilginç bir problemde göstermek için optik karakter tanımanın bir parçasına bakalım: el yazısı rakamların tanınması.
+    Gerçek dünyada bu hem görüntüde karakterleri bulmayı hem tanımayı içerir. Burada kısayol kullanıp Scikit-Learn'ün kütüphaneye gömülü önceden biçimlendirilmiş rakam kümesini kullanacağız.</p>
+
+    <h3 id="rakamlari-yukleme">Rakam Verisini Yükleme ve Görselleştirme</h3>
+
+    <p>Scikit-Learn'ün veri erişim arayüzüyle bu veriye bakabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="digits_load.py">
+      <pre><code>from sklearn.datasets import load_digits
+digits = load_digits()
+digits.images.shape</code></pre>
+    </div>
+
+    <p>Görüntü verisi üç boyutlu bir dizidir: 1.797 örnek, her biri 8×8 piksel ızgara.
+    İlk yüz tanesini görselleştirelim:</p>
+
+    <div class="code-block" data-lang="python" data-filename="digits_grid_plot.py">
+      <pre><code>import matplotlib.pyplot as plt
+
+fig, axes = plt.subplots(10, 10, figsize=(8, 8),
+                         subplot_kw={'xticks':[], 'yticks':[]},
+                         gridspec_kw=dict(hspace=0.1, wspace=0.1))
+
+for i, ax in enumerate(axes.flat):
+    ax.imshow(digits.images[i], cmap='binary', interpolation='nearest')
+    ax.text(0.05, 0.05, str(digits.target[i]),
+            transform=ax.transAxes, color='green')</code></pre>
+    </div>
+
+    <p>Scikit-Learn ile çalışmak için iki boyutlu <code>[n_samples, n_features]</code> temsil gerekir.
+    Her pikseli bir öznitelik sayarak piksel dizilerini düzleştirerek uzunluk 64 piksel değeri dizisi elde ederiz.
+    Ayrıca her rakam için önceden belirlenmiş etiketi veren hedef dizisi gerekir; ikisi de <code>data</code> ve <code>target</code> özniteliklerinde bulunur:</p>
+
+    <div class="code-block" data-lang="python" data-filename="digits_X.py">
+      <pre><code>X = digits.data
+X.shape</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="digits_y.py">
+      <pre><code>y = digits.target
+y.shape</code></pre>
+    </div>
+
+    <p>1.797 örnek ve 64 öznitelik görüyoruz.</p>
+
+    <h3 id="rakam-boyut-indirgeme">Denetimsiz Öğrenme Örneği: Boyut İndirgeme</h3>
+
+    <p>64 boyutlu parametre uzayında noktalarımızı görselleştirmek isteriz; bu kadar yüksek boyutta etkili görselleştirme zordur.
+    Bunun yerine boyutu denetimsiz bir yöntemle indireceğiz.
+    Burada <a href="10-manifold-learning.html">Derinlemesine: Manifold Öğrenme</a> bölümündeki Isomap manifold öğrenme algoritmasını kullanıp veriyi iki boyuta dönüştüreceğiz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="digits_isomap.py">
+      <pre><code>from sklearn.manifold import Isomap
+iso = Isomap(n_components=2)
+iso.fit(digits.data)
+data_projected = iso.transform(digits.data)
+print(data_projected.shape)</code></pre>
+    </div>
+
+    <p>Yansıtılan veri artık iki boyutlu. Yapıdan bir şey öğrenip öğrenemeyeceğimizi görmek için çizelim:</p>
+
+    <div class="code-block" data-lang="python" data-filename="digits_isomap_scatter.py">
+      <pre><code>plt.scatter(data_projected[:, 0], data_projected[:, 1], c=digits.target,
+            edgecolor='none', alpha=0.5,
+            cmap=plt.cm.get_cmap('viridis', 10))
+plt.colorbar(label='digit label', ticks=range(10))
+plt.clim(-0.5, 9.5);</code></pre>
+    </div>
+
+    <p>Bu çizim, 64 boyutlu uzayda çeşitli rakamların ne kadar ayrıldığına dair iyi bir sezgi verir.
+    Örneğin sıfır ve bir parametre uzayında çok az örtüşür; sezgisel olarak mantıklıdır: sıfır görüntü ortasında boştur, bir genelde ortada mürekkep vardır.
+    Öte yandan birler ile dörtler arasında sürekli bir spektrum vardır: bazıları "şapkalı" bir çizer; bu da dörtlere benzetir.</p>
+
+    <p>Genel olarak kenarlarda bir miktar karışma olsa da farklı gruplar parametre uzayında oldukça yerelleşmiş görünür; bu da tam yüksek boyutlu veri kümesinde bile basit bir denetimli sınıflandırmanın uygun performans gösterebileceğini düşündürür.
+    Deneyelim.</p>
+
+    <h3 id="rakam-siniflandirma">Rakamlarda Sınıflandırma</h3>
+
+    <p>Rakam verisine bir sınıflandırma algoritması uygulayalım.
+    Iris'te yaptığımız gibi veriyi eğitim ve test kümelerine ayırıp Gauss naive Bayes modeli uyduracağız:</p>
+
+    <div class="code-block" data-lang="python" data-filename="digits_train_test.py">
+      <pre><code>Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, random_state=0)</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="digits_gaussian_nb.py">
+      <pre><code>from sklearn.naive_bayes import GaussianNB
+model = GaussianNB()
+model.fit(Xtrain, ytrain)
+y_model = model.predict(Xtest)</code></pre>
+    </div>
+
+    <p>Modelin tahminleri elimizde; doğruluğu test kümesinin gerçek değerleriyle karşılaştırarak ölçeriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="digits_accuracy.py">
+      <pre><code>from sklearn.metrics import accuracy_score
+accuracy_score(ytest, y_model)</code></pre>
+    </div>
+
+    <p>Bu çok basit modelle bile rakam sınıflandırmasında yaklaşık %83 doğruluk buluyoruz!
+    Ancak tek bir sayı nerede hata yaptığımızı söylemez. Bunun güzel bir yolu <em>karmaşıklık matrisi</em>dir; Scikit-Learn ile hesaplayıp Seaborn ile çizebiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="digits_confusion_matrix.py">
+      <pre><code>from sklearn.metrics import confusion_matrix
+
+mat = confusion_matrix(ytest, y_model)
+
+sns.heatmap(mat, square=True, annot=True, cbar=False, cmap='Blues')
+plt.xlabel('predicted value')
+plt.ylabel('true value');</code></pre>
+    </div>
+
+    <p>Bu, yanlış etiketlenen noktaların nerede yoğunlaştığını gösterir: örneğin burada birçok iki, bir veya sekiz olarak yanlış sınıflandırılmış.</p>
+
+    <p>Modelin özelliklerine dair sezgi için girdileri tahmin edilen etiketlerle yeniden çizebiliriz.
+    Doğru etiketler yeşil, yanlışlar kırmızı olacak:</p>
+
+    <div class="code-block" data-lang="python" data-filename="digits_misclassified_plot.py">
+      <pre><code>fig, axes = plt.subplots(10, 10, figsize=(8, 8),
+                         subplot_kw={'xticks':[], 'yticks':[]},
+                         gridspec_kw=dict(hspace=0.1, wspace=0.1))
+
+test_images = Xtest.reshape(-1, 8, 8)
+
+for i, ax in enumerate(axes.flat):
+    ax.imshow(test_images[i], cmap='binary', interpolation='nearest')
+    ax.text(0.05, 0.05, str(y_model[i]),
+            transform=ax.transAxes,
+            color='green' if (ytest[i] == y_model[i]) else 'red')</code></pre>
+    </div>
+
+    <p>Veri alt kümesini incelemek, algoritmanın nerede optimal olmayabileceğine dair ipucu verir.
+    %83 sınıflandırma başarısının ötesine geçmek için destek vektör makineleri (<a href="07-support-vector-machines.html">Derinlemesine: SVM</a>), rastgele ormanlar (<a href="08-random-forests.html">Derinlemesine: Karar Ağaçları ve Rastgele Ormanlar</a>) veya başka bir sınıflandırma yaklaşımına geçebiliriz.</p>
+
+    <h2 id="ozet-02">Özet</h2>
+
+    <p>Bu bölümde Scikit-Learn veri temsilinin ve Estimator API'sinin temel özelliklerini ele aldık.
+    Kullanılan tahmin edici türünden bağımsız olarak aynı içe aktar/örnekle/uydur/tahmin et kalıbı geçerlidir.
+    Estimator API hakkında bu bilgiyle Scikit-Learn dokümantasyonunu keşfedebilir ve çeşitli modelleri verinizde denemeye başlayabilirsiniz.</p>
+
+    <p>Sonraki bölümde makine öğrenmesinde belki en önemli konuya geçeceğiz: modelinizi nasıl seçip doğrulayacağınız.</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — fit / predict / transform</div>
+      <p>Scikit-Learn tahmin edicilerinde ortak kalıp: <code>model.fit(X, y)</code> (denetimli) veya <code>model.fit(X)</code> (denetimsiz);
+            <code>model.predict(X)</code> sınıflandırma/regresyon tahmini;
+            <code>model.transform(X)</code> boyut indirgeme ve ön işleme için dönüşüm.
+            Bu sayfa <strong>Pyodide ile scikit-learn önceden yüklenir</strong> (<code>data-preload-sklearn</code>); ilk çalıştırmada paket indirme süresi olabilir.</p>
+    </div>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — X ve y şekilleri</div>
+      <p><code>X</code> her zaman <code>(n_samples, n_features)</code>, <code>y</code> tek boyutlu <code>(n_samples,)</code> olmalıdır.
+            Tek öznitelikli regresyonda <code>x[:, np.newaxis]</code> ile sütun vektörüne çevirmeyi unutmayın.</p>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Iris X ve y oluşturun</div>
+      <p>Seaborn Iris veri kümesinden öznitelik matrisi ve hedef dizisi çıkarın:</p>
+          <div class="code-block" data-lang="python" data-filename="iris_X_y.py">
+      <pre><code>import seaborn as sns
+iris = sns.load_dataset('iris')
+X = iris.drop('species', axis=1)
+y = iris['species']
+print(X.shape, y.shape)</code></pre>
+    </div>
+
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Basit doğrusal regresyon</div>
+      <p>Rastgele 1D veriye <code>LinearRegression</code> uydurup eğimi yazdırın:</p>
+          <div class="code-block" data-lang="python" data-filename="quick_linear_regression.py">
+      <pre><code>import numpy as np
+from sklearn.linear_model import LinearRegression
+rng = np.random.RandomState(0)
+x = rng.rand(20)
+y = 2 * x + 1 + 0.1 * rng.randn(20)
+X = x[:, np.newaxis]
+m = LinearRegression().fit(X, y)
+print("coef_:", m.coef_, "intercept_:", m.intercept_)</code></pre>
+    </div>
+
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="03-hyperparameters-and-model-validation.html">5.3 Hiperparametreler ve Model Doğrulama →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas + Matplotlib + scikit-learn yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

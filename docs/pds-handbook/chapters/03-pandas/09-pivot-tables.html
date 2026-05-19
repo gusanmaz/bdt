@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pivot Tablolar — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="03-pandas" data-section="09-pivot-tables" data-preload-numpy="true" data-preload-pandas="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.09-pivot-tables.html" target="_blank" rel="noopener">03.09 Pivot Tables</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+
+<h1>3.9 Pivot Tablolar</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.09-pivot-tables.html" target="_blank" rel="noopener">Pivot Tables</a></em></p>
+
+    <p><code>groupby</code> soyutlamasının veri kümesi içindeki ilişkileri keşfetmeye nasıl yardımcı olduğunu gördük. <em>Pivot tablo</em>, elektronik tablolarda ve tablo verisiyle çalışan programlarda yaygın benzer bir işlemdir: sütun yönelimli veriyi alır, girişleri verinin çok boyutlu özetini veren iki boyutlu bir tabloda gruplar. Pivot tablolar ile <code>groupby</code> bazen karıştırılır; pivot tabloyu <code>groupby</code> agregasyonunun <em>çok boyutlu</em> sürümü olarak düşünmek yardımcı olur — böl ve birleştir hem tek boyutlu indeks yerine iki boyutlu ızgarada olur.</p>
+
+    <h2 id="pivot-motivasyon">Pivot Tablolara Giriş</h2>
+
+    <p>Bu bölümdeki örnekler için Seaborn üzerinden <em>Titanic</em> yolcu veri tabanını kullanacağız:</p>
+    <div class="code-block" data-lang="python" data-filename="import_titanic.py">
+      <pre><code>import numpy as np
+import pandas as pd
+import seaborn as sns
+titanic = sns.load_dataset('titanic')</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="titanic_head.py">
+      <pre><code>titanic.head()</code></pre>
+    </div>
+
+    <p>Çıktıda, felaketli yolculuktaki her yolcu için cinsiyet, yaş, sınıf, ödenen ücret ve daha fazlası yer alır.</p>
+
+    <h2 id="elle-pivot">Elle Pivot Tablo</h2>
+
+    <p>Veriyi anlamak için cinsiyet, hayatta kalma durumu veya bunların birleşimine göre gruplamak isteyebiliriz. Önceki bölümü okuduysanız <code>groupby</code> kullanmaya meyillisiniz — cinsiyete göre hayatta kalma oranı:</p>
+    <div class="code-block" data-lang="python" data-filename="titanic_survival_sex.py">
+      <pre><code>titanic.groupby('sex')[['survived']].mean()</code></pre>
+    </div>
+
+    <p>İlk içgörü: gemideki kadınların dörtte üçü, erkeklerin ise yaklaşık beşte biri hayatta kalmış!</p>
+
+    <p>Bir adım daha gidip hem cinsiyet hem sınıfa göre hayatta kalma oranına bakalım. <code>groupby</code> sözcüğüyle: sınıf ve cinsiyete göre <em>grupla</em>, hayatta kalmayı <em>seç</em>, ortalama <em>uygula</em>, grupları <em>birleştir</em>, hiyerarşik indeksi <em>unstack</em> ile aç:</p>
+    <div class="code-block" data-lang="python" data-filename="titanic_groupby_unstack.py">
+      <pre><code>titanic.groupby(['sex', 'class'])['survived'].aggregate('mean').unstack()</code></pre>
+    </div>
+
+    <p>Cinsiyet ve sınıfın hayatta kalmayı nasıl etkilediğine dair daha iyi bir fikir verir; kod ise okunması zor bir dizi haline gelmeye başlar. Bu iki boyutlu <code>groupby</code> yeterince yaygındır; Pandas <code>pivot_table</code> adlı kısa yolu içerir.</p>
+
+    <h2 id="pivot-sozdizimi">Pivot Tablo Sözdizimi</h2>
+
+    <p>Önceki işlemin <code>DataFrame.pivot_table</code> ile eşdeğeri:</p>
+    <div class="code-block" data-lang="python" data-filename="titanic_pivot_table.py">
+      <pre><code>titanic.pivot_table('survived', index='sex', columns='class', aggfunc='mean')</code></pre>
+    </div>
+
+    <p>Elle <code>groupby</code> yaklaşımından çok daha okunaklıdır; aynı sonucu üretir. 20. yüzyıl başı transatlantik yolculuğunda hayatta kalma eğilimi hem üst sınıfları hem de veride kadın olarak kayıtlı yolcuları kayırır. Birinci sınıf kadınlar neredeyse kesin hayatta kalmış (merhaba Rose!); üçüncü sınıf erkeklerin yaklaşık sekizde biri (üzgünüz Jack!).</p>
+
+    <h3 id="cok-duzeyli-pivot">Çok Düzeyli Pivot Tablolar</h3>
+
+    <p><code>groupby</code>'da olduğu gibi pivot tablolarda gruplama birden fazla düzeyle ve seçeneklerle belirtilebilir. Yaşı üçüncü boyut olarak ekleyelim; <code>pd.cut</code> ile kutulayalım:</p>
+    <div class="code-block" data-lang="python" data-filename="titanic_pivot_age.py">
+      <pre><code>age = pd.cut(titanic['age'], [0, 18, 80])
+titanic.pivot_table('survived', ['sex', age], 'class')</code></pre>
+    </div>
+
+    <p>Sütunlar için de aynı strateji: ücret için <code>pd.qcut</code> ile otomatik niceleme:</p>
+    <div class="code-block" data-lang="python" data-filename="titanic_pivot_fare.py">
+      <pre><code>fare = pd.qcut(titanic['fare'], 2)
+titanic.pivot_table('survived', ['sex', age], [fare, 'class'])</code></pre>
+    </div>
+
+    <p>Sonuç, değerler arasındaki ilişkiyi ızgara düzeninde gösteren hiyerarşik indeksli (<a href="05-hierarchical-indexing.html">3.5 Hiyerarşik İndeksleme</a>) dört boyutlu bir agregasyondur.</p>
+
+    <h3 id="pivot-ek-secenekler">Ek Pivot Tablo Seçenekleri</h3>
+
+    <p><code>DataFrame.pivot_table</code> tam imzası (Pandas 1.3.5):</p>
+    <div class="code-block" data-lang="python" data-filename="pivot_table_signature.py" data-readonly="true">
+      <pre><code># Pandas 1.3.5 imzası
+DataFrame.pivot_table(data, values=None, index=None, columns=None,
+                      aggfunc='mean', fill_value=None, margins=False,
+                      dropna=True, margins_name='All', observed=False,
+                      sort=True)</code></pre>
+    </div>
+
+    <p>İlk üç argümanı gördük; <code>fill_value</code> ve <code>dropna</code> eksik veriyle ilgilidir.</p>
+
+    <p><code>aggfunc</code> hangi agregasyonun uygulanacağını denetler (varsayılan ortalama). <code>groupby</code>'da olduğu gibi dize (<code>'sum'</code>, <code>'mean'</code>, <code>'count'</code> vb.) veya fonksiyon olabilir; sütunlara eşleme sözlüğü de verilebilir:</p>
+    <div class="code-block" data-lang="python" data-filename="titanic_pivot_aggfunc_dict.py">
+      <pre><code>titanic.pivot_table(index='sex', columns='class',
+                    aggfunc={'survived':sum, 'fare':'mean'})</code></pre>
+    </div>
+
+    <p><code>aggfunc</code> için eşleme verildiğinde <code>values</code> anahtar sözcüğü çoğu zaman otomatik belirlenir.</p>
+
+    <p>Bazen her gruplama boyunca toplamlar yararlıdır; <code>margins</code> anahtar sözcüğü ile:</p>
+    <div class="code-block" data-lang="python" data-filename="titanic_pivot_margins.py">
+      <pre><code>titanic.pivot_table('survived', index='sex', columns='class', margins=True)</code></pre>
+    </div>
+
+    <p>Bu, sınıftan bağımsız cinsiyete göre hayatta kalma, cinsiyetten bağımsız sınıfa göre hayatta kalma ve genel %38 hayatta kalma oranını verir. Kenar etiketi <code>margins_name</code> ile değiştirilir (varsayılan <code>"All"</code>).</p>
+
+    <h2 id="ornek-dogum">Örnek: Doğum Oranı Verisi</h2>
+
+    <p>Başka bir örnek: ABD Hastalık Kontrol Merkezleri (CDC) doğum verisi. Veri <a href="https://raw.githubusercontent.com/jakevdp/data-CDCbirths/master/births.csv" target="_blank" rel="noopener">burada</a> bulunur (Andrew Gelman ve grubu tarafından kapsamlı analiz edilmiştir).</p>
+    <div class="code-block" data-lang="text" data-filename="download_births.sh" data-readonly="true">
+      <pre><code># shell command to download the data:
+# !cd data &amp;&amp; curl -O \
+# https://raw.githubusercontent.com/jakevdp/data-CDCbirths/master/births.csv</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="read_births_csv.py">
+      <pre><code>births = pd.read_csv('data/births.csv')</code></pre>
+    </div>
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — CDC verisi ve Pyodide</div>
+      <p><code>data/births.csv</code> yerel veya indirilmiş olmalıdır; Pyodide'da dosya yoksa indirme hücresini okuyun.</p>
+    </div>
+
+    <p>Veri görece basit — tarih ve cinsiyete göre gruplanmış doğum sayıları.</p>
+    <div class="code-block" data-lang="python" data-filename="births_head.py">
+      <pre><code>births.head()</code></pre>
+    </div>
+
+    <p><code>decade</code> sütunu ekleyip on yıllara göre erkek/kadın doğumlarına pivot tablo ile bakalım:</p>
+    <div class="code-block" data-lang="python" data-filename="births_pivot_decade.py">
+      <pre><code>births['decade'] = 10 * (births['year'] // 10)
+births.pivot_table('births', index='decade', columns='gender', aggfunc='sum')</code></pre>
+    </div>
+
+    <p>Her on yılda erkek doğumları kadın doğumlarından fazladır. Pandas yerleşik <code>plot</code> ile yıllık trend görselleştirilebilir (Matplotlib bölümüne bakın):</p>
+    <div class="code-block" data-lang="text" data-filename="births_plot_year.py" data-readonly="true">
+      <pre><code>%matplotlib inline
+import matplotlib.pyplot as plt
+plt.style.use('seaborn-whitegrid')
+births.pivot_table(
+    'births', index='year', columns='gender', aggfunc='sum').plot()
+plt.ylabel('total births per year');</code></pre>
+    </div>
+
+    <p>Basit pivot tablo ve <code>plot</code> ile cinsiyete göre yıllık doğum eğilimi hemen görülür; son 50 yılda erkek doğumları kadın doğumlardan yaklaşık %5 fazla gibi görünür.</p>
+
+    <p>Pivot tabloyla doğrudan ilgili olmasa da bu veri kümesinden Pandas araçlarıyla birkaç ilginç özellik daha çıkarılabilir. Önce veriyi temizleyelim — yanlış yazılmış tarihler (ör. 31 Haziran) veya eksik günler (99 Haziran) gibi aykırıları kırpma (robust sigma-clipping) ile kaldıralım:</p>
+    <div class="code-block" data-lang="python" data-filename="births_quartiles.py">
+      <pre><code>quartiles = np.percentile(births['births'], [25, 50, 75])
+mu = quartiles[1]
+sig = 0.74 * (quartiles[2] - quartiles[0])</code></pre>
+    </div>
+
+    <p>Son satır, 0,74 çarpanı Gauss dağılımının çeyreklikler aralığından gelen örneklem standart sapmasının sağlam bir tahminidir.</p>
+
+    <p>Bu değerlerle <code>query</code> (<a href="12-performance-eval-and-query.html">3.12 eval ve query</a>) kullanarak aykırı satırları filtreleyebiliriz:</p>
+    <div class="code-block" data-lang="python" data-filename="births_query_clip.py">
+      <pre><code>births = births.query('(births &gt; @mu - 5 * @sig) &amp; (births &lt; @mu + 5 * @sig)')</code></pre>
+    </div>
+
+    <p><code>day</code> sütununu tamsayı yapalım; bazı satırlarda <code>'null'</code> olduğu için önceden metindi:</p>
+    <div class="code-block" data-lang="python" data-filename="births_day_int.py">
+      <pre><code># set 'day' column to integer; it originally was a string due to nulls
+births['day'] = births['day'].astype(int)</code></pre>
+    </div>
+
+    <p>Son olarak gün, ay ve yılı birleştirip tarih indeksi oluşturalım (<a href="11-working-with-time-series.html">3.11 Zaman Serileri</a>):</p>
+    <div class="code-block" data-lang="python" data-filename="births_datetime_index.py">
+      <pre><code># create a datetime index from the year, month, day
+births.index = pd.to_datetime(10000 * births.year +
+                              100 * births.month +
+                              births.day, format='%Y%m%d')
+
+births['dayofweek'] = births.index.dayofweek</code></pre>
+    </div>
+
+    <p>Bununla on yıllar boyunca haftanın gününe göre doğumları çizebiliriz:</p>
+    <div class="code-block" data-lang="python" data-filename="births_weekday_plot.py">
+      <pre><code>import matplotlib.pyplot as plt
+import matplotlib as mpl
+
+births.pivot_table('births', index='dayofweek',
+                    columns='decade', aggfunc='mean').plot()
+plt.gca().set(xticks=range(7),
+              xticklabels=['Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat', 'Sun'])
+plt.ylabel('mean births by day');</code></pre>
+    </div>
+
+    <p>Görünüşe göre hafta sonları doğumlar hafta içinden biraz daha az! 1990 ve 2000'ler eksik — 1989'dan itibaren CDC verisi yalnızca doğum ayını içeriyor.</p>
+
+    <p>İlginç bir başka görünüm: yılın gününe göre ortalama doğum sayısı. Önce ay ve güne göre gruplayalım:</p>
+    <div class="code-block" data-lang="python" data-filename="births_by_date_pivot.py">
+      <pre><code>births_by_date = births.pivot_table('births', 
+                                    [births.index.month, births.index.day])
+births_by_date.head()</code></pre>
+    </div>
+
+    <p>Sonuç ay ve gün üzerinde çoklu indekstir. Görselleştirmek için ay ve günleri şubat 29'u doğru işleyen artık yıl ile birleştirip tarihe dönüştürelim:</p>
+    <div class="code-block" data-lang="python" data-filename="births_by_date_index.py">
+      <pre><code>from datetime import datetime
+births_by_date.index = [datetime(2012, month, day)
+                        for (month, day) in births_by_date.index]
+births_by_date.head()</code></pre>
+    </div>
+
+    <p>Yalnızca ay ve güne odaklanınca yılın gününe göre ortalama doğum sayısını yansıtan bir zaman serimiz olur. <code>plot</code> ile çizildiğinde ilginç eğilimler görülür:</p>
+    <div class="code-block" data-lang="python" data-filename="births_by_date_plot.py">
+      <pre><code># Plot the results
+fig, ax = plt.subplots(figsize=(12, 4))
+births_by_date.plot(ax=ax);</code></pre>
+    </div>
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Tatil düşüşü</div>
+      <p>Grafikte ABD tatillerinde (Bağımsızlık Günü, İşçi Bayramı, Şükran, Noel, Yılbaşı) doğum düşüşü belirgindir — çoğunlukla planlı doğumlar yerine kayıt/veri etkisini yansıtır.</p>
+    </div>
+
+    <p>Özellikle grafikte ABD tatillerinde doğum oranı düşüşü çarpıcıdır — büyük olasılıkla doğal doğumdan çok planlı/indüklenmiş doğum eğilimlerini yansıtır. Konuyla ilgili Andrew Gelman'ın blog yazısına bakın. Bu grafiğe Matplotlib araçlarıyla not eklemek için kitabın ilerleyen bölümlerine bakılacaktır.</p>
+
+    <p>Bu kısa örnek, şimdiye kadar gördüğümüz Python ve Pandas araçlarının birleştirilerek çeşitli veri kümelerinden içgörü elde edilebileceğini gösterir. Bu veri manipülasyonlarının daha gelişmiş uygulamalarını sonraki bölümlerde göreceğiz!</p>
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>Titanic verisinde (Seaborn yüklüyse) cinsiyet × sınıf hayatta kalma pivot tablosu oluşturun:</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_pivot_titanic.py">
+      <pre><code>import pandas as pd
+try:
+    import seaborn as sns
+    t = sns.load_dataset('titanic')
+    print(t.pivot_table('survived', index='sex', columns='class', aggfunc='mean'))
+except Exception:
+    df = pd.DataFrame({
+        'sex': ['female','female','male','male'],
+        'class': ['First','Third','First','Third'],
+        'survived': [1, 0, 1, 0]
+    })
+    print(df.pivot_table('survived', index='sex', columns='class', aggfunc='mean'))</code></pre>
+    </div>
+
+    </div>
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="10-working-with-strings.html">3.10 Dizelerle Çalışma →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

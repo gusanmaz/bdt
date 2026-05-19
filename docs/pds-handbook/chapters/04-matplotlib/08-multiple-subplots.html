@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Çoklu Alt Grafikler — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="04-matplotlib" data-section="08-multiple-subplots" data-preload-numpy="true" data-preload-matplotlib="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/04.08-multiple-subplots.html" target="_blank" rel="noopener">04.08 Multiple Subplots</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/04.08-multiple-subplots.html" target="_blank" rel="noopener">04.08 Multiple Subplots</a></em></p>
+<h1>Çoklu Alt Grafikler</h1>
+
+    <p>Bazen verinin farklı görünümlerini yan yana karşılaştırmak yararlıdır.
+    Matplotlib bunu tek bir figür içinde birden fazla alt grafik (subplot) düzenleyerek sağlar.</p>
+
+    <div class="code-block" data-lang="python" data-filename="matplotlib_inline.py">
+      <pre><code>%matplotlib inline
+import matplotlib.pyplot as plt
+plt.style.use(&#x27;seaborn-white&#x27;)
+import numpy as np</code></pre>
+    </div>
+
+    <h2 id="plt-axes-el">plt.axes: Elle alt grafikler</h2>    <p>Eksen oluşturmanın en temel yolu <code>plt.axes</code> kullanmaktır.
+    Varsayılan olarak bu, tüm figürü kaplayan standart bir eksen oluşturur; farklı bir konum ve boyut için <code>plt.axes</code>'e bir dizi verilebilir (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="axes_manual.py">
+      <pre><code>ax1 = plt.axes()  # standard axes
+ax2 = plt.axes([0.65, 0.65, 0.2, 0.2])</code></pre>
+    </div>
+
+    <p>Nesne yönelimli arayüzdeki karşılığı <code>fig.add_axes</code>'tir.
+    İki dikey istiflenmiş eksen oluşturmak için bunu kullanalım (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="add_axes_stacked.py">
+      <pre><code>fig = plt.figure()
+ax1 = fig.add_axes([0.1, 0.5, 0.8, 0.4],
+                   xticklabels=[], ylim=(-1.2, 1.2))
+ax2 = fig.add_axes([0.1, 0.1, 0.8, 0.4],
+                   ylim=(-1.2, 1.2))
+
+x = np.linspace(0, 10)
+ax1.plot(np.sin(x))
+ax2.plot(np.cos(x));</code></pre>
+    </div>
+
+    <p>Artık iki eksenimiz var (üstteki işaret etiketleri yok); üst panelin altı (konum 0.5) alt panelin üstüyle (0.1 + 0.4) örtüşüyor.</p>
+
+    <h2 id="plt-subplot-izgara">plt.subplot: Basit alt grafik ızgaraları</h2>    <p>Hizalı sütun veya satır alt grafikler yaygındır; Matplotlib bunları kolaylaştıran birkaç yardımcı rutin sunar.
+    En düşük seviye <code>plt.subplot</code>'tur; ızgarada tek bir alt grafik oluşturur.
+    Komut üç tamsayı alır — satır sayısı, sütun sayısı ve bu şemada (sol üstten sağ alta) oluşturulacak grafiğin indeksi (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="subplot_loop.py">
+      <pre><code>for i in range(1, 7):
+    plt.subplot(2, 3, i)
+    plt.text(0.5, 0.5, str((2, 3, i)),
+             fontsize=18, ha=&#x27;center&#x27;)</code></pre>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Alt grafik ızgarası</div>
+      <p>2×2 ızgara oluşturup her hücreye metin yazın.</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_subplots_2x2.py">
+      <pre><code>fig, axes = plt.subplots(2, 2)
+for ax in axes.flat:
+    ax.text(0.5, 0.5, 'panel', ha='center', fontsize=14)</code></pre>
+    </div>
+
+    </div>
+
+
+    <p>Alt grafikler arasındaki boşluğu ayarlamak için <code>plt.subplots_adjust</code> kullanılabilir.
+    Aşağıdaki kod nesne yönelimli eşdeğeri <code>fig.add_subplot</code>'u kullanır (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="subplots_adjust.py">
+      <pre><code>fig = plt.figure()
+fig.subplots_adjust(hspace=0.4, wspace=0.4)
+for i in range(1, 7):
+    ax = fig.add_subplot(2, 3, i)
+    ax.text(0.5, 0.5, str((2, 3, i)),
+           fontsize=18, ha=&#x27;center&#x27;)</code></pre>
+    </div>
+
+    <p>Burada <code>plt.subplots_adjust</code>'in <code>hspace</code> ve <code>wspace</code> bağımsız değişkenlerini kullandık; bunlar alt grafik boyutunun birimleri cinsinden dikey ve yatay boşluğu belirtir (burada boşluk alt grafik genişlik ve yüksekliğinin %40'ı).</p>
+
+    <h2 id="plt-subplots-tek">plt.subplots: Tüm ızgarayı tek seferde</h2>    <p>Büyük bir alt grafik ızgarası oluştururken ve iç panellerde eksen etiketlerini gizlemek istediğinizde yukarıdaki yöntem çabuk yorucu olur.
+    Bu iş için <code>plt.subplots</code> daha kolaydır (sonundaki <code>s</code>'e dikkat). Tek alt grafik yerine tek satırda tam bir ızgara oluşturur ve NumPy dizisi olarak döndürür.
+    Bağımsız değişkenler satır ve sütun sayısıdır; isteğe bağlı <code>sharex</code> ve <code>sharey</code> eksenler arası ölçek ilişkisini belirler.</p>
+    <p>Aynı satırdaki tüm eksenler y ölçeğini, aynı sütundakiler x ölçeğini paylaşan $2 \times 3$ bir ızgara oluşturalım (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="subplots_share.py">
+      <pre><code>fig, ax = plt.subplots(2, 3, sharex=&#x27;col&#x27;, sharey=&#x27;row&#x27;)</code></pre>
+    </div>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — sharex ve sharey</div>
+      <p>Paylaşılan eksenler ölçeği eşitler; karşılaştırma grafiklerinde çok kullanışlıdır. İç etiketler gizlenir; dış kenarlarda etiket bırakın.</p>
+    </div>
+
+
+    <p><code>sharex</code> ve <code>sharey</code> ile ızgaranın iç etiketleri otomatik kaldırıldı; daha temiz bir çizim elde edildi.
+    Dönen eksen dizisi, standart dizi indeksleme ile istenen ekseni seçmeyi kolaylaştırır (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="subplots_index.py">
+      <pre><code># axes are in a two-dimensional array, indexed by [row, col]
+for i in range(2):
+    for j in range(3):
+        ax[i, j].text(0.5, 0.5, str((i, j)),
+                      fontsize=18, ha=&#x27;center&#x27;)
+fig</code></pre>
+    </div>
+
+    <p><code>plt.subplot</code>'a kıyasla <code>plt.subplots</code> Python'un sıfırdan başlayan indekslemesiyle daha tutarlıdır; <code>plt.subplot</code> MATLAB tarzı birden başlayan indeks kullanır.</p>
+
+    <h2 id="plt-gridspec">plt.GridSpec: Daha karmaşık düzenler</h2>    <p>Birden fazla satır ve sütunu kapsayan alt grafiklere geçmek için en iyi araç <code>plt.GridSpec</code>'tir.
+    <code>plt.GridSpec</code> kendi başına çizim oluşturmaz; <code>plt.subplot</code> tarafından tanınan bir arayüzdür.
+    Örneğin belirli genişlik ve yükseklik aralıklı iki satır üç sütunlu bir <code>GridSpec</code> şöyle görünür:</p>
+
+    <div class="code-block" data-lang="python" data-filename="gridspec_empty.py">
+      <pre><code></code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="gridspec_create.py">
+      <pre><code>grid = plt.GridSpec(2, 3, wspace=0.4, hspace=0.3)</code></pre>
+    </div>
+
+    <p>Bundan sonra alt grafik konum ve boyutlarını tanıdık Python dilimleme sözdizimiyle belirtebiliriz (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="gridspec_slice.py">
+      <pre><code>plt.subplot(grid[0, 0])
+plt.subplot(grid[0, 1:])
+plt.subplot(grid[1, :2])
+plt.subplot(grid[1, 2]);</code></pre>
+    </div>
+
+    <p>Bu esnek hizalama geniş kullanım alanına sahiptir; en çok aşağıdaki şekildeki gibi çok eksenli histogram düzenleri için kullanırım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="marginal_histogram.py">
+      <pre><code># Create some normally distributed data
+mean = [0, 0]
+cov = [[1, 1], [1, 2]]
+rng = np.random.default_rng(1701)
+x, y = rng.multivariate_normal(mean, cov, 3000).T
+
+# Set up the axes with GridSpec
+fig = plt.figure(figsize=(6, 6))
+grid = plt.GridSpec(4, 4, hspace=0.2, wspace=0.2)
+main_ax = fig.add_subplot(grid[:-1, 1:])
+y_hist = fig.add_subplot(grid[:-1, 0], xticklabels=[], sharey=main_ax)
+x_hist = fig.add_subplot(grid[-1, 1:], yticklabels=[], sharex=main_ax)
+
+# Scatter points on the main axes
+main_ax.plot(x, y, &#x27;ok&#x27;, markersize=3, alpha=0.2)
+
+# Histogram on the attached axes
+x_hist.hist(x, 40, histtype=&#x27;stepfilled&#x27;,
+            orientation=&#x27;vertical&#x27;, color=&#x27;gray&#x27;)
+x_hist.invert_yaxis()
+
+y_hist.hist(y, 40, histtype=&#x27;stepfilled&#x27;,
+            orientation=&#x27;horizontal&#x27;, color=&#x27;gray&#x27;)
+y_hist.invert_xaxis()</code></pre>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 GridSpec dilimleme</div>
+      <p>Üst satırın tamamını tek panel, alt sol iki sütunu bir panel yapın.</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_gridspec.py">
+      <pre><code>grid = plt.GridSpec(2, 3)
+plt.subplot(grid[0, :])
+plt.subplot(grid[1, :2])
+plt.subplot(grid[1, 2])</code></pre>
+    </div>
+
+    </div>
+
+
+    <p>Kenarlarıyla birlikte bu tür dağılım çizimi yeterince yaygındır; Seaborn paketinde kendi çizim API'si vardır — ayrıntılar için
+    <a href="14-visualization-with-seaborn.html">Seaborn ile Görselleştirme</a> bölümüne bakın.</p>
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="09-text-and-annotation.html">4.9 Metin ve Açıklama →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Matplotlib yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Birleştirme: Concat ve Append — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="03-pandas" data-section="06-concat-and-append" data-preload-numpy="true" data-preload-pandas="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.06-concat-and-append.html" target="_blank" rel="noopener">03.06 Concat and Append</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+
+<h1>3.6 Birleştirme: Concat ve Append</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.06-concat-and-append.html" target="_blank" rel="noopener">Combining Datasets: Concat and Append</a></em></p>
+
+    <p>Verinin en ilgi çekici analizleri çoğu zaman farklı kaynakların birleştirilmesinden çıkar. Bu işlemler iki veri kümesinin basit yan yana eklenmesinden, örtüşmeleri doğru ele alan veritabanı tarzı birleştirme ve join'lere kadar uzanır. <code>Series</code> ve <code>DataFrame</code> bu tür işlemler için tasarlanmıştır; Pandas bu veri düzenleme işlerini hızlı ve doğrudan kılan fonksiyon ve yöntemler içerir.</p>
+
+    <p>Burada <code>pd.concat</code> ile <code>Series</code> ve <code>DataFrame</code> birleştirmesine bakacağız; daha sonra Pandas'taki bellek içi <code>pd.merge</code> join'lerine geçeceğiz.</p>
+
+    <p>Standart içe aktarmalarla başlayalım:</p>
+    <div class="code-block" data-lang="python" data-filename="import_pd_np.py">
+      <pre><code>import pandas as pd
+import numpy as np</code></pre>
+    </div>
+
+    <p>Kolaylık için aşağıdaki örneklerde kullanacağımız belirli biçimde bir <code>DataFrame</code> üreten yardımcı fonksiyonu tanımlayalım:</p>
+    <div class="code-block" data-lang="python" data-filename="make_df.py">
+      <pre><code>def make_df(cols, ind):
+    """Quickly make a DataFrame"""
+    data = {c: [str(c) + str(i) for i in ind]
+            for c in cols}
+    return pd.DataFrame(data, ind)
+
+# example DataFrame
+make_df('ABC', range(3))</code></pre>
+    </div>
+
+    <p>Ayrıca birden fazla <code>DataFrame</code>'i yan yana göstermek için kısa bir sınıf tanımlayacağız. Kod, IPython/Jupyter'ın zengin nesne gösterimi için kullandığı özel <code>_repr_html_</code> yönteminden yararlanır:</p>
+    <div class="code-block" data-lang="python" data-filename="display_class.py">
+      <pre><code>class display(object):
+    """Display HTML representation of multiple objects"""
+    template = """&lt;div style="float: left; padding: 10px;"&gt;
+    &lt;p style='font-family:"Courier New", Courier, monospace'&gt;{0}&lt;/p&gt;{1}
+    &lt;/div&gt;"""
+    def __init__(self, *args):
+        self.args = args
+        
+    def _repr_html_(self):
+        return '\n'.join(self.template.format(a, eval(a)._repr_html_())
+                         for a in self.args)
+    
+    def __repr__(self):
+        return '\n\n'.join(a + '\n' + repr(eval(a))
+                           for a in self.args)
+    </code></pre>
+    </div>
+
+    <p>Kullanımı aşağıdaki bölümlerde netleşecektir.</p>
+
+    <h2 id="numpy-birlestirme-hatirlatma">Hatırlatma: NumPy Dizilerinde Birleştirme</h2>
+
+    <p><code>Series</code> ve <code>DataFrame</code> birleştirmesi, <a href="../02-numpy/02-basics-of-numpy-arrays.html">2.2 NumPy Dizilerinin Temelleri</a>'nde anlatılan <code>np.concatenate</code> ile benzer davranır. İki veya daha fazla dizinin içeriği tek dizide birleştirilebilir:</p>
+    <div class="code-block" data-lang="python" data-filename="np_concat_1d.py">
+      <pre><code>x = [1, 2, 3]
+y = [4, 5, 6]
+z = [7, 8, 9]
+np.concatenate([x, y, z])</code></pre>
+    </div>
+
+    <p>İlk argüman birleştirilecek dizilerin listesi veya demetidir. Çok boyutlu dizilerde sonucun hangi eksen boyunca birleştirileceğini belirten <code>axis</code> anahtar sözcüğü vardır:</p>
+    <div class="code-block" data-lang="python" data-filename="np_concat_axis.py">
+      <pre><code>x = [[1, 2],
+     [3, 4]]
+np.concatenate([x, x], axis=1)</code></pre>
+    </div>
+
+    <h2 id="pd-concat-basit">pd.concat ile Basit Birleştirme</h2>
+
+    <p><code>pd.concat</code>, <code>np.concatenate</code>'e benzer sözdizimi sunar; birçok seçenek vardır:</p>
+    <div class="code-block" data-lang="python" data-filename="pd_concat_signature.py" data-readonly="true">
+      <pre><code># Pandas v1.3.5 imzası
+pd.concat(objs, axis=0, join='outer', ignore_index=False, keys=None,
+          levels=None, names=None, verify_integrity=False,
+          sort=False, copy=True)</code></pre>
+    </div>
+
+    <p><code>pd.concat</code>, <code>np.concatenate</code> gibi <code>Series</code> veya <code>DataFrame</code> nesnelerinin basit birleştirmesi için kullanılır:</p>
+    <div class="code-block" data-lang="python" data-filename="concat_series.py">
+      <pre><code>ser1 = pd.Series(['A', 'B', 'C'], index=[1, 2, 3])
+ser2 = pd.Series(['D', 'E', 'F'], index=[4, 5, 6])
+pd.concat([ser1, ser2])</code></pre>
+    </div>
+
+    <p>Daha yüksek boyutlu nesneler (<code>DataFrame</code>) için de çalışır:</p>
+    <div class="code-block" data-lang="python" data-filename="concat_dataframes.py">
+      <pre><code>df1 = make_df('AB', [1, 2])
+df2 = make_df('AB', [3, 4])
+display('df1', 'df2', 'pd.concat([df1, df2])')</code></pre>
+    </div>
+
+    <p>Varsayılan davranış satır bazında birleştirmedir (<code>axis=0</code>). <code>np.concatenate</code> gibi birleştirmenin yapılacağı eksen belirtilebilir:</p>
+    <div class="code-block" data-lang="python" data-filename="concat_axis_columns.py">
+      <pre><code>df3 = make_df('AB', [0, 1])
+df4 = make_df('CD', [0, 1])
+display('df3', 'df4', "pd.concat([df3, df4], axis='columns')")</code></pre>
+    </div>
+
+    <p><code>axis=1</code> ile eşdeğerdir; burada daha sezgisel olan <code>axis='columns'</code> kullandık.</p>
+
+    <h3 id="yinelenen-indeksler">Yinelenen İndeksler</h3>
+
+    <p><code>np.concatenate</code> ile <code>pd.concat</code> arasındaki önemli farklardan biri: Pandas birleştirme <em>indeksleri korur</em> — sonuçta yinelenen indeksler olsa bile!</p>
+    <div class="code-block" data-lang="python" data-filename="concat_duplicate_index.py">
+      <pre><code>x = make_df('AB', [0, 1])
+y = make_df('AB', [2, 3])
+y.index = x.index  # make indices match
+display('x', 'y', 'pd.concat([x, y])')</code></pre>
+    </div>
+
+    <p>Sonuçta yinelenen indekslere dikkat edin. <code>DataFrame</code> içinde geçerli olsa da sonuç çoğu zaman istenmez. <code>pd.concat</code> bunu yönetmek için seçenekler sunar.</p>
+
+    <h4 id="yinelenen-indeks-hata">Yinelenen indeksleri hata sayma</h4>
+
+    <p>Sonuçta örtüşen indeks olmadığını doğrulamak için <code>verify_integrity=True</code> kullanılabilir; yinelenen indeks varsa birleştirme istisna fırlatır:</p>
+    <div class="code-block" data-lang="python" data-filename="concat_verify_integrity.py">
+      <pre><code>try:
+    pd.concat([x, y], verify_integrity=True)
+except ValueError as e:
+    print("ValueError:", e)</code></pre>
+    </div>
+
+    <h4 id="indeksi-yoksay">İndeksi yoksayma</h4>
+
+    <p>Bazen indeks önemli değildir; <code>ignore_index=True</code> ile yeni bir tamsayı indeks oluşturulur:</p>
+    <div class="code-block" data-lang="python" data-filename="concat_ignore_index.py">
+      <pre><code>display('x', 'y', 'pd.concat([x, y], ignore_index=True)')</code></pre>
+    </div>
+
+    <h4 id="multiindex-anahtar">MultiIndex anahtarları ekleme</h4>
+
+    <p><code>keys</code> ile kaynaklara etiket verilebilir; sonuç hiyerarşik indeksli bir yapıdır:</p>
+    <div class="code-block" data-lang="python" data-filename="concat_keys.py">
+      <pre><code>display('x', 'y', "pd.concat([x, y], keys=['x', 'y'])")</code></pre>
+    </div>
+
+    <p><a href="05-hierarchical-indexing.html">3.5 Hiyerarşik İndeksleme</a>'deki araçlarla bu çoklu indeksli <code>DataFrame</code> istediğimiz gösterime dönüştürülebilir.</p>
+
+    <h3 id="join-ile-birlestirme">Join ile Birleştirme</h3>
+
+    <p>Kısa örneklerde sütun adları örtüşüyordu. Gerçekte kaynakların sütun kümeleri farklı olabilir; <code>pd.concat</code> bu durumda seçenekler sunar:</p>
+    <div class="code-block" data-lang="python" data-filename="concat_outer_join.py">
+      <pre><code>df5 = make_df('ABC', [1, 2])
+df6 = make_df('BCD', [3, 4])
+display('df5', 'df6', 'pd.concat([df5, df6])')</code></pre>
+    </div>
+
+    <p>Veri olmayan girişler varsayılan olarak NA ile doldurulur. <code>join</code> parametresi değiştirilebilir: varsayılan birleşim (<code>join='outer'</code>); <code>join='inner'</code> kesişimdir:</p>
+    <div class="code-block" data-lang="python" data-filename="concat_inner_join.py">
+      <pre><code>display('df5', 'df6',
+        "pd.concat([df5, df6], join='inner')")</code></pre>
+    </div>
+
+    <p>Hangi sütunların düşeceğine daha ince kontrol için birleştirmeden önce <code>reindex</code> kullanılabilir:</p>
+    <div class="code-block" data-lang="python" data-filename="concat_reindex.py">
+      <pre><code>pd.concat([df5, df6.reindex(df5.columns, axis=1)])</code></pre>
+    </div>
+
+    <h3 id="append-yontemi">append Yöntemi</h3>
+
+    <p>Dizi birleştirme çok yaygın olduğundan <code>Series</code> ve <code>DataFrame</code>'de <code>append</code> yöntemi vardır; örneğin <code>pd.concat([df1, df2])</code> yerine <code>df1.append(df2)</code>:</p>
+    <div class="code-block" data-lang="python" data-filename="df_append.py">
+      <pre><code>display('df1', 'df2', 'df1.append(df2)')</code></pre>
+    </div>
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — append yerine concat</div>
+      <p>Python listelerindeki <code>append</code>/<code>extend</code> gibi Pandas <code>append</code> orijinal nesneyi <strong>değiştirmez</strong>; yeni nesne üretir ve verimli değildir. Modern Pandas'ta <code>DataFrame.append</code> kaldırılmıştır; <code>pd.concat</code> kullanın.</p>
+    </div>
+
+    <p>Python listelerindeki <code>append</code> ve <code>extend</code> yöntemlerinin aksine Pandas'taki <code>append</code> orijinal nesneyi değiştirmez; birleşik veriyle yeni nesne oluşturur. Yeni indeks ve veri tamponu oluşturduğu için verimli değildir — birden fazla <code>append</code> yerine liste oluşturup tek <code>concat</code> çağrısı genelde daha iyidir.</p>
+
+    <p>Sonraki bölümde çoklu kaynaktan veri birleştirmenin daha güçlü yolu olan <code>pd.merge</code> join'lerine bakacağız. <code>concat</code>, <code>append</code> ve ilgili işlevler için Pandas dokümantasyonundaki <a href="https://pandas.pydata.org/docs/user_guide/merging.html" target="_blank" rel="noopener">Merge, join, concat and compare</a> bölümüne bakın.</p>
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>İki küçük <code>DataFrame</code> oluşturup <code>pd.concat</code> ile satır ve sütun ekseninde birleştirin:</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_concat.py">
+      <pre><code>import pandas as pd
+import numpy as np
+
+def make_df(cols, ind):
+    data = {c: [str(c) + str(i) for i in ind] for c in cols}
+    return pd.DataFrame(data, ind)
+
+a, b = make_df('AB', [0, 1]), make_df('CD', [0, 1])
+print("Satır bazında:\n", pd.concat([a, b]))
+print("\nSütun bazında:\n", pd.concat([a, b], axis=1))</code></pre>
+    </div>
+
+    </div>
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="07-merge-and-join.html">3.7 Merge ve Join →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

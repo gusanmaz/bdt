@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1.5 IPython ve Shell Komutları — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="01-ipython" data-section="05-shell-commands">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/01.05-ipython-and-shell-commands.html" target="_blank" rel="noopener">05 IPython and Shell Commands</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>1.5 IPython ve Shell Komutları</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/01.05-ipython-and-shell-commands.html" target="_blank" rel="noopener">IPython and Shell Commands</a></em></p>
+
+    <p>Standart Python yorumlayıcısıyla etkileşimli çalışırken can sıkıcı bir durum, Python araçlarına ve sistem komut satırı araçlarına erişmek için birden fazla pencere arasında geçiş yapmak zorunda kalmaktır. IPython bu boşluğu kapatır ve IPython terminalinden doğrudan kabuk (shell) komutlarını çalıştırmak için bir sözdizimi sunar. Sihir ünlem işaretiyle olur: bir satırda <code>!</code> sonrasında görünen her şey Python çekirdeği tarafından değil, sistem komut satırı tarafından yürütülür.</p>
+
+    <p>Aşağıdaki tartışma Linux veya macOS gibi Unix benzeri bir sistemde olduğunuzu varsayar. Bazı örnekler Windows'ta varsayılan olarak farklı bir kabuk kullandığı için başarısız olur; ancak <em>Windows Subsystem for Linux</em> kullanıyorsanız buradaki örnekler doğru çalışmalıdır. Kabuk komutlarına aşina değilseniz, Software Carpentry Foundation'ın hazırladığı mükemmel <a href="http://swcarpentry.github.io/shell-novice/" target="_blank" rel="noopener">Unix shell eğitimine</a> göz atmanızı öneririm.</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — bu handbook sayfası</div>
+      <p>Tarayıcıdaki Pyodide editöründe <code>!</code> ve kabuk magic'leri <strong>çalışmaz</strong>. Aşağıdaki örnekleri yerel Jupyter veya terminal IPython'da deneyin; burada kodları okuma ve karşılaştırma amaçlı sunuyoruz.</p>
+    </div>
+
+    <h2 id="shell-hizli-giris">Kabuğa hızlı giriş</h2>
+
+    <p>Kabuğu/terminali/komut satırını kullanmaya dair tam bir giriş bu bölümün kapsamının çok ötesindedir; yine de yeni başlayanlar için kısa bir giriş sunuyorum. Kabuk, bilgisayarınızla metin tabanlı etkileşim kurmanın bir yoludur. 1980'lerin ortasından beri Microsoft ve Apple yaygın grafik işletim sistemlerinin ilk sürümlerini tanıttığından beri çoğu kullanıcı işletim sistemleriyle menü seçimleri ve sürükle-bırak hareketleriyle etkileşir. Ancak işletim sistemleri bu grafik arayüzlerden çok önce de vardı ve esas olarak metin girdisi dizileriyle kontrol ediliyordu: istemde kullanıcı bir komut yazardı, bilgisayar da kullanıcının söylediğini yapardı. Bu erken istem sistemleri, bugün çoğu veri bilimcinin hâlâ kullandığı kabukların ve terminallerin öncülleriydi.</p>
+
+    <p>Kabuğa aşina olmayan biri, birçok sonucun simge ve menülere tıklayarak da elde edilebildiği durumda neden uğraşılacağını sorabilir. Kabuk kullanıcısı başka bir soruyla yanıt verebilir: yazarak çok daha kolay başarabileceğiniz şeyler için neden simge ve menü öğelerini arayasınız? Tipik bir teknoloji tercihi çekişmesi gibi görünse de temel görevlerin ötesine geçildiğinde kabuğun gelişmiş işlerde çok daha fazla kontrol sunduğu hızla anlaşılır — öğrenme eğrisinin korkutucu olabileceğini kabul etmek gerekir.</p>
+
+    <p>Örnek olarak, bir kullanıcının sisteminde dizin ve dosyaları keşfettiği, oluşturduğu ve değiştirdiği bir Linux/macOS kabuk oturumu (<code>osx:~ $</code> istemdir; <code>$</code> sonrası yazılan komuttur; <code>#</code> ile başlayan metin yalnızca açıklamadır, yazmanız gerekmez):</p>
+
+    <div class="code-block" data-lang="bash" data-readonly="true" data-filename="shell_ornek.sh">
+      <pre><code>osx:~ $ echo "hello world"             # echo, Python'daki print gibi
+hello world
+
+osx:~ $ pwd                            # pwd = çalışma dizinini yazdır
+/home/jake                             # Şu an bulunduğumuz "yol"
+
+osx:~ $ ls                             # ls = dizin içeriğini listele
+notebooks  projects
+
+osx:~ $ cd projects/                   # cd = dizin değiştir
+
+osx:projects $ pwd
+/home/jake/projects
+
+osx:projects $ ls
+datasci_book   mpld3   myproject.txt
+
+osx:projects $ mkdir myproject          # mkdir = yeni dizin oluştur
+
+osx:projects $ cd myproject/
+
+osx:myproject $ mv ../myproject.txt ./  # mv = dosya taşı. myproject.txt bir üst
+                                        # dizinden (../) geçerli dizine (./) taşınıyor.
+osx:myproject $ ls
+myproject.txt</code></pre>
+    </div>
+
+    <p>Bunların hepsi, tanıdık işlemleri (dizin yapısında gezinme, dizin oluşturma, dosya taşıma vb.) simge ve menü yerine komut yazarak yapmanın özlü bir yoludur. Birkaç komutla (<code>pwd</code>, <code>ls</code>, <code>cd</code>, <code>mkdir</code>, <code>cp</code>) en yaygın dosya işlemlerinin çoğunu yapabilirsiniz; kabuk yaklaşımı bu temellerin ötesinde gerçekten güçlü hale gelir.</p>
+
+    <h2 id="ipython-shell">IPython'da kabuk komutları</h2>
+
+    <p>Herhangi bir standart kabuk komutu IPython'da başına <code>!</code> karakteri eklenerek doğrudan kullanılabilir. Örneğin <code>ls</code>, <code>pwd</code> ve <code>echo</code> komutları şöyle çalıştırılır:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="ipython_shell.ipynb">
+      <pre><code>In [1]: !ls
+myproject.txt
+
+In [2]: !pwd
+/home/jake/projects/myproject
+
+In [3]: !echo "printing from the shell"
+printing from the shell</code></pre>
+    </div>
+
+    <h2 id="deger-aktarimi">Kabuğa ve kabuktan değer aktarmak</h2>
+
+    <p>Kabuk komutları yalnızca IPython'dan çağrılmakla kalmaz; IPython ad alanıyla da etkileşime girebilir. Örneğin herhangi bir kabuk komutunun çıktısını atama operatörü <code>=</code> ile bir Python listesine kaydedebilirsiniz:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true">
+      <pre><code>In [4]: contents = !ls
+
+In [5]: print(contents)
+['myproject.txt']
+
+In [6]: directory = !pwd
+
+In [7]: print(directory)
+['/Users/jakevdp/notebooks/tmp/myproject']</code></pre>
+    </div>
+
+    <p>Bu sonuçlar liste olarak değil, IPython'da tanımlı özel bir kabuk dönüş tipi olarak gelir:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true">
+      <pre><code>In [8]: type(directory)
+IPython.utils.text.SList</code></pre>
+    </div>
+
+    <p>Bu tip Python listesine çok benzer görünür ve davranır; ancak <code>grep</code> ve <code>fields</code> metodları ile sonuçları aramak, süzmek ve uygun biçimde göstermek için <code>s</code>, <code>n</code> ve <code>p</code> özellikleri gibi ek işlevlere sahiptir. Ayrıntılar için IPython'un yerleşik yardım özelliklerini kullanabilirsiniz.</p>
+
+    <p>Diğer yönde — Python değişkenlerini kabuğa geçirmek — <code>{varname}</code> sözdizimiyle mümkündür:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true">
+      <pre><code>In [9]: message = "hello from Python"
+
+In [10]: !echo {message}
+hello from Python</code></pre>
+    </div>
+
+    <p>Süslü parantezler değişken adını içerir; kabuk komutunda değişkenin içeriğiyle değiştirilir.</p>
+
+    <h2 id="shell-magic">Kabukla ilgili magic komutlar</h2>
+
+    <p>IPython kabuk komutlarıyla bir süre oynadıysanız dosya sisteminde gezinmek için <code>!cd</code> kullanamadığınızı fark edebilirsiniz:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true">
+      <pre><code>In [11]: !pwd
+/home/jake/projects/myproject
+
+In [12]: !cd ..
+
+In [13]: !pwd
+/home/jake/projects/myproject</code></pre>
+    </div>
+
+    <p>Nedeni, notebook'taki kabuk komutlarının komuttan komuta durumu korumayan geçici bir alt kabukta yürütülmesidir. Çalışma dizinini daha kalıcı biçimde değiştirmek için <code>%cd</code> magic komutunu kullanabilirsiniz:</p>
+
+    <div class="code-block" data-lang="python" data-readonly="true" data-filename="magic_cd.ipynb">
+      <pre><code>In [14]: %cd ..
+/home/jake/projects</code></pre>
+    </div>
+
+    <p>Varsayılan olarak bunu <code>%</code> işareti olmadan bile kullanabilirsiniz:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true">
+      <pre><code>In [15]: cd myproject
+/home/jake/projects/myproject</code></pre>
+    </div>
+
+    <p>Buna <em>automagic</em> (otomatik magic) denir; açık <code>%</code> olmadan bu tür komutları çalıştırma <code>%automagic</code> magic fonksiyonuyla açılıp kapatılabilir.</p>
+
+    <p><code>%cd</code> dışında kullanılabilir kabuk benzeri magic fonksiyonlar: <code>%cat</code>, <code>%cp</code>, <code>%env</code>, <code>%ls</code>, <code>%man</code>, <code>%mkdir</code>, <code>%more</code>, <code>%mv</code>, <code>%pwd</code>, <code>%rm</code> ve <code>%rmdir</code>. <code>automagic</code> açıksa bunların hepsi <code>%</code> olmadan da kullanılabilir. Böylece IPython istemini neredeyse normal bir kabuk gibi kullanabilirsiniz:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true">
+      <pre><code>In [16]: mkdir tmp
+
+In [17]: ls
+myproject.txt  tmp/
+
+In [18]: cp myproject.txt tmp/
+
+In [19]: ls tmp
+myproject.txt
+
+In [20]: rm -r tmp</code></pre>
+    </div>
+
+    <p>Python oturumunuzla aynı terminal penceresinden kabuğa erişmek, iş akışlarınızda Python ile kabuğu daha az bağlam değiştirerek birleştirmenizi sağlar.</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin — yerel Jupyter'de</div>
+      <p>Yerel bir notebook'ta <code>message = "Merhaba"</code> tanımlayıp <code>!echo {message}</code> çalıştırın. Ardından <code>contents = !ls</code> ile çıktıyı bir değişkene alıp <code>print(contents)</code> ile inceleyin.</p>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="06-errors-and-debugging.html">1.6 Hatalar ve Hata Ayıklama →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

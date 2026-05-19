@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Naive Bayes Sınıflandırması — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="05-sklearn" data-section="05-naive-bayes" data-preload-numpy="true" data-preload-pandas="true" data-preload-matplotlib="true" data-preload-sklearn="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.05-naive-bayes.html" target="_blank" rel="noopener">05.05 Naive Bayes</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>5.5 Derinlemesine: Naive Bayes Sınıflandırması</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.05-naive-bayes.html" target="_blank" rel="noopener">05.05 Naive Bayes</a></em></p>
+    <p>Önceki dört bölüm makine öğrenmesi kavramlarına genel bir bakış verdi.
+    Bu ve sonraki bölümlerde önce denetimli öğrenme için dört algoritmaya, ardından denetimsiz öğrenme için dört algoritmaya daha yakından bakacağız.
+    Denetimli yöntemlerimizden ilki olan naive Bayes sınıflandırmasıyla başlıyoruz.</p>
+    <p>Naive Bayes modelleri çok hızlı ve basit sınıflandırma algoritmaları grubudur; çok yüksek boyutlu veri kümeleri için sıkça uygundur.
+    Çok hızlı olmaları ve ayarlanabilir parametreleri az olduğu için sınıflandırma problemlerinde hızlı bir temel çizgi (baseline) olarak yararlıdırlar.
+    Bu bölüm naive Bayes sınıflandırıcılarının sezgisel açıklamasını ve birkaç veri kümesindeki örneklerini sunar.</p>
+    <h2 id="bayes-siniflandirma">Bayes Sınıflandırması</h2>
+    <p>Naive Bayes sınıflandırıcıları Bayes sınıflandırma yöntemleri üzerine kuruludur.
+    Bunlar Bayes teoremini kullanır; bu teorem koşullu olasılıklar arasındaki ilişkiyi tanımlar.
+    Bayes sınıflandırmasında gözlemlenen öznitelikler verildiğinde bir etiket $L$'nin olasılığı $P(L~|~{\rm features})$ ile ilgileniyoruz.
+    Bayes teoremi bunu daha doğrudan hesaplayabileceğimiz niceliklerle ifade etmemizi sağlar:</p>
+    <p>$$P(L~|~{\rm features}) = \frac{P({\rm features}~|~L)P(L)}{P({\rm features})}$$</p>
+    <p>İki etiket $L_1$ ve $L_2$ arasında karar vermek istiyorsak, her etiket için posterior olasılıkların oranını hesaplayabiliriz:</p>
+    <p>$$\frac{P(L_1~|~{\rm features})}{P(L_2~|~{\rm features})} = \frac{P({\rm features}~|~L_1)}{P({\rm features}~|~L_2)}\frac{P(L_1)}{P(L_2)}$$</p>
+    <p>Her etiket için $P({\rm features}~|~L_i)$ hesaplayabileceğimiz bir modele ihtiyacımız var.
+    Böyle bir modele <em>üretici model</em> denir; veriyi üreten varsayımsal rastgele süreci tanımlar.
+    Her etiket için üretici modeli tanımlamak bu Bayes sınıflandırıcısının eğitiminin ana parçasıdır.
+    Bu eğitim adımının genel hali çok zordur; ancak model biçimine dair basitleştirici varsayımlarla kolaylaştırabiliriz.</p>
+    <p>"Naive" Bayes'teki "naive" buradan gelir: her etiket için üretici model hakkında çok naif varsayımlar yaparsak, her sınıf için üretici modelin kaba bir yaklaşımını bulup Bayes sınıflandırmasına devam edebiliriz.
+    Farklı naive Bayes türleri veri hakkında farklı naif varsayımlara dayanır; aşağıda birkaçını inceleyeceğiz.</p>
+    <p>Standart içe aktarmalarla başlayalım:</p>
+    <div class="code-block" data-lang="python" data-filename="imports_nb.py" data-readonly="true">
+      <pre><code>%matplotlib inline
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+plt.style.use('seaborn-whitegrid')</code></pre>
+    </div>
+
+    <h2 id="gauss-naive-bayes">Gauss Naive Bayes</h2>
+    <p>Anlaşılması belki de en kolay naive Bayes sınıflandırıcısı Gauss naive Bayes'tir.
+    Bu sınıflandırıcıda varsayım, <em>her etiketten gelen verinin basit bir Gauss dağılımından çekilmesidir</em>.
+    Aşağıdaki veriyi düşünün (Şekil 41-1):</p>
+    <div class="code-block" data-lang="python" data-filename="make_blobs_nb.py">
+      <pre><code>from sklearn.datasets import make_blobs
+X, y = make_blobs(100, 2, centers=2, random_state=2, cluster_std=1.5)
+plt.scatter(X[:, 0], X[:, 1], c=y, s=50, cmap='RdBu');</code></pre>
+    </div>
+
+    <p>En basit Gauss modeli, verinin boyutlar arası kovaryans olmadan Gauss dağılımıyla tanımlandığını varsayar.
+    Bu model her etiket içindeki noktaların ortalama ve standart sapmasını hesaplayarak uydurulabilir; böyle bir dağılımı tanımlamak için gereken tek şey budur.
+    Bu naif Gauss varsayımının sonucu aşağıdaki şekilde gösterilir:</p>
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.05-gaussian-NB.png" alt="Gauss naive Bayes üretici modeli" width="700" loading="lazy">
+      <figcaption>Kaynak: <a href="https://github.com/jakevdp/PythonDataScienceHandbook/blob/master/notebooks/06.00-Figure-Code.ipynb#Gaussian-Naive-Bayes" target="_blank" rel="noopener">Ek — Şekil kodu</a></figcaption>
+    </figure>
+    <p>Buradaki elipsler her etiket için Gauss üretici modelini temsil eder; elips merkezine doğru olasılık daha yüksektir.
+    Her sınıf için üretici model yerindeyken herhangi bir veri noktası için $P({\rm features}~|~L_1)$ olabilirliğini hızlıca hesaplayabilir; böylece posterior oranı hesaplayıp verilen nokta için en olası etiketi belirleriz.</p>
+    <p>Bu prosedür Scikit-Learn'ün <code>sklearn.naive_bayes.GaussianNB</code> tahmin edicisinde uygulanmıştır:</p>
+    <div class="code-block" data-lang="python" data-filename="gaussian_nb_fit.py">
+      <pre><code>from sklearn.naive_bayes import GaussianNB
+model = GaussianNB()
+model.fit(X, y);</code></pre>
+    </div>
+
+    <p>Yeni veri üretip etiket tahmin edelim:</p>
+    <div class="code-block" data-lang="python" data-filename="nb_predict_new.py">
+      <pre><code>rng = np.random.RandomState(0)
+Xnew = [-6, -14] + [14, 18] * rng.rand(2000, 2)
+ynew = model.predict(Xnew)</code></pre>
+    </div>
+
+    <p>Bu yeni veriyi çizerek karar sınırının nerede olduğuna bakalım (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="nb_decision_boundary.py">
+      <pre><code>plt.scatter(X[:, 0], X[:, 1], c=y, s=50, cmap='RdBu')
+lim = plt.axis()
+plt.scatter(Xnew[:, 0], Xnew[:, 1], c=ynew, s=20, cmap='RdBu', alpha=0.1)
+plt.axis(lim);</code></pre>
+    </div>
+
+    <p>Sınıflandırmalarda hafif eğri bir sınır görüyoruz — genelde Gauss naive Bayes modelinin ürettiği sınır ikinci dereceden olur.</p>
+    <p>Bu Bayes biçiminin güzel yanı, <code>predict_proba</code> yöntemiyle olasılıksal sınıflandırmaya doğal olarak izin vermesidir:</p>
+    <div class="code-block" data-lang="python" data-filename="nb_predict_proba.py">
+      <pre><code>yprob = model.predict_proba(Xnew)
+yprob[-8:].round(2)</code></pre>
+    </div>
+
+    <p>Sütunlar sırasıyla birinci ve ikinci etiketin posterior olasılıklarını verir.
+    Sınıflandırmada belirsizlik tahminleri arıyorsanız bu tür Bayes yaklaşımları iyi bir başlangıç noktası olabilir.</p>
+    <p>Elbette nihai sınıflandırma yalnızca ona yol açan model varsayımları kadar iyi olacaktır; bu yüzden Gauss naive Bayes sık sık çok iyi sonuç vermez.
+    Yine de birçok durumda — özellikle öznitelik sayısı büyüdükçe — bu varsayım Gauss naive Bayes'in güvenilir bir yöntem olmasını engelleyecek kadar zararlı değildir.</p>
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — predict_proba</div>
+      <p><code>predict_proba</code> her sınıf için olasılık vektörü döndürür; en yüksek olasılıklı sınıf <code>predict</code> ile aynıdır. Eşik veya "bilmiyorum" kararı için olasılıkları kullanabilirsiniz.</p>
+    </div>
+
+    <h2 id="multinomial-naive-bayes">Multinomial Naive Bayes</h2>
+    <p>Az önce anlatılan Gauss varsayımı her etiket için üretici dağılımı tanımlamanın tek basit varsayımı değildir.
+    Başka yararlı bir örnek multinomial naive Bayes'tir; özniteliklerin basit bir multinomial dağılımdan üretildiği varsayılır.
+    Multinomial dağılım bir dizi kategori arasında gözlemlenen sayımların olasılığını tanımlar; bu yüzden multinomial naive Bayes sayımları veya sayım oranlarını temsil eden öznitelikler için en uygundur.</p>
+    <p>Fikir öncekiyle aynıdır; yalnızca veri dağılımını en iyi Gauss ile değil en iyi multinomial dağılımla modellemek farkı vardır.</p>
+    <h3 id="metin-siniflandirma">Örnek: Metin Sınıflandırması</h3>
+    <p>Multinomial naive Bayes'in sık kullanıldığı yer metin sınıflandırmasıdır; öznitelikler sınıflandırılacak belgelerdeki kelime sayımları veya frekanslarıyla ilgilidir.
+    Metinden bu özniteliklerin çıkarımını <a href="04-feature-engineering.html">Öznitelik Mühendisliği</a> bölümünde tartıştık; burada Scikit-Learn üzerinden 20 Newsgroups külliyatının seyrek kelime sayımı özniteliklerini kullanarak kısa belgeleri kategorilere sınıflandırmayı göstereceğiz.</p>
+    <p>Veriyi indirip hedef adlarına bakalım:</p>
+    <div class="code-block" data-lang="python" data-filename="fetch_20newsgroups.py">
+      <pre><code>from sklearn.datasets import fetch_20newsgroups
+
+data = fetch_20newsgroups()
+data.target_names</code></pre>
+    </div>
+
+    <p>Basitlik için yalnızca birkaç kategori seçip eğitim ve test kümelerini indireceğiz:</p>
+    <div class="code-block" data-lang="python" data-filename="newsgroups_subset.py">
+      <pre><code>categories = ['talk.religion.misc', 'soc.religion.christian',
+              'sci.space', 'comp.graphics']
+train = fetch_20newsgroups(subset='train', categories=categories)
+test = fetch_20newsgroups(subset='test', categories=categories)</code></pre>
+    </div>
+
+    <p>Veriden temsil bir giriş:</p>
+    <div class="code-block" data-lang="python" data-filename="newsgroups_sample.py">
+      <pre><code>print(train.data[5][48:])</code></pre>
+    </div>
+
+    <p>Bu veriyi makine öğrenmesinde kullanmak için her dizenin içeriğini sayılar vektörüne dönüştürmemiz gerekir.
+    Bunun için TF–IDF vektörizörünü (<a href="04-feature-engineering.html">Öznitelik Mühendisliği</a> bölümünde tanıtıldı) kullanıp multinomial naive Bayes sınıflandırıcısına bağlayan bir pipeline oluşturacağız:</p>
+    <div class="code-block" data-lang="python" data-filename="tfidf_multinomial_pipeline.py">
+      <pre><code>from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import make_pipeline
+
+model = make_pipeline(TfidfVectorizer(), MultinomialNB())</code></pre>
+    </div>
+
+    <p>Bu pipeline ile modeli eğitim verisine uygulayıp test verisi için etiket tahmin edebiliriz:</p>
+    <div class="code-block" data-lang="python" data-filename="newsgroups_fit_predict.py">
+      <pre><code>model.fit(train.data, train.target)
+labels = model.predict(test.data)</code></pre>
+    </div>
+
+    <p>Test verisi için etiketleri tahmin ettikten sonra tahmin edicinin performansını öğrenmek için değerlendirebiliriz.
+    Örneğin test verisinde gerçek ve tahmin edilen etiketler arasındaki karmaşıklık matrisine bakalım (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="newsgroups_confusion.py">
+      <pre><code>from sklearn.metrics import confusion_matrix
+mat = confusion_matrix(test.target, labels)
+sns.heatmap(mat.T, square=True, annot=True, fmt='d', cbar=False,
+            xticklabels=train.target_names, yticklabels=train.target_names,
+            cmap='Blues')
+plt.xlabel('true label')
+plt.ylabel('predicted label');</code></pre>
+    </div>
+
+    <p>Görülüyor ki bu çok basit sınıflandırıcı bile uzay tartışmalarını bilgisayar tartışmalarından ayırabilir; ancak din ve Hristiyanlık tartışmaları arasında karışır.
+    Bu belki de beklenebilir!</p>
+    <p>İlginç olan, <code>predict</code> yöntemiyle <em>herhangi</em> bir dize için kategoriyi belirleyebilmemizdir.
+    Tek bir dize için tahmin döndüren bir yardımcı fonksiyon:</p>
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 </div>
+      <p>Gauss naive Bayes ile make_blobs verisinde sınıflandırma deneyin:</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_gaussian_nb.py">
+      <pre><code>from sklearn.datasets import make_blobs
+from sklearn.naive_bayes import GaussianNB
+X, y = make_blobs(n_samples=100, centers=2, random_state=0)
+clf = GaussianNB().fit(X, y)
+print("Doğruluk (eğitim):", clf.score(X, y))</code></pre>
+    </div>
+
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="predict_category_fn.py">
+      <pre><code>def predict_category(s, train=train, model=model):
+    pred = model.predict([s])
+    return train.target_names[pred[0]]</code></pre>
+    </div>
+
+    <p>Deneyelim:</p>
+    <div class="code-block" data-lang="python" data-filename="predict_iss.py">
+      <pre><code>predict_category('sending a payload to the ISS')</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="predict_god.py">
+      <pre><code>predict_category('discussing the existence of God')</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="predict_screen.py">
+      <pre><code>predict_category('determining the screen resolution')</code></pre>
+    </div>
+
+    <p>Bunun dizedeki her kelimenin (ağırlıklı) frekansı için basit bir olasılık modelinden fazlası olmadığını unutmayın; yine de sonuç çarpıcıdır.
+    Çok naif bir algoritma bile dikkatle kullanıldığında ve yüksek boyutlu büyük veri kümesi üzerinde eğitildiğinde şaşırtıcı derecede etkili olabilir.</p>
+    <h2 id="ne-zaman-naive-bayes">Naive Bayes Ne Zaman Kullanılır?</h2>
+    <p>Naive Bayes sınıflandırıcıları veri hakkında bu kadar katı varsayımlar yaptığından genelde daha karmaşık modeller kadar iyi performans göstermez.
+    Yine de birkaç avantajları vardır:</p>
+    <ul>
+      <li>Eğitim ve tahmin için hızlıdır.</li>
+      <li>Doğrudan olasılıksal tahmin sağlar.</li>
+      <li>Genelde kolay yorumlanır.</li>
+      <li>Az (hatta hiç) ayarlanabilir parametreleri vardır.</li>
+    </ul>
+    <p>Bu avantajlar naive Bayes sınıflandırıcısının sıkça iyi bir başlangıç temel çizgisi olması anlamına gelir.
+    Uygun performans gösterirse tebrikler: probleminiz için çok hızlı, çok yorumlanabilir bir sınıflandırıcınız var.
+    İyi değilse, ne kadar iyi olmaları gerektiğine dair temel bilgiyle daha gelişmiş modellere geçebilirsiniz.</p>
+    <p>Naive Bayes sınıflandırıcıları özellikle şu durumlarda iyi performans gösterir:</p>
+    <ul>
+      <li>Naif varsayımlar gerçekten veriye uyduğunda (pratikte çok nadirdir)</li>
+      <li>Kategoriler iyi ayrıldığında, model karmaşıklığı daha az önemli olduğunda</li>
+      <li>Çok yüksek boyutlu veride, model karmaşıklığı daha az önemli olduğunda</li>
+    </ul>
+    <p>Son iki nokta farklı görünür ama aslında ilişkilidir: veri kümesinin boyutu arttıkça iki noktanın birbirine yakın bulunması çok daha az olasıdır (genel olarak yakın olmak için <em>her boyutta</em> yakın olmaları gerekir).
+    Bu yüzden yüksek boyutlarda kümeler ortalama olarak daha ayrık olma eğilimindedir; yeni boyutlar gerçekten bilgi eklediyse varsayılır.
+    Bu nedenle burada tartışılan basit sınıflandırıcılar, boyut arttıkça daha karmaşık sınıflandırıcılar kadar veya onlardan daha iyi çalışabilir: yeterli veriniz olduğunda basit bir model bile çok güçlü olabilir.</p>
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="06-linear-regression.html">5.6 Doğrusal Regresyon →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas + Matplotlib + scikit-learn yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

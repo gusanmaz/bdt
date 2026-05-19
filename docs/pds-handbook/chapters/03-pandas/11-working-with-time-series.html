@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zaman Serileri — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="03-pandas" data-section="11-working-with-time-series" data-preload-numpy="true" data-preload-pandas="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.11-working-with-time-series.html" target="_blank" rel="noopener">03.11 Working with Time Series</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>3.11 Zaman Serileri</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.11-working-with-time-series.html" target="_blank" rel="noopener">Working with Time Series</a></em></p>
+    <p>Pandas başlangıçta finansal modelleme bağlamında geliştirildi; beklenebileceği gibi tarihler, saatler ve zaman indeksli verilerle çalışmak için kapsamlı bir araç seti içerir. Tarih ve saat verisi birkaç türde gelir:</p>
+    <ul>
+      <li><em>Zaman damgaları</em> (timestamps) belirli anları ifade eder (ör. 4 Temmuz 2021, sabah 7:00).</li>
+      <li><em>Zaman aralıkları</em> ve <em>dönemler</em> (periods) belirli bir başlangıç ve bitiş arasındaki süreyi ifade eder; örneğin Haziran 2021 ayı. Dönemler genelde her aralığın eşit uzunlukta ve çakışmadığı zaman aralıklarının özel bir durumudur (ör. günleri oluşturan 24 saatlik dönemler).</li>
+      <li><em>Zaman farkları</em> veya <em>süreler</em> (deltas/durations) tam bir süre uzunluğunu ifade eder (ör. 22,56 saniye).</li>
+    </ul>
+    <p>Bu bölüm Pandas'ta bu tarih/saat veri türlerinin her biriyle nasıl çalışılacağını tanıtır. Python veya Pandas'taki zaman serisi araçlarının eksiksiz bir rehberi değil; kullanıcı olarak zaman serileriyle nasıl yaklaşmanız gerektiğine dair geniş bir bakış sunar. Python'daki tarih ve saat araçlarının kısa bir tartışmasıyla başlayacağız; ardından Pandas'ın sunduğu araçlara geçeceğiz. Daha derin kaynakları listeledikten sonra Pandas'ta zaman serisi verisiyle çalışmanın kısa örneklerini gözden geçireceğiz.</p>
+
+    <h2 id="python-tarih-saat">Python'da Tarihler ve Saatler</h2>
+    <p>Python dünyasında tarih, saat, fark ve zaman aralıklarının birkaç temsili vardır. Pandas'ın zaman serisi araçları veri bilimi uygulamalarında genelde en kullanışlı olsa da diğer Python araçlarıyla ilişkisini görmek faydalıdır.</p>
+
+    <h3 id="datetime-dateutil">Yerleşik Python Tarih/Saat: datetime ve dateutil</h3>
+    <p>Python'da tarih ve saatle çalışmak için temel nesneler yerleşik <code>datetime</code> modülündedir. Üçüncü taraf <code>dateutil</code> modülüyle tarihler üzerinde bir dizi kullanışlı işlemi hızlıca yapabilirsiniz. Örneğin <code>datetime</code> tipiyle elle tarih oluşturabilirsiniz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="datetime_ornek.py">
+      <pre><code>from datetime import datetime
+datetime(year=2021, month=7, day=4)</code></pre>
+    </div>
+
+    <p>Esnek biçimde biçimlendirilmiş bir dize tarihini ayrıştırmak için <code>dateutil</code> modülünü kullanabilirsiniz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="dateutil_parse.py">
+      <pre><code>from dateutil import parser
+date = parser.parse(&quot;4th of July, 2021&quot;)
+date</code></pre>
+    </div>
+
+    <p><code>datetime</code> nesneniz olduktan sonra haftanın gününü yazdırmak gibi işlemler yapabilirsiniz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="strftime_gun.py">
+      <pre><code>date.strftime(&#x27;%A&#x27;)</code></pre>
+    </div>
+
+    <p>Burada tarihleri yazdırmak için standart dize biçim kodlarından birini (<code>'%A'</code>) kullandık; bunlar Python <a href="https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior" target="_blank" rel="noopener"><code>datetime</code> dokümantasyonundaki <code>strftime</code> bölümünde</a> açıklanır. Diğer yararlı tarih yardımcılarının dokümantasyonu <a href="http://labix.org/python-dateutil" target="_blank" rel="noopener"><code>dateutil</code> çevrimiçi dokümantasyonunda</a> bulunur. Bilinmesi gereken ilgili paket <a href="http://pytz.sourceforge.net/" target="_blank" rel="noopener"><code>pytz</code></a>; zaman serisi verisinin en baş ağrıtan unsuru olan saat dilimleriyle çalışma araçlarını içerir.</p>
+    <p><code>datetime</code> ve <code>dateutil</code>'in gücü esneklik ve kolay sözdizimindedir: ilgilendiğiniz neredeyse her işlemi bu nesneler ve yerleşik yöntemleriyle kolayca yapabilirsiniz. Zayıf kaldıkları yer büyük tarih/saat dizileriyle çalışmak istediğinizdedir: Python sayısal değişken listeleri NumPy tarzı tipli sayısal dizilere göre verimsiz olduğu gibi Python <code>datetime</code> nesne listeleri de kodlanmış tarih dizilerine göre verimsizdir.</p>
+
+    <h3 id="numpy-datetime64">Zaman Tipli Diziler: NumPy datetime64</h3>
+
+    <div class="code-block" data-lang="python" data-filename="np_datetime64.py">
+      <pre><code>import numpy as np
+date = np.array(&#x27;2021-07-04&#x27;, dtype=np.datetime64)
+date</code></pre>
+    </div>
+
+    <p>Tarihleri bu biçimde elde ettikten sonra vektörize işlemleri hızlıca yapabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="datetime64_arange.py">
+      <pre><code>date + np.arange(12)</code></pre>
+    </div>
+
+    <p>NumPy <code>datetime64</code> dizilerindeki tekdüze tip sayesinde bu tür işlem, diziler büyüdükçe özellikle Python <code>datetime</code> nesneleriyle doğrudan çalışmaktan çok daha hızlı yapılabilir (vektörizasyonu <a href="../02-numpy/03-computation-ufuncs.html">2.3 Evrensel Fonksiyonlar</a> bölümünde tanıtmıştık).</p>
+    <p><code>datetime64</code> ve ilgili <code>timedelta64</code> nesnelerinin bir ayrıntısı <em>temel zaman birimi</em> üzerine kurulu olmalarıdır. <code>datetime64</code> 64 bit hassasiyetle sınırlı olduğundan kodlanabilir zaman aralığı bu temel birimin $2^{64}$ katıdır. Yani <code>datetime64</code> <em>zaman çözünürlüğü</em> ile <em>maksimum zaman aralığı</em> arasında ödünleşim dayatır.</p>
+    <p>Örneğin 1 nanosaniye çözünürlük istiyorsanız yalnızca $2^{64}$ nanosaniye, yani yaklaşık 600 yıl kodlayabilirsiniz. NumPy istenen birimi girdiden çıkarır; örneğin gün tabanlı <code>datetime</code>:</p>
+
+    <div class="code-block" data-lang="python" data-filename="datetime64_gun.py">
+      <pre><code>np.datetime64(&#x27;2021-07-04&#x27;)</code></pre>
+    </div>
+
+    <p>İşte dakika tabanlı bir datetime:</p>
+
+    <div class="code-block" data-lang="python" data-filename="datetime64_dakika.py">
+      <pre><code>np.datetime64(&#x27;2021-07-04 12:00&#x27;)</code></pre>
+    </div>
+
+    <p>İstenen temel birimi birçok biçim kodundan biriyle zorlayabilirsiniz; burada nanosaniye tabanlı zaman zorluyoruz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="datetime64_ns.py">
+      <pre><code>np.datetime64(&#x27;2021-07-04 12:59:59.50&#x27;, &#x27;ns&#x27;)</code></pre>
+    </div>
+
+    <p>Aşağıdaki tablo NumPy <code>datetime64</code> dokümantasyonundan alınmış olup kullanılabilir biçim kodlarını ve kodlayabildikleri göreli/mutlak zaman aralıklarını listeler:</p>
+
+    <div class="table-wrapper">
+      <table class="vocab-table">
+        <thead><tr><th>Kod</th><th>Anlam</th><th>Göreli aralık</th><th>Mutlak aralık</th></tr></thead>
+        <tbody>
+          <tr><td><code>Y</code></td><td>Yıl</td><td>± 9,2e18 yıl</td><td>[9,2e18 MÖ, 9,2e18 MS]</td></tr>
+          <tr><td><code>M</code></td><td>Ay</td><td>± 7,6e17 yıl</td><td>[7,6e17 MÖ, 7,6e17 MS]</td></tr>
+          <tr><td><code>W</code></td><td>Hafta</td><td>± 1,7e17 yıl</td><td>[1,7e17 MÖ, 1,7e17 MS]</td></tr>
+          <tr><td><code>D</code></td><td>Gün</td><td>± 2,5e16 yıl</td><td>[2,5e16 MÖ, 2,5e16 MS]</td></tr>
+          <tr><td><code>h</code></td><td>Saat</td><td>± 1,0e15 yıl</td><td>[1,0e15 MÖ, 1,0e15 MS]</td></tr>
+          <tr><td><code>m</code></td><td>Dakika</td><td>± 1,7e13 yıl</td><td>[1,7e13 MÖ, 1,7e13 MS]</td></tr>
+          <tr><td><code>s</code></td><td>Saniye</td><td>± 2,9e12 yıl</td><td>[2,9e9 MÖ, 2,9e9 MS]</td></tr>
+          <tr><td><code>ms</code></td><td>Milisaniye</td><td>± 2,9e9 yıl</td><td>[2,9e6 MÖ, 2,9e6 MS]</td></tr>
+          <tr><td><code>us</code></td><td>Mikrosaniye</td><td>± 2,9e6 yıl</td><td>[290301 MÖ, 294241 MS]</td></tr>
+          <tr><td><code>ns</code></td><td>Nanosaniye</td><td>± 292 yıl</td><td>[1678 MS, 2262 MS]</td></tr>
+          <tr><td><code>ps</code></td><td>Pikosaniye</td><td>± 106 gün</td><td>[1969 MS, 1970 MS]</td></tr>
+          <tr><td><code>fs</code></td><td>Femtosaniye</td><td>± 2,6 saat</td><td>[1969 MS, 1970 MS]</td></tr>
+          <tr><td><code>as</code></td><td>Attosaniye</td><td>± 9,2 saniye</td><td>[1969 MS, 1970 MS]</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Gerçek dünyada gördüğümüz veri türleri için kullanışlı bir varsayılan <code>datetime64[ns]</code>'dir; modern tarihlerin geniş bir aralığını uygun ince çözünürlükle kodlayabilir.</p>
+    <p>Son olarak <code>datetime64</code> yerleşik Python <code>datetime</code> tipinin bazı eksikliklerini giderse de <code>datetime</code> ve özellikle <code>dateutil</code>'in sağladığı birçok kullanışlı yöntem ve fonksiyondan yoksundur. Daha fazla bilgi <a href="https://numpy.org/doc/stable/reference/arrays.datetime.html" target="_blank" rel="noopener">NumPy <code>datetime64</code> dokümantasyonunda</a>.</p>
+
+    <h3 id="pandas-timestamp">Pandas'ta Tarih ve Saat: İki Dünyanın En İyisi</h3>
+    <p>Pandas az önce tartışılan tüm araçların üzerine inşa ederek <code>Timestamp</code> nesnesi sunar; <code>datetime</code> ve <code>dateutil</code>'in kullanım kolaylığını <code>numpy.datetime64</code>'ün verimli depolama ve vektörize arayüzüyle birleştirir. Bu <code>Timestamp</code> nesnelerinden Pandas, <code>Series</code> veya <code>DataFrame</code>'de veriyi indekslemek için <code>DatetimeIndex</code> oluşturabilir.</p>
+    <p>Örneğin daha önceki gösterimi Pandas araçlarıyla tekrarlayabiliriz. Esnek biçimli dize tarihini ayrıştırıp gün adını biçim kodlarıyla yazdırabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="pd_to_datetime.py">
+      <pre><code>import pandas as pd
+date = pd.to_datetime(&quot;4th of July, 2021&quot;)
+date</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="pd_strftime.py">
+      <pre><code>date.strftime(&#x27;%A&#x27;)</code></pre>
+    </div>
+
+    <p>Ayrıca aynı nesne üzerinde NumPy tarzı vektörize işlemler yapabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="pd_timedelta.py">
+      <pre><code>date + pd.to_timedelta(np.arange(12), &#x27;D&#x27;)</code></pre>
+    </div>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Timestamp</div>
+      <p>Pandas <code>Timestamp</code>, <code>datetime</code> kolaylığını <code>datetime64</code> verimliliğiyle birleştirir — zaman serisi analizinde en sık kullanılan tip budur.</p>
+    </div>
+
+    <p>Sonraki bölümde Pandas'ın sunduğu araçlarla zaman serisi verisini manipüle etmeye daha yakından bakacağız.</p>
+
+    <h2 id="zamana-gore-indeks">Pandas Zaman Serisi: Zamana Göre İndeksleme</h2>
+    <p>Pandas zaman serisi araçları veriyi zaman damgalarıyla indekslemeye başladığınızda gerçekten faydalı olur. Örneğin zaman indeksli veri içeren bir <code>Series</code> oluşturabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="datetime_index_series.py">
+      <pre><code>index = pd.DatetimeIndex([&#x27;2020-07-04&#x27;, &#x27;2020-08-04&#x27;,
+                          &#x27;2021-07-04&#x27;, &#x27;2021-08-04&#x27;])
+data = pd.Series([0, 1, 2, 3], index=index)
+data</code></pre>
+    </div>
+
+    <p>Veriyi bir <code>Series</code>'te tuttuğumuza göre önceki bölümlerdeki <code>Series</code> indeksleme kalıplarının herhangi birini, tarihe dönüştürülebilen değerler geçirerek kullanabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="series_date_slice.py">
+      <pre><code>data[&#x27;2020-07-04&#x27;:&#x27;2021-07-04&#x27;]</code></pre>
+    </div>
+
+    <p>Ek özel yalnızca-tarih indeksleme işlemleri vardır; örneğin bir yıl geçirerek o yıldaki tüm verinin dilimini almak:</p>
+
+    <div class="code-block" data-lang="python" data-filename="series_year_slice.py">
+      <pre><code>data[&#x27;2021&#x27;]</code></pre>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>Zaman indeksli <code>Series</code> ile dilimleme deneyin:</p>
+      <div class="code-block" data-lang="python" data-filename="deneme_datetime_index.py">
+        <pre><code>import pandas as pd
+idx = pd.DatetimeIndex([&quot;2020-01-01&quot;, &quot;2020-06-01&quot;, &quot;2021-01-01&quot;])
+s = pd.Series([10, 20, 30], index=idx)
+print(s[&quot;2020&quot;:&quot;2020-12-31&quot;])</code></pre>
+      </div>
+    </div>
+
+    <p>Daha sonra tarihleri indeks olarak kullanmanın kolaylığının ek örneklerini göreceğiz. Önce mevcut zaman serisi veri yapılarına daha yakından bakalım.</p>
+
+    <h2 id="zaman-serisi-yapilari">Pandas Zaman Serisi Veri Yapıları</h2>
+
+    <p>Bu bölüm zaman serisi verisiyle çalışmak için temel Pandas yapılarını tanıtır:</p>
+    <ul>
+      <li><em>Zaman damgaları</em> için Pandas <code>Timestamp</code> tipini sağlar. Daha önce belirtildiği gibi bu esasen Python <code>datetime</code>'ın yerine geçer; daha verimli <code>numpy.datetime64</code> tipine dayanır. İlişkili <code>Index</code> yapısı <code>DatetimeIndex</code>'tir.</li>
+      <li><em>Zaman dönemleri</em> için Pandas <code>Period</code> tipini sağlar. <code>numpy.datetime64</code> tabanlı sabit frekanslı aralık kodlar. İlişkili indeks <code>PeriodIndex</code>'tir.</li>
+      <li><em>Zaman farkları</em> veya <em>süreler</em> için Pandas <code>Timedelta</code> tipini sağlar. Python <code>datetime.timedelta</code>'nın daha verimli yerine geçer; <code>numpy.timedelta64</code>'e dayanır. İlişkili indeks <code>TimedeltaIndex</code>'tir.</li>
+    </ul>
+
+    <div class="code-block" data-lang="python" data-filename="to_datetime_coklu.py">
+      <pre><code>dates = pd.to_datetime([datetime(2021, 7, 3), &#x27;4th of July, 2021&#x27;,
+                       &#x27;2021-Jul-6&#x27;, &#x27;07-07-2021&#x27;, &#x27;20210708&#x27;])
+dates</code></pre>
+    </div>
+
+    <p>Herhangi bir <code>DatetimeIndex</code>, frekans kodu eklenerek <code>to_period</code> ile <code>PeriodIndex</code>'e dönüştürülebilir; burada günlük frekans için <code>'D'</code> kullanıyoruz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="to_period.py">
+      <pre><code>dates.to_period(&#x27;D&#x27;)</code></pre>
+    </div>
+
+    <p>Örneğin bir tarihten diğeri çıkarıldığında <code>TimedeltaIndex</code> oluşur:</p>
+
+    <div class="code-block" data-lang="python" data-filename="dates_fark.py">
+      <pre><code>dates - dates[0]</code></pre>
+    </div>
+
+    <h2 id="date-range">Düzenli Diziler: pd.date_range</h2>
+    <p>Düzenli tarih dizileri oluşturmayı kolaylaştırmak için Pandas <code>pd.date_range</code> (zaman damgaları), <code>pd.period_range</code> (dönemler) ve <code>pd.timedelta_range</code> (zaman farkları) sunar. Python <code>range</code> ve NumPy <code>np.arange</code> başlangıç, bitiş ve isteğe bağlı adım alıp dizi döndürür. Benzer şekilde <code>pd.date_range</code> başlangıç/bitiş tarihi ve isteğe bağlı frekans kodu ile düzenli tarih dizisi oluşturur:</p>
+
+    <div class="code-block" data-lang="python" data-filename="date_range.py">
+      <pre><code>pd.date_range(&#x27;2015-07-03&#x27;, &#x27;2015-07-10&#x27;)</code></pre>
+    </div>
+
+    <p>Alternatif olarak bitiş yerine başlangıç noktası ve dönem sayısı belirtilebilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="date_range_periods.py">
+      <pre><code>pd.date_range(&#x27;2015-07-03&#x27;, periods=8)</code></pre>
+    </div>
+
+    <p><code>freq</code> argümanı (varsayılan <code>D</code>) aralığı değiştirir. Örneğin saatlik zaman damgaları dizisi:</p>
+
+    <div class="code-block" data-lang="python" data-filename="date_range_hourly.py">
+      <pre><code>pd.date_range(&#x27;2015-07-03&#x27;, periods=8, freq=&#x27;H&#x27;)</code></pre>
+    </div>
+
+    <p><code>freq</code> argümanı (varsayılan <code>D</code>) aralığı değiştirir. Örneğin saatlik zaman damgaları dizisi:</p>
+
+    <div class="code-block" data-lang="python" data-filename="period_range.py">
+      <pre><code>pd.period_range(&#x27;2015-07&#x27;, periods=8, freq=&#x27;M&#x27;)</code></pre>
+    </div>
+
+    <p>Düzenli <code>Period</code> veya <code>Timedelta</code> dizileri için <code>pd.period_range</code> ve <code>pd.timedelta_range</code> kullanışlıdır. Aylık dönemler:</p>
+
+    <div class="code-block" data-lang="python" data-filename="timedelta_range.py">
+      <pre><code>pd.timedelta_range(0, periods=6, freq=&#x27;H&#x27;)</code></pre>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p><code>pd.date_range</code> ile haftalık tarih dizisi oluşturun:</p>
+      <div class="code-block" data-lang="python" data-filename="deneme_date_range.py">
+        <pre><code>import pandas as pd
+dr = pd.date_range(&quot;2024-01-01&quot;, periods=5, freq=&quot;W-MON&quot;)
+print(dr)</code></pre>
+      </div>
+    </div>
+
+    <p>Saat saat artan süre dizisi:</p>
+
+    <h2 id="frekanslar-ofsetler">Frekanslar ve Ofsetler</h2>
+
+    <p>Pandas zaman serisi araçlarının temelinde <em>frekans</em> veya <em>tarih ofseti</em> kavramı yatar. Ana kodların özeti aşağıdadır; önceki bölümlerdeki <code>D</code> (gün) ve <code>H</code> (saat) gibi istediğiniz frekans aralığını belirtmek için kullanılır:</p>
+
+    <div class="table-wrapper">
+      <table class="vocab-table">
+        <thead><tr><th>Kod</th><th>Açıklama</th><th>Kod</th><th>Açıklama</th></tr></thead>
+        <tbody>
+          <tr><td><code>D</code></td><td>Takvim günü</td><td><code>B</code></td><td>İş günü</td></tr>
+          <tr><td><code>W</code></td><td>Haftalık</td><td></td><td></td></tr>
+          <tr><td><code>M</code></td><td>Ay sonu</td><td><code>BM</code></td><td>İş ayı sonu</td></tr>
+          <tr><td><code>Q</code></td><td>Çeyrek sonu</td><td><code>BQ</code></td><td>İş çeyreği sonu</td></tr>
+          <tr><td><code>A</code></td><td>Yıl sonu</td><td><code>BA</code></td><td>İş yılı sonu</td></tr>
+          <tr><td><code>H</code></td><td>Saat</td><td><code>BH</code></td><td>İş saati</td></tr>
+          <tr><td><code>T</code></td><td>Dakika</td><td></td><td></td></tr>
+          <tr><td><code>S</code></td><td>Saniye</td><td></td><td></td></tr>
+          <tr><td><code>L</code></td><td>Milisaniye</td><td></td><td></td></tr>
+          <tr><td><code>U</code></td><td>Mikrosaniye</td><td></td><td></td></tr>
+          <tr><td><code>N</code></td><td>Nanosaniye</td><td></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Aylık, çeyreklik ve yıllık frekansların hepsi belirtilen dönemin <em>sonunda</em> işaretlenir. Herhangi birine <code>S</code> eki eklemek bunları dönemin <em>başında</em> işaretler:</p>
+
+    <div class="table-wrapper">
+      <table class="vocab-table">
+        <thead><tr><th>Kod</th><th>Açıklama</th><th>Kod</th><th>Açıklama</th></tr></thead>
+        <tbody>
+          <tr><td><code>MS</code></td><td>Ay başı</td><td><code>BMS</code></td><td>İş ayı başı</td></tr>
+          <tr><td><code>QS</code></td><td>Çeyrek başı</td><td><code>BQS</code></td><td>İş çeyreği başı</td></tr>
+          <tr><td><code>AS</code></td><td>Yıl başı</td><td><code>BAS</code></td><td>İş yılı başı</td></tr>
+        </tbody>
+      </table>
+    </div>    <p>Ayrıca çeyreklik veya yıllık kodların ayını üç harfli ay koduyla, haftalık frekansın bölünme gününü üç harfli gün koduyla değiştirebilirsiniz (<code>Q-JAN</code>, <code>W-MON</code> vb.). Kodlar sayılarla birleştirilerek başka frekanslar da belirtilebilir; örneğin 2 saat 30 dakika:</p>
+
+    <div class="code-block" data-lang="python" data-filename="timedelta_2h30t.py">
+      <pre><code>pd.timedelta_range(0, periods=6, freq=&quot;2H30T&quot;)</code></pre>
+    </div>
+
+    <p>Tüm bu kısa kodlar <code>pd.tseries.offsets</code> modülündeki Pandas zaman serisi ofset örneklerine referans verir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="bday_offset.py">
+      <pre><code>from pandas.tseries.offsets import BDay
+pd.date_range(&#x27;2015-07-01&#x27;, periods=6, freq=BDay())</code></pre>
+    </div>
+
+    <p>Frekans ve ofset kullanımının daha fazla tartışması için Pandas dokümantasyonundaki <a href="https://pandas.pydata.org/docs/user_guide/timeseries.html#dateoffset-objects" target="_blank" rel="noopener"><code>DateOffset</code> bölümüne</a> bakın.</p>
+
+    <h2 id="resample-shift-window">Yeniden Örnekleme, Kaydırma ve Pencereleme</h2>
+    <p>Tarih/saat indeksleri sezgisel veri organizasyonu sağlar. Pandas ek olarak yeniden örnekleme, kaydırma ve pencereleme sunar. Hisse fiyat örneği için <code>pandas-datareader</code> ile S&amp;P 500 verisi yüklenir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="sp500_datareader.py">
+      <pre><code>from pandas_datareader import data
+
+sp500 = data.DataReader(&#x27;^GSPC&#x27;, start=&#x27;2018&#x27;, end=&#x27;2022&#x27;,
+                        data_source=&#x27;yahoo&#x27;)
+sp500.head()</code></pre>
+    </div>
+
+    <p>Basitlik için yalnızca kapanış fiyatını kullanacağız:</p>
+
+    <div class="code-block" data-lang="python" data-filename="sp500_close.py">
+      <pre><code>sp500 = sp500[&#x27;Close&#x27;]</code></pre>
+    </div>
+
+    <p>Normal Matplotlib kurulum kodundan sonra <code>plot</code> yöntemiyle görselleştirebiliriz (bkz. kitap <a href="https://jakevdp.github.io/PythonDataScienceHandbook/04.00-introduction-to-matplotlib.html" target="_blank" rel="noopener">Bölüm 4</a>):</p>
+
+    <div class="code-block" data-lang="python" data-filename="sp500_plot.py">
+      <pre><code>%matplotlib inline
+import matplotlib.pyplot as plt
+plt.style.use(&#x27;seaborn-whitegrid&#x27;)
+sp500.plot();</code></pre>
+    </div>
+
+    <h3 id="resample-asfreq">Frekans Yeniden Örnekleme ve Dönüştürme</h3>
+
+    <div class="code-block" data-lang="python" data-filename="resample_asfreq.py">
+      <pre><code>sp500.plot(alpha=0.5, style=&#x27;-&#x27;)
+sp500.resample(&#x27;BA&#x27;).mean().plot(style=&#x27;:&#x27;)
+sp500.asfreq(&#x27;BA&#x27;).plot(style=&#x27;--&#x27;);
+plt.legend([&#x27;input&#x27;, &#x27;resample&#x27;, &#x27;asfreq&#x27;],
+           loc=&#x27;upper left&#x27;);</code></pre>
+    </div>
+
+    <h3 id="resample-asfreq">Frekans Yeniden Örnekleme ve Dönüştürme</h3>
+
+    <p>Yukarı örneklemede <code>resample</code> ve <code>asfreq</code> büyük ölçüde eşdeğerdir. Varsayılan olarak boş noktalar NA ile doldurulur; <a href="04-missing-values.html">3.4 Eksik Veri</a> bölümündeki gibi <code>asfreq</code> <code>method</code> ile doldurma yapılabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="asfreq_fill.py">
+      <pre><code>fig, ax = plt.subplots(2, sharex=True)
+data = sp500.iloc[:20]
+
+data.asfreq(&#x27;D&#x27;).plot(ax=ax[0], marker=&#x27;o&#x27;)
+
+data.asfreq(&#x27;D&#x27;, method=&#x27;bfill&#x27;).plot(ax=ax[1], style=&#x27;-o&#x27;)
+data.asfreq(&#x27;D&#x27;, method=&#x27;ffill&#x27;).plot(ax=ax[1], style=&#x27;--o&#x27;)
+ax[1].legend([&quot;back-fill&quot;, &quot;forward-fill&quot;]);</code></pre>
+    </div>
+
+    <p>S&amp;P 500 kapanış verisini aşağı örneklemede ikisinin döndürdüğünü karşılaştıralım. İş yılı sonunda yeniden örnekliyoruz:</p>
+
+    <h3 id="zaman-kaydirma">Zaman Kaydırma</h3>
+
+    <div class="code-block" data-lang="python" data-filename="shift_roi.py">
+      <pre><code>sp500 = sp500.asfreq(&#x27;D&#x27;, method=&#x27;pad&#x27;)
+
+ROI = 100 * (sp500.shift(-365) - sp500) / sp500
+ROI.plot()
+plt.ylabel(&#x27;% Return on Investment after 1 year&#x27;);</code></pre>
+    </div>
+
+    <p>Yukarı örneklemede <code>resample</code> ve <code>asfreq</code> büyük ölçüde eşdeğerdir; <code>resample</code>'ın çok daha fazla seçeneği vardır. Her iki yöntemin varsayılanı yukarı örneklenen noktaları boş bırakmaktır (NA ile doldurulur). <a href="04-missing-values.html">3.4 Eksik Veri</a> bölümündeki <code>pd.fillna</code> gibi <code>asfreq</code> değerlerin nasıl doldurulacağını belirten <code>method</code> argümanı kabul eder. İş günü verisini günlük frekansta (hafta sonları dahil) yeniden örnekliyoruz:</p>
+
+    <h3 id="kayan-pencere">Kayan Pencereleme</h3>
+    <p>Kayan istatistikler <code>rolling</code> özniteliğiyle hesaplanır (<a href="08-aggregation-and-grouping.html">3.8 Agregasyon ve Gruplama</a>):</p>
+
+    <p>Örneğin bir yıllık merkezli kayan ortalama ve medyan:</p>
+
+    <div class="code-block" data-lang="python" data-filename="rolling_mean_median.py">
+      <pre><code>rolling = sp500.rolling(365, center=True)
+
+data = pd.DataFrame({&#x27;input&#x27;: sp500,
+                     &#x27;one-year rolling_mean&#x27;: rolling.mean(),
+                     &#x27;one-year rolling_median&#x27;: rolling.median()})
+ax = data.plot(style=[&#x27;-&#x27;, &#x27;--&#x27;, &#x27;:&#x27;])
+ax.lines[0].set_alpha(0.3)</code></pre>
+    </div>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — resample vs asfreq</div>
+      <p><code>resample</code> agregasyon (ortalama, toplam vb.) yapar; <code>asfreq</code> belirli frekanstaki mevcut değeri seçer veya NA bırakır.</p>
+    </div>
+
+    <h3 id="zaman-kaydirma">Zaman Kaydırma</h3>
+
+    <h2 id="daha-fazla-kaynak">Daha Fazlasını Nereden Öğrenilir?</h2>
+    <p>Kapsamlı tartışma: Pandas <a href="https://pandas.pydata.org/docs/user_guide/timeseries.html" target="_blank" rel="noopener">zaman serisi dokümantasyonu</a> ve Wes McKinney <em>Python for Data Analysis</em>. IPython <code>?</code> ile keşfetmeyi unutmayın.</p>
+
+    <h2 id="ornek-seattle">Örnek: Seattle Bisiklet Sayımları</h2>
+    <p>Seattle Fremont Köprüsü saatlik bisiklet sayım verisi (2012+). CSV indirme notebook'taki yorum satırlarında:</p>
+
+    <div class="code-block" data-lang="python" data-filename="fremont_curl.py">
+      <pre><code># url = (&#x27;https://raw.githubusercontent.com/jakevdp/&#x27;
+#        &#x27;bicycle-data/main/FremontBridge.csv&#x27;)
+# !curl -O {url}</code></pre>
+    </div>
+
+    <p>CSV'yi <code>Date</code> indeksli ve <code>parse_dates=True</code> ile okuyoruz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="read_fremont.py">
+      <pre><code>data = pd.read_csv(&#x27;FremontBridge.csv&#x27;, index_col=&#x27;Date&#x27;, parse_dates=True)
+data.head()</code></pre>
+    </div>
+
+    <p>Sütun adlarını kısaltıyoruz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="fremont_columns.py">
+      <pre><code>data.columns = [&#x27;Total&#x27;, &#x27;East&#x27;, &#x27;West&#x27;]</code></pre>
+    </div>
+
+    <p>Özet istatistikler:</p>
+
+    <div class="code-block" data-lang="python" data-filename="fremont_describe.py">
+      <pre><code>data.dropna().describe()</code></pre>
+    </div>
+
+    <h3 id="veriyi-gorsellestirme">Veriyi Görselleştirme</h3>
+
+    <div class="code-block" data-lang="python" data-filename="fremont_plot_raw.py">
+      <pre><code>data.plot()
+plt.ylabel(&#x27;Hourly Bicycle Count&#x27;);</code></pre>
+    </div>
+
+    <p>~150.000 saatlik örnek çok yoğundur; haftalık <code>resample</code> ile eğilimleri görelim:</p>
+
+    <div class="code-block" data-lang="python" data-filename="fremont_weekly.py">
+      <pre><code>weekly = data.resample(&#x27;W&#x27;).sum()
+weekly.plot(style=[&#x27;-&#x27;, &#x27;:&#x27;, &#x27;--&#x27;])
+plt.ylabel(&#x27;Weekly bicycle count&#x27;);</code></pre>
+    </div>
+
+    <p>Yaz/kış farkı, hava etkisi ve 2020'de COVID-19'un işe gidip gelme kalıplarına etkisi görülür.</p>
+
+    <div class="code-block" data-lang="python" data-filename="fremont_rolling30.py">
+      <pre><code>daily = data.resample(&#x27;D&#x27;).sum()
+daily.rolling(30, center=True).sum().plot(style=[&#x27;-&#x27;, &#x27;:&#x27;, &#x27;--&#x27;])
+plt.ylabel(&#x27;mean hourly count&#x27;);</code></pre>
+    </div>
+
+    <p>Kayan ortalama penceresinin sert kesimi tırtıklılık yaratır; Gauss <code>win_type</code> ile yumuşatma yapılabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="fremont_gaussian.py">
+      <pre><code>daily.rolling(50, center=True,
+              win_type=&#x27;gaussian&#x27;).sum(std=10).plot(style=[&#x27;-&#x27;, &#x27;:&#x27;, &#x27;--&#x27;]);</code></pre>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>Kayan ortalama ile basit zaman serisi yumuşatma:</p>
+      <div class="code-block" data-lang="python" data-filename="deneme_rolling.py">
+        <pre><code>import pandas as pd
+import numpy as np
+rng = np.random.default_rng(0)
+idx = pd.date_range(&quot;2020-01-01&quot;, periods=100, freq=&quot;D&quot;)
+s = pd.Series(rng.random(100).cumsum(), index=idx)
+print(s.rolling(7, center=True).mean().tail())</code></pre>
+      </div>
+    </div>
+
+    <h3 id="veriye-derinlemesine">Veriye Derinlemesine Bakmak</h3>
+
+    <div class="code-block" data-lang="python" data-filename="fremont_by_time.py">
+      <pre><code>by_time = data.groupby(data.index.time).mean()
+hourly_ticks = 4 * 60 * 60 * np.arange(6)
+by_time.plot(xticks=hourly_ticks, style=[&#x27;-&#x27;, &#x27;:&#x27;, &#x27;--&#x27;]);</code></pre>
+    </div>
+
+    <p>Saatlik trafik iki tepelidir (08:00 ve 17:00) — işe gidip gelme kanıtı. Doğu kaldırım sabah, batı akşam daha yoğun.</p>
+
+    <div class="code-block" data-lang="python" data-filename="fremont_by_weekday.py">
+      <pre><code>by_weekday = data.groupby(data.index.dayofweek).mean()
+by_weekday.index = [&#x27;Mon&#x27;, &#x27;Tues&#x27;, &#x27;Wed&#x27;, &#x27;Thurs&#x27;, &#x27;Fri&#x27;, &#x27;Sat&#x27;, &#x27;Sun&#x27;]
+by_weekday.plot(style=[&#x27;-&#x27;, &#x27;:&#x27;, &#x27;--&#x27;]);</code></pre>
+    </div>
+
+    <p>Haftanın gününe göre <code>groupby</code>:</p>
+
+    <div class="code-block" data-lang="python" data-filename="fremont_weekend_group.py">
+      <pre><code>weekend = np.where(data.index.weekday &lt; 5, &#x27;Weekday&#x27;, &#x27;Weekend&#x27;)
+by_time = data.groupby([weekend, data.index.time]).mean()</code></pre>
+    </div>
+
+    <p>Hafta içi/sonu ve saat bazında bileşik <code>groupby</code>; sonuçları Matplotlib ile iki panelde çiziyoruz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="fremont_subplots.py">
+      <pre><code>import matplotlib.pyplot as plt
+fig, ax = plt.subplots(1, 2, figsize=(14, 5))
+by_time.loc[&#x27;Weekday&#x27;].plot(ax=ax[0], title=&#x27;Weekdays&#x27;,
+                            xticks=hourly_ticks, style=[&#x27;-&#x27;, &#x27;:&#x27;, &#x27;--&#x27;])
+by_time.loc[&#x27;Weekend&#x27;].plot(ax=ax[1], title=&#x27;Weekends&#x27;,
+                            xticks=hourly_ticks, style=[&#x27;-&#x27;, &#x27;:&#x27;, &#x27;--&#x27;]);</code></pre>
+    </div>
+
+    <p>Hafta içi iki tepeli, hafta sonu tek tepeli kalıp ortaya çıkar. Veri kümesine modelleme bölümünde tekrar döneceğiz.</p>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="12-performance-eval-and-query.html">3.12 Performans ve Sorgu →</a></p>
+    </div>
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

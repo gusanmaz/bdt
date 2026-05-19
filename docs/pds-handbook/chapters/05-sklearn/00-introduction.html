@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Makine Öğrenmesi — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="05-sklearn" data-section="00-introduction">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.00-machine-learning.html" target="_blank" rel="noopener">05.00 Machine Learning</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>Makine Öğrenmesi</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.00-machine-learning.html" target="_blank" rel="noopener">05.00 Machine Learning</a></em></p>
+
+    <p>Kitabın bu son bölümü, özellikle Python'un <a href="http://scikit-learn.org" target="_blank" rel="noopener">Scikit-Learn</a> paketi üzerinden çok geniş bir konu olan makine öğrenmesine giriş niteliğindedir.
+    Makine öğrenmesini, bir programın bir veri kümesindeki belirli örüntüleri algılamasına ve böylece veriden "öğrenerek" çıkarımlar yapmasına olanak tanıyan bir algoritma sınıfı olarak düşünebilirsiniz.
+    Burada makine öğrenmesi alanının kapsamlı bir girişi yapılmamaktadır; bu büyük bir konudur ve burada aldığımızdan daha teknik bir yaklaşım gerektirir.
+    Scikit-Learn paketinin kullanımına yönelik kapsamlı bir el kitabı da değildir (bunun için <a href="15-learning-more.html">Daha Fazla Makine Öğrenmesi Kaynağı</a> bölümündeki kaynaklara bakabilirsiniz).
+    Bunun yerine hedefler şunlardır:</p>
+
+    <ul>
+      <li>Makine öğrenmesinin temel sözlüğünü ve kavramlarını tanıtmak</li>
+      <li>Scikit-Learn API'sini tanıtmak ve kullanımına birkaç örnek göstermek</li>
+      <li>Birkaç önemli klasik makine öğrenmesi yaklaşımının ayrıntılarına inmek; nasıl çalıştıklarına ve ne zaman/nerede uygulanabilir olduklarına dair sezgi geliştirmek</li>
+    </ul>
+
+    <p>Bu bölümdeki malzemenin önemli kısmı, yıllar içinde PyCon, SciPy, PyData ve diğer konferanslarda verdiğim Scikit-Learn öğreticilerinden ve atölyelerinden derlenmiştir.
+    Aşağıdaki sayfalardaki netlik büyük olasılıkla bu malzeme üzerinde değerli geri bildirim veren çok sayıda atölye katılımcısı ve yardımcı eğitmene borçluyum!</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Bölüm 5 ve önkoşullar</div>
+      <p>Bu bölüm <a href="../02-numpy/00-introduction.html">NumPy</a>, <a href="../03-pandas/00-introduction.html">Pandas</a> ve <a href="../04-matplotlib/00-introduction.html">Matplotlib</a> bölümlerindeki araçları varsayar. Kod örnekleri bu sayfada Pyodide ile çalıştırılabilir; Scikit-Learn gerektiren bölümlerde paket önceden yüklenir.</p>
+    </div>
+
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Scikit-Learn sürümünü kontrol edin</div>
+      <p>Aşağıdaki kodu çalıştırarak ortamınızda scikit-learn kurulu mu bakın (Bölüm 5.2'den itibaren yoğun kullanılacak):</p>
+          <div class="code-block" data-lang="python" data-filename="check_sklearn.py">
+      <pre><code>try:
+    import sklearn
+    print("scikit-learn", sklearn.__version__)
+except ImportError:
+    print("scikit-learn yüklü değil")</code></pre>
+    </div>
+
+    </div>
+
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="01-what-is-machine-learning.html">5.1 Makine Öğrenmesi Nedir? →</a></p>
+    </div>
+
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

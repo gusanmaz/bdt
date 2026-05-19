@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2.7 Fancy Indexing — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="02-numpy" data-section="07-fancy-indexing" data-preload-numpy="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.07-fancy-indexing.html" target="_blank" rel="noopener">07 Fancy Indexing</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+    
+<h1>2.7 Fancy Indexing (Gelişmiş İndeksleme)</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.07-fancy-indexing.html" target="_blank" rel="noopener">07 Fancy Indexing</a></em></p>
+
+    <p>Önceki bölümlerde basit indeksler (<code>arr[0]</code>), dilimler (<code>arr[:5]</code>) ve Boolean maskeler (<code>arr[arr &gt; 0]</code>) ile dizilerin bölümlerine erişmeyi gördük. Bu bölümde <strong>fancy indexing</strong> (veya <strong>vektörize indeksleme</strong>): tek skaler yerine <em>indeks dizisi</em> geçirerek birden çok elemana aynı anda erişim.</p>
+
+    <h2 id="fancy-kesfet">Fancy Indexing'i Keşfetmek</h2>
+
+    <p>Kavramsal olarak basit: birden fazla elemana erişmek için indeks dizisi geçirmek.</p>
+    <div class="code-block" data-lang="python" data-filename="fancy_x.py">
+      <pre><code>import numpy as np
+rng = np.random.default_rng(seed=1701)
+
+x = rng.integers(100, size=10)
+print(x)</code></pre>
+    </div>
+
+    <p>Üç farklı elemana erişmek:</p>
+    <div class="code-block" data-lang="python" data-filename="fancy_manual.py">
+      <pre><code>[x[3], x[7], x[2]]</code></pre>
+    </div>
+
+    <p>Alternatif: tek bir liste veya indeks dizisi:</p>
+    <div class="code-block" data-lang="python" data-filename="fancy_ind.py">
+      <pre><code>ind = [3, 7, 4]
+x[ind]</code></pre>
+    </div>
+
+    <p>İndeks dizileri kullanıldığında sonucun şekli, <em>indekslenen dizinin</em> değil <em>indeks dizilerinin</em> şeklini yansıtır:</p>
+    <div class="code-block" data-lang="python" data-filename="fancy_2d_ind.py">
+      <pre><code>ind = np.array([[3, 7],
+                [4, 5]])
+x[ind]</code></pre>
+    </div>
+
+    <p>Fancy indexing çok boyutlu dizilerde de çalışır:</p>
+    <div class="code-block" data-lang="python" data-filename="fancy_X.py">
+      <pre><code>X = np.arange(12).reshape((3, 4))
+X</code></pre>
+    </div>
+
+    <p>Standart indekslemede olduğu gibi ilk indeks satır, ikinci sütun:</p>
+    <div class="code-block" data-lang="python" data-filename="fancy_row_col.py">
+      <pre><code>row = np.array([0, 1, 2])
+col = np.array([2, 1, 3])
+X[row, col]</code></pre>
+    </div>
+
+    <p>İlk değer <code>X[0, 2]</code>, ikinci <code>X[1, 1]</code>, üçüncü <code>X[2, 3]</code>. İndeks eşleştirmesi <a href="05-broadcasting.html">2.5 Broadcasting</a> kurallarına uyar. Sütun vektörü + satır vektörü birleştirilirse iki boyutlu sonuç:</p>
+    <div class="code-block" data-lang="python" data-filename="fancy_broadcast_ind.py">
+      <pre><code>X[row[:, np.newaxis], col]</code></pre>
+    </div>
+
+    <p>Her satır değeri her sütun vektörüyle eşleşir — aritmetik broadcasting'deki gibi:</p>
+    <div class="code-block" data-lang="python" data-filename="fancy_broadcast_demo.py">
+      <pre><code>row[:, np.newaxis] * col</code></pre>
+    </div>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu</div>
+      <p>Fancy indexing'de dönüş değerinin şekli <strong>indekslerin yayınlanmış şeklini</strong> yansıtır, indekslenen dizinin şeklini değil.</p>
+    </div>
+
+    <h2 id="birlesik-indeksleme">Birleşik İndeksleme</h2>
+
+    <p>Fancy indexing diğer indeksleme şemalarıyla birleştirilebilir:</p>
+    <div class="code-block" data-lang="python" data-filename="print_X.py">
+      <pre><code>print(X)</code></pre>
+    </div>
+
+    <p>Fancy + basit indeks:</p>
+    <div class="code-block" data-lang="python" data-filename="fancy_simple.py">
+      <pre><code>X[2, [2, 0, 1]]</code></pre>
+    </div>
+
+    <p>Fancy + dilimleme:</p>
+    <div class="code-block" data-lang="python" data-filename="fancy_slice.py">
+      <pre><code>X[1:, [2, 0, 1]]</code></pre>
+    </div>
+
+    <p>Fancy + maskeleme:</p>
+    <div class="code-block" data-lang="python" data-filename="fancy_mask.py">
+      <pre><code>mask = np.array([True, False, True, False])
+X[row[:, np.newaxis], mask]</code></pre>
+    </div>
+
+    <p>Tüm bu seçenekler dizilere verimli erişim ve değiştirme için esnek bir araç seti sunar.</p>
+
+    <h2 id="rastgele-noktalar">Örnek: Rastgele Nokta Seçimi</h2>
+
+    <p>Fancy indexing'in yaygın kullanımı: matristen satır alt kümesi seçmek. $N 	imes D$ boyutlu matris — $D$ boyutlu $N$ nokta. İki boyutlu normal dağılımdan noktalar:</p>
+    <div class="code-block" data-lang="python" data-filename="random_points.py">
+      <pre><code>mean = [0, 0]
+cov = [[1, 2],
+       [2, 5]]
+X = rng.multivariate_normal(mean, cov, 100)
+X.shape</code></pre>
+    </div>
+
+    <p>Kitap bu noktaları scatter plot ile gösterir (Bölüm 4 — Matplotlib). 20 rastgele nokta seçmek için tekrarsız 20 indeks:</p>
+    <div class="code-block" data-lang="python" data-filename="random_indices.py">
+      <pre><code>indices = np.random.choice(X.shape[0], 20, replace=False)
+indices</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="random_selection.py">
+      <pre><code>selection = X[indices]  # fancy indexing
+selection.shape</code></pre>
+    </div>
+
+    <p>Seçilen noktalar büyük dairelerle üst üste çizilebilir. Bu strateji veri kümesini hızlıca bölmede kullanılır — örneğin istatistiksel modellerde eğitim/test ayrımı (kitap Bölüm 5 — <em>Hyperparameters and Model Validation</em>).</p>
+
+    <h2 id="fancy-atama">Fancy Indexing ile Değer Değiştirme</h2>
+
+    <p>Erişimin yanı sıra değiştirme de mümkün:</p>
+    <div class="code-block" data-lang="python" data-filename="fancy_assign.py">
+      <pre><code>x = np.arange(10)
+i = np.array([2, 1, 8, 4])
+x[i] = 99
+print(x)</code></pre>
+    </div>
+
+    <p>Herhangi bir atama operatörü:</p>
+    <div class="code-block" data-lang="python" data-filename="fancy_assign_op.py">
+      <pre><code>x[i] -= 10
+print(x)</code></pre>
+    </div>
+
+    <p>Tekrarlı indeksler beklenmedik sonuç verebilir:</p>
+    <div class="code-block" data-lang="python" data-filename="fancy_repeat1.py">
+      <pre><code>x = np.zeros(10)
+x[[0, 0]] = [4, 6]
+print(x)  # x[0] = 6 (4 kayboldu)</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="fancy_repeat2.py">
+      <pre><code>i = [2, 3, 3, 4, 4, 4]
+x[i] += 1
+x  # x[3]=1, x[4]=1 — 2 ve 3 değil!</code></pre>
+    </div>
+
+    <p><code>x[i] += 1</code> kısaltması <code>x[i] = x[i] + 1</code>. <code>x[i] + 1</code> bir kez hesaplanır, sonra atama yapılır — artırma değil atama tekrarlanır.</p>
+
+    <p>Artırmanın her tekrarda uygulanmasını istiyorsanız ufunc'un <code>at</code> metodu:</p>
+    <div class="code-block" data-lang="python" data-filename="add_at.py">
+      <pre><code>x = np.zeros(10)
+np.add.at(x, i, 1)
+print(x)  # x[3]=2, x[4]=3</code></pre>
+    </div>
+
+    <p><code>at</code> belirtilen indekslerde operatörü yerinde uygular. Benzer: ufunc'ların <code>reduceat</code> metodu — <a href="https://numpy.org/doc/stable/reference/ufuncs.html" target="_blank" rel="noopener">NumPy ufunc dokümantasyonu</a>.</p>
+
+    <h2 id="binning">Örnek: Veriyi Kutulara Ayırma (Binning)</h2>
+
+    <p>Fancy indexing fikirleriyle özel kutulu hesaplamalar yapılabilir. 100 değerin hangi kutuya düştüğünü bulmak:</p>
+    <div class="code-block" data-lang="python" data-filename="binning_manual.py">
+      <pre><code>rng = np.random.default_rng(seed=1701)
+x = rng.normal(size=100)
+
+bins = np.linspace(-5, 5, 20)
+counts = np.zeros_like(bins)
+
+# Her x için uygun kutuyu bul
+i = np.searchsorted(bins, x)
+
+# Her kutuya 1 ekle
+np.add.at(counts, i, 1)
+print("counts:", counts)</code></pre>
+    </div>
+
+    <p><code>counts</code> her kutudaki nokta sayısını verir — yani histogram. Matplotlib <code>plt.hist</code> tek satırda aynısını yapar:</p>
+    <div class="code-block" data-lang="python" data-filename="plt_hist.py" data-readonly="true">
+      <pre><code># plt.hist(x, bins, histtype='step')</code></pre>
+    </div>
+
+    <p>Matplotlib <code>np.histogram</code> kullanır. Karşılaştırma (notebook'ta <code>%timeit</code>):</p>
+    <div class="code-block" data-lang="python" data-filename="binning_timing.py">
+      <pre><code>import time
+
+def bench(fn, n=50):
+    t0 = time.perf_counter()
+    for _ in range(n):
+        fn()
+    return (time.perf_counter() - t0) / n * 1000
+
+# 100 nokta
+t_np = bench(lambda: np.histogram(x, bins))
+t_custom = bench(lambda: np.add.at(np.zeros_like(bins), np.searchsorted(bins, x), 1))
+print(f"100 nokta — np.histogram: {t_np:.3f} ms, özel: {t_custom:.3f} ms")
+
+# 1M nokta
+x_big = rng.normal(size=1_000_000)
+t_np_big = bench(lambda: np.histogram(x_big, bins), n=5)
+t_custom_big = bench(lambda: np.add.at(np.zeros_like(bins), np.searchsorted(bins, x_big), 1), n=5)
+print(f"1M nokta — np.histogram: {t_np_big:.3f} ms, özel: {t_custom_big:.3f} ms")</code></pre>
+    </div>
+
+    <p>Küçük veride özel algoritma daha hızlı olabilir; büyük veride <code>np.histogram</code> daha esnek ve optimize edilmiştir. Algoritmik verimlilik basit değildir — bkz. <a href="08-sorting.html#big-o">2.8 Big-O Notasyonu</a>.</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>100 rastgele sayıdan 20 tanesini <code>np.random.choice</code> ile tekrarsız seçin.</p>
+    <div class="code-block" data-lang="python" data-filename="deneme_choice.py">
+      <pre><code>import numpy as np
+X = np.random.randn(100, 2)
+idx = np.random.choice(X.shape[0], 20, replace=False)
+print("Seçilen:", len(idx), "  İlk 5 indeks:", idx[:5])</code></pre>
+    </div>
+
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="08-sorting.html">2.8 Dizi Sıralama →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

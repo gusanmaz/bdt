@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manifold Öğrenme — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="05-sklearn" data-section="10-manifold-learning" data-preload-numpy="true" data-preload-pandas="true" data-preload-matplotlib="true" data-preload-sklearn="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.10-manifold-learning.html" target="_blank" rel="noopener">05.10 Manifold Learning</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>5.10 Derinlemesine: Manifold Öğrenme</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.10-manifold-learning.html" target="_blank" rel="noopener">05.10 Manifold Learning</a></em></p>
+    <p>Önceki bölümde PCA'nın boyut indirgeme için nasıl kullanıldığını gördük. PCA esnek ve hızlı olsa da veride <em>doğrusal olmayan</em> ilişkiler olduğunda iyi performans göstermez.</p>
+    <p>Bu eksikliği gidermek için <em>manifold öğrenme algoritmalarına</em> dönebiliriz — veri kümelerini yüksek boyutlu uzaylara gömülü düşük boyutlu manifoldlar olarak tanımlamaya çalışan denetimsiz tahmin ediciler.</p>
+    <p>Manifold düşünürken bir kağıt yaprağını hayal edin: üç boyutlu dünyamızda yaşayan iki boyutlu bir nesne. Kağıdı bükmek, kıvırmak veya buruşturmak onu hâlâ iki boyutlu bir manifold yapar; ancak üç boyutlu uzaya gömülüş artık doğrusal değildir.</p>
+    <p>Burada MDS, yerel doğrusal gömme (LLE) ve izometrik haritalama (Isomap) gibi yöntemleri inceleyeceğiz.</p>
+    <p>Standart içe aktarmalarla başlayalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="imports_manifold.py">
+      <pre><code>%matplotlib inline
+import matplotlib.pyplot as plt
+plt.style.use(&#x27;seaborn-whitegrid&#x27;)
+import numpy as np</code></pre>
+    </div>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — MNIST ve ağ</div>
+      <p><code>fetch_openml</code> MNIST için ağ indirmesi gerektirir; Pyodide'da ilk çalıştırma uzun sürebilir. Isomap ve LLE büyük veride yavaştır — alt örnekleme kullanın.</p>
+    </div>
+
+
+    <h2 id="manifold-hello">Manifold Öğrenme: "HELLO"</h2>
+
+    <div class="code-block" data-lang="python" data-filename="make_hello.py">
+      <pre><code>def make_hello(N=1000, rseed=42):
+    # Make a plot with &quot;HELLO&quot; text; save as PNG
+    fig, ax = plt.subplots(figsize=(4, 1))
+    fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    ax.axis(&#x27;off&#x27;)
+    ax.text(0.5, 0.4, &#x27;HELLO&#x27;, va=&#x27;center&#x27;, ha=&#x27;center&#x27;, weight=&#x27;bold&#x27;, size=85)
+    fig.savefig(&#x27;hello.png&#x27;)
+    plt.close(fig)
+    
+    # Open this PNG and draw random points from it
+    from matplotlib.image import imread
+    data = imread(&#x27;hello.png&#x27;)[::-1, :, 0].T
+    rng = np.random.RandomState(rseed)
+    X = rng.rand(4 * N, 2)
+    i, j = (X * data.shape).astype(int).T
+    mask = (data[i, j] &lt; 1)
+    X = X[mask]
+    X[:, 0] *= (data.shape[0] / data.shape[1])
+    X = X[:N]
+    return X[np.argsort(X[:, 0])]</code></pre>
+    </div>
+
+    <p>Kavramları netleştirmek için "HELLO" kelimesi şeklinde iki boyutlu veri üreten bir fonksiyonla başlayalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hello_plot.py">
+      <pre><code>X = make_hello(1000)
+colorize = dict(c=X[:, 0], cmap=plt.cm.get_cmap(&#x27;rainbow&#x27;, 5))
+plt.scatter(X[:, 0], X[:, 1], **colorize)
+plt.axis(&#x27;equal&#x27;);</code></pre>
+    </div>
+
+    <p>Çıktı iki boyutludur ve "HELLO" şeklinde noktalardan oluşur. Bu biçim, algoritmaların ne yaptığını görsel olarak anlamamıza yardımcı olur.</p>
+
+    <h2 id="mds">Çok Boyutlu Ölçekleme (MDS)</h2>
+
+    <div class="code-block" data-lang="python" data-filename="rotate_hello.py">
+      <pre><code>def rotate(X, angle):
+    theta = np.deg2rad(angle)
+    R = [[np.cos(theta), np.sin(theta)],
+         [-np.sin(theta), np.cos(theta)]]
+    return np.dot(X, R)
+    
+X2 = rotate(X, 20) + 5
+plt.scatter(X2[:, 0], X2[:, 1], **colorize)
+plt.axis(&#x27;equal&#x27;);</code></pre>
+    </div>
+
+    <p>Verinin <em>x</em> ve <em>y</em> değerleri en temel tanım olmayabilir; ölçekleme, döndürme veriyi değiştirse de "HELLO" yapısı kalır (aşağıdaki şekil).</p>
+
+    <div class="code-block" data-lang="python" data-filename="pairwise_distances.py">
+      <pre><code>from sklearn.metrics import pairwise_distances
+D = pairwise_distances(X)
+D.shape</code></pre>
+    </div>
+
+    <p>Burada temel olan noktalar arasındaki <em>uzaklıktır</em>. $N$ nokta için $(i,j)$ girişi $i$ ile $j$ arasındaki uzaklığı içeren $N \times N$ bir uzaklık matrisi kurarız:</p>
+
+    <div class="code-block" data-lang="python" data-filename="distance_matrix_plot.py">
+      <pre><code>plt.imshow(D, zorder=2, cmap=&#x27;viridis&#x27;, interpolation=&#x27;nearest&#x27;)
+plt.colorbar();</code></pre>
+    </div>
+
+    <p>$N$=1.000 nokta için 1000×1000 matris elde ederiz (aşağıdaki şekil). Döndürülmüş ve ötelenmiş veri için de aynı uzaklık matrisi oluşur.</p>
+
+    <div class="code-block" data-lang="python" data-filename="distance_matrix_rotated.py">
+      <pre><code>D2 = pairwise_distances(X2)
+np.allclose(D, D2)</code></pre>
+    </div>
+
+    <p>Uzaklık matrisi dönme ve ötelemeye karşı değişmezdir; ancak görselleştirme sezgisel değildir — "HELLO" yapısı kaybolur. MDS tam olarak uzaklık matrisinden $D$ boyutlu koordinat temsilini kurtarmaya çalışır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="mds_hello.py">
+      <pre><code>from sklearn.manifold import MDS
+model = MDS(n_components=2, dissimilarity=&#x27;precomputed&#x27;, random_state=1701)
+out = model.fit_transform(D)
+plt.scatter(out[:, 0], out[:, 1], **colorize)
+plt.axis(&#x27;equal&#x27;);</code></pre>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>HELLO verisinde MDS:</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_mds.py">
+      <pre><code>import numpy as np
+from sklearn.manifold import MDS
+# make_hello fonksiyonu notebook'ta tanımlı; basit 2D örnek:
+rng = np.random.RandomState(42)
+X = rng.randn(50, 2)
+emb = MDS(n_components=2, random_state=0).fit_transform(X)
+print("Gömme şekli:", emb.shape)</code></pre>
+    </div>
+
+    </div>
+
+
+    <p>MDS algoritması, yalnızca $N\times N$ uzaklık matrisini kullanarak olası iki boyutlu koordinat gösterimlerinden birini kurtarır.</p>
+
+    <h3 id="mds-manifold">Manifold Öğrenme Olarak MDS</h3>
+
+    <div class="code-block" data-lang="python" data-filename="random_projection.py">
+      <pre><code>def random_projection(X, dimension=3, rseed=42):
+    assert dimension &gt;= X.shape[1]
+    rng = np.random.RandomState(rseed)
+    C = rng.randn(dimension, dimension)
+    e, V = np.linalg.eigh(np.dot(C, C.T))
+    return np.dot(X, V[:X.shape[1]])
+    
+X3 = random_projection(X, 3)
+X3.shape</code></pre>
+    </div>
+
+    <p>Uzaklık matrisleri herhangi bir boyuttaki veriden hesaplanabilir. Veriyi üç boyuta yansıtıp MDS ile iki boyutlu gömme isteyebiliriz (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="hello_3d_plot.py">
+      <pre><code>from mpl_toolkits import mplot3d
+ax = plt.axes(projection=&#x27;3d&#x27;)
+ax.scatter3D(X3[:, 0], X3[:, 1], X3[:, 2],
+             **colorize);</code></pre>
+    </div>
+
+    <p>Üç boyutlu veriyi girdi olarak verip MDS tahmin edicisi uzaklık matrisini hesaplayıp bu uzaklık matrisi için optimal iki boyutlu gömmeyi belirler (aşağıdaki şekil).</p>
+
+    <div class="code-block" data-lang="python" data-filename="mds_3d.py">
+      <pre><code>model = MDS(n_components=2, random_state=1701)
+out3 = model.fit_transform(X3)
+plt.scatter(out3[:, 0], out3[:, 1], **colorize)
+plt.axis(&#x27;equal&#x27;);</code></pre>
+    </div>
+
+    <p>Bu, manifold öğrenme tahmin edicisinin hedefinin özüdür: yüksek boyutlu gömülü veri verildiğinde, veri içindeki belirli ilişkileri koruyan düşük boyutlu bir temsil aranır. MDS durumunda korunan nicelik her nokta çifti arasındaki uzaklıktır.</p>
+
+    <h3 id="mds-dogrusal-olmayan">Doğrusal Olmayan Gömme: MDS'in Başarısız Olduğu Yer</h3>
+
+    <div class="code-block" data-lang="python" data-filename="make_hello_s_curve.py">
+      <pre><code>def make_hello_s_curve(X):
+    t = (X[:, 0] - 2) * 0.75 * np.pi
+    x = np.sin(t)
+    y = X[:, 1]
+    z = np.sign(t) * (np.cos(t) - 1)
+    return np.vstack((x, y, z)).T
+
+XS = make_hello_s_curve(X)</code></pre>
+    </div>
+
+    <p>Veri üç boyutlu olsa da gömme daha karmaşıktır (aşağıdaki şekil). Veri "S" şeklinde bükülmüştür.</p>
+
+    <div class="code-block" data-lang="python" data-filename="s_curve_3d.py">
+      <pre><code>from mpl_toolkits import mplot3d
+ax = plt.axes(projection=&#x27;3d&#x27;)
+ax.scatter3D(XS[:, 0], XS[:, 1], XS[:, 2],
+             **colorize);</code></pre>
+    </div>
+
+    <p>Temel ilişkiler hâlâ vardır; ancak veri doğrusal olmayan biçimde dönüştürülmüştür.</p>
+
+    <div class="code-block" data-lang="python" data-filename="mds_s_curve.py">
+      <pre><code>from sklearn.manifold import MDS
+model = MDS(n_components=2, random_state=2)
+outS = model.fit_transform(XS)
+plt.scatter(outS[:, 0], outS[:, 1], **colorize)
+plt.axis(&#x27;equal&#x27;);</code></pre>
+    </div>
+
+    <p>Basit MDS bu doğrusal olmayan gömülüşü "açamaz"; en iyi iki boyutlu <em>doğrusal</em> gömme orijinal $y$ eksenini atar (aşağıdaki şekil).</p>
+
+    <h2 id="lle">Doğrusal Olmayan Manifoldlar: Yerel Doğrusal Gömme</h2>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.10-LLE-vs-MDS.png" alt="LLE ve MDS bağlantıları" width="700" loading="lazy">
+    </figure>
+
+    <p>Solda MDS her nokta çifti arasındaki uzaklığı korumaya çalışır. Sağda <em>yerel doğrusal gömme</em> (LLE) yalnızca <em>komşu</em> noktalar arasındaki uzaklıkları korumaya çalışır. LLE, bu mantığı yansıtan bir maliyet fonksiyonunun küresel optimizasyonuyla veriyi açabilir (aşağıdaki şekil).</p>
+
+    <div class="code-block" data-lang="python" data-filename="lle_s_curve.py">
+      <pre><code>from sklearn.manifold import LocallyLinearEmbedding
+model = LocallyLinearEmbedding(
+    n_neighbors=100, n_components=2,
+    method=&#x27;modified&#x27;, eigen_solver=&#x27;dense&#x27;)
+out = model.fit_transform(XS)
+
+fig, ax = plt.subplots()
+ax.scatter(out[:, 0], out[:, 1], **colorize)
+ax.set_ylim(0.15, -0.15);</code></pre>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>S-eğrisi verisinde LLE (sentetik veri gerektirir):</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_lle.py">
+      <pre><code>from sklearn.manifold import LocallyLinearEmbedding
+from sklearn.datasets import make_s_curve
+X, _ = make_s_curve(200, random_state=0)
+emb = LocallyLinearEmbedding(n_components=2, n_neighbors=15).fit_transform(X)
+print("LLE gömme şekli:", emb.shape)</code></pre>
+    </div>
+
+    </div>
+
+
+    <p>Sonuç orijinal manifolda göre biraz bozuk kalsa da verideki temel ilişkileri yakalar!</p>
+
+    <h2 id="manifold-dusunceler">Manifold Yöntemleri Hakkında Düşünceler</h2>
+
+    <p>Pratikte manifold teknikleri genelde yüksek boyutlu verinin basit nitel görselleştirmesinden öteye nadiren kullanılır.</p>
+    <p>Manifold öğrenmenin PCA'ya kıyasla zorlukları:</p>
+    <ul>
+      <li>Eksik veri için iyi bir çerçeve yoktur; PCA'da yinelemeli yaklaşımlar vardır.</li>
+      <li>Gürültü manifoldu "kısa devre" edebilir; PCA gürültüyü filtreler.</li>
+      <li>Komşu sayısı seçimi kritiktir ve genelde optimal seçim için sağlam bir ölçüt yoktur.</li>
+      <li>Çıktı boyutu küresel olarak optimal belirlenmesi zordur.</li>
+      <li>Gömülü boyutların anlamı her zaman net değildir.</li>
+      <li>Hesaplama maliyeti genelde $O[N^2]$ veya $O[N^3]$ ölçeklenir.</li>
+    </ul>
+    <p>Manifold yöntemlerinin PCA'ya tek net üstünlüğü doğrusal olmayan ilişkileri korumasıdır; bu yüzden veriyi önce PCA ile keşfederim.</p>
+    <p>Scikit-Learn LLE ve Isomap dışında birçok manifold yöntemi sunar. Öneriler: oyuncak S-eğrisi için modified LLE; gerçek yüksek boyutlu veride Isomap; güçlü kümeleme için t-SNE (yavaş olabilir).</p>
+
+    <h2 id="ornek-isomap-yuzler">Örnek: Yüzlerde Isomap</h2>
+
+    <div class="code-block" data-lang="python" data-filename="fetch_lfw_isomap.py">
+      <pre><code>from sklearn.datasets import fetch_lfw_people
+faces = fetch_lfw_people(min_faces_per_person=30)
+faces.data.shape</code></pre>
+    </div>
+
+    <p>2.370 görüntü, her biri 2.914 piksel — görüntüler 2.914 boyutlu uzayda noktalar gibidir! Birkaç görüntüyü gösterelim (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="plot_lfw_faces.py">
+      <pre><code>fig, ax = plt.subplots(4, 8, subplot_kw=dict(xticks=[], yticks=[]))
+for i, axi in enumerate(ax.flat):
+    axi.imshow(faces.images[i], cmap=&#x27;gray&#x27;)</code></pre>
+    </div>
+
+    <p><a href="09-principal-component-analysis.html">5.9 PCA</a> bölümünde sıkıştırma amacıyla bileşenleri kullanmıştık. Burada düşük boyutlu gömme ile görüntüler arası ilişkileri öğrenmek istiyoruz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="pca_lfw_variance.py">
+      <pre><code>from sklearn.decomposition import PCA
+model = PCA(100, svd_solver=&#x27;randomized&#x27;).fit(faces.data)
+plt.plot(np.cumsum(model.explained_variance_ratio_))
+plt.xlabel(&#x27;n components&#x27;)
+plt.ylabel(&#x27;cumulative variance&#x27;);</code></pre>
+    </div>
+
+    <p>Bu veri için %90 varyansı korumak yaklaşık 100 bileşen gerektirir — veri içsel olarak çok yüksek boyutludur. Bu durumda LLE ve Isomap yardımcı olabilir.</p>
+
+    <div class="code-block" data-lang="python" data-filename="isomap_faces.py">
+      <pre><code>from sklearn.manifold import Isomap
+model = Isomap(n_components=2)
+proj = model.fit_transform(faces.data)
+proj.shape</code></pre>
+    </div>
+
+    <p>Çıktı, tüm girdi görüntülerinin iki boyutlu yansımasıdır. Küçük resimlerle görselleştirmek için bir fonksiyon tanımlayabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="plot_component_faces.py">
+      <pre><code>from matplotlib import offsetbox
+
+def plot_components(data, model, images=None, ax=None,
+                    thumb_frac=0.05, cmap=&#x27;gray&#x27;):
+    ax = ax or plt.gca()
+    
+    proj = model.fit_transform(data)
+    ax.plot(proj[:, 0], proj[:, 1], &#x27;.k&#x27;)
+    
+    if images is not None:
+        min_dist_2 = (thumb_frac * max(proj.max(0) - proj.min(0))) ** 2
+        shown_images = np.array([2 * proj.max(0)])
+        for i in range(data.shape[0]):
+            dist = np.sum((proj[i] - shown_images) ** 2, 1)
+            if np.min(dist) &lt; min_dist_2:
+                # don&#x27;t show points that are too close
+                continue
+            shown_images = np.vstack([shown_images, proj[i]])
+            imagebox = offsetbox.AnnotationBbox(
+                offsetbox.OffsetImage(images[i], cmap=cmap),
+                                      proj[i])
+            ax.add_artist(imagebox)</code></pre>
+    </div>
+
+    <p>Bu fonksiyonu çağırdığımızda sonuç aşağıdaki şekildedir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="isomap_face_grid.py">
+      <pre><code>fig, ax = plt.subplots(figsize=(10, 10))
+plot_components(faces.data,
+                model=Isomap(n_components=2),
+                images=faces.images[:, ::2, ::2])</code></pre>
+    </div>
+
+    <p>İlk iki Isomap boyutu genel parlaklık ve yüz yönelimini betimler gibi görünür.</p>
+
+    <h2 id="ornek-mnist-manifold">Örnek: Rakamlarda Yapıyı Görselleştirme</h2>
+
+    <div class="code-block" data-lang="python" data-filename="fetch_openml_mnist.py">
+      <pre><code>from sklearn.datasets import fetch_openml
+mnist = fetch_openml(&#x27;mnist_784&#x27;)
+mnist.data.shape</code></pre>
+    </div>
+
+    <p>MNIST veri kümesi 70.000 görüntü, her biri 784 piksel (28×28). İlk birkaç görüntüye bakalım (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="mnist_reshape.py">
+      <pre><code>mnist_data = np.asarray(mnist.data)
+mnist_target = np.asarray(mnist.target, dtype=int)
+
+fig, ax = plt.subplots(6, 8, subplot_kw=dict(xticks=[], yticks=[]))
+for i, axi in enumerate(ax.flat):
+    axi.imshow(mnist_data[1250 * i].reshape(28, 28), cmap=&#x27;gray_r&#x27;)</code></pre>
+    </div>
+
+    <p>El yazısı stillerinin çeşitliliğine dair fikir verir. Hız için verinin 1/30'unu kullanarak manifold projeksiyonu hesaplayalım (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="isomap_mnist_subset.py">
+      <pre><code># Use only 1/30 of the data: full dataset takes a long time!
+data = mnist_data[::30]
+target = mnist_target[::30]
+
+model = Isomap(n_components=2)
+proj = model.fit_transform(data)
+
+plt.scatter(proj[:, 0], proj[:, 1], c=target, cmap=plt.cm.get_cmap(&#x27;jet&#x27;, 10))
+plt.colorbar(ticks=range(10))
+plt.clim(-0.5, 9.5);</code></pre>
+    </div>
+
+    <p>Tek bir rakamı (örneğin 1) vurgulayarak projeksiyonda biçim çeşitliliğini görebiliriz (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="isomap_digit_one.py">
+      <pre><code># Choose 1/4 of the &quot;1&quot; digits to project
+data = mnist_data[mnist_target == 1][::4]
+
+fig, ax = plt.subplots(figsize=(10, 10))
+model = Isomap(n_neighbors=5, n_components=2, eigen_solver=&#x27;dense&#x27;)
+plot_components(data, model, images=data.reshape((-1, 28, 28)),
+                ax=ax, thumb_frac=0.05, cmap=&#x27;gray_r&#x27;)</code></pre>
+    </div>
+
+    <p>1 rakamının veri kümesindeki biçim çeşitliliğine dair fikir verir. Projeksiyon, sınıflandırma için doğrudan yararlı olmasa da veriyi anlamaya ve ön işleme fikirlerine yardımcı olabilir.</p>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="11-k-means.html">5.11 K-Means Kümeleme →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas + Matplotlib + scikit-learn yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

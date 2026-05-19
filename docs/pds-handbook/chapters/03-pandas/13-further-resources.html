@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daha Fazla Pandas Kaynağı — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="03-pandas" data-section="13-further-resources" data-preload-numpy="true" data-preload-pandas="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.13-further-pandas-resources.html" target="_blank" rel="noopener">03.13 Further Resources</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>3.13 Daha Fazla Pandas Kaynağı</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.13-further-pandas-resources.html" target="_blank" rel="noopener">Further Resources</a></em></p>
+
+    <p>Kitabın bu bölümünde veri analizinde Pandas'ı etkili kullanmanın temellerinin çoğunu ele aldık. Yine de tartışmamızdan pek çok konu bilinçli olarak dışarıda bırakıldı. Pandas hakkında daha fazla bilgi edinmek için şu kaynakları öneririm:</p>
+
+    <ul>
+      <li><a href="https://pandas.pydata.org/" target="_blank" rel="noopener">Pandas çevrimiçi dokümantasyonu</a>: Paketin eksiksiz dokümantasyonu için birincil kaynak. Dokümantasyondaki örnekler genelde küçük sentetik veri kümelerine dayansa da seçeneklerin açıklaması kapsamlıdır ve çeşitli fonksiyonların kullanımını anlamak için çok faydalıdır.</li>
+      <li><a href="https://learning.oreilly.com/library/view/python-for-data/9781098104023/" target="_blank" rel="noopener"><em>Python for Data Analysis</em></a>: Wes McKinney (Pandas'ın yaratıcısı) tarafından yazılmıştır; bu bölümde yer veremediğimiz Pandas ayrıntılarının çoğunu içerir. Özellikle McKinney, finansal danışmanlık deneyiminden gelen zaman serisi araçlarına derinlemesine girer. Kitap ayrıca gerçek dünya veri kümelerinden içgörü kazanmak için Pandas uygulayan eğlenceli örnekler sunar.</li>
+      <li><a href="https://leanpub.com/effective-pandas" target="_blank" rel="noopener"><em>Effective Pandas</em></a>: Pandas geliştiricisi Tom Augspurger'ın kısa e-kitabı; Pandas kütüphanesinin tam gücünü etkili ve idiomatik biçimde kullanmanın özünü sunar.</li>
+      <li><a href="http://pyvideo.org/search?q=pandas" target="_blank" rel="noopener">PyVideo'da Pandas</a>: PyCon'dan SciPy'ye, PyData'ya kadar birçok konferansta Pandas geliştiricileri ve ileri düzey kullanıcılar tarafından verilen eğitimler bulunur. Özellikle PyCon eğitimleri genelde iyi seçilmiş sunucular tarafından verilir.</li>
+    </ul>
+
+    <p>Bu kaynakları, bu bölümlerde verilen yürüyüşle birlikte kullanarak umarım karşınıza çıkan herhangi bir veri analizi probleminde Pandas'ı kullanmaya hazır olursunuz!</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — öğrenme yolu</div>
+      <p>Resmi dokümantasyon + McKinney kitabı + bu handbook bölümleri birlikte en sağlam Pandas temelini verir. Takıldığınız yerde IPython'da <code>pd.DataFrame?</code> ve Tab tamamlama alışkanlığını sürdürün.</p>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>Pandas dokümantasyonuna hızlı erişim alıştırması — bir <code>Series</code> üzerinde <code>str</code> erişimcisini keşfedin:</p>
+      <div class="code-block" data-lang="python" data-filename="deneme_pandas_kaynak.py">
+        <pre><code>import pandas as pd
+s = pd.Series([&quot;Merhaba&quot;, &quot;Dünya&quot;])
+print(s.str.upper())
+print([m for m in dir(s.str) if not m.startswith(&quot;_&quot;)][:8], &quot;...&quot;)</code></pre>
+      </div>
+    </div>
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

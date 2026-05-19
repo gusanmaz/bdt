@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Merge ve Join — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="03-pandas" data-section="07-merge-and-join" data-preload-numpy="true" data-preload-pandas="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.07-merge-and-join.html" target="_blank" rel="noopener">03.07 Merge and Join</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+
+<h1>3.7 Merge ve Join</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.07-merge-and-join.html" target="_blank" rel="noopener">Combining Datasets: Merge and Join</a></em></p>
+
+    <p>Pandas'ın sunduğu önemli özelliklerden biri, veritabanlarında tanıdık olabileceğiniz yüksek performanslı bellek içi join ve merge işlemleridir. Ana arayüz <code>pd.merge</code> fonksiyonudur; pratikte nasıl çalıştığını örneklerle göreceğiz.</p>
+
+    <p>Kolaylık için önceki bölümdeki <code>display</code> fonksiyonunu standart içe aktarmalardan sonra yeniden tanımlayalım:</p>
+    <div class="code-block" data-lang="python" data-filename="imports_display.py">
+      <pre><code>import pandas as pd
+import numpy as np
+
+class display(object):
+    """Display HTML representation of multiple objects"""
+    template = """&lt;div style="float: left; padding: 10px;"&gt;
+    &lt;p style='font-family:"Courier New", Courier, monospace'&gt;{0}&lt;/p&gt;{1}
+    &lt;/div&gt;"""
+    def __init__(self, *args):
+        self.args = args
+        
+    def _repr_html_(self):
+        return '\n'.join(self.template.format(a, eval(a)._repr_html_())
+                         for a in self.args)
+    
+    def __repr__(self):
+        return '\n\n'.join(a + '\n' + repr(eval(a))
+                           for a in self.args)</code></pre>
+    </div>
+
+    <h2 id="iliskisel-cebir">İlişkisel Cebir</h2>
+
+    <p><code>pd.merge</code>'de uygulanan davranış, çoğu veritabanındaki işlemlerin kavramsal temeli olan <em>ilişkisel cebirin</em> bir alt kümesidir. Bu yaklaşımın gücü, herhangi bir veri kümesi üzerinde daha karmaşık bileşik işlemlerin yapı taşları olan temel işlemleri tanımlamasıdır.</p>
+
+    <p>Pandas, <code>pd.merge</code> ve <code>Series</code>/<code>DataFrame</code> <code>join</code> yönteminde bu yapı taşlarının birçoğunu uygular; farklı kaynaklardan veriyi verimli biçimde bağlamanızı sağlar.</p>
+
+    <h2 id="join-turleri">Join Türleri</h2>
+
+    <p><code>pd.merge</code> <em>bire bir</em>, <em>çoka bir</em> ve <em>çoğa çok</em> join türlerini destekler. Hepsi aynı arayüzle çağrılır; join türü girdi verisinin biçimine bağlıdır. Önce üç basit örneğe bakalım.</p>
+
+    <h3 id="bire-bir-join">Bire Bir Join</h3>
+
+    <p>En basit merge türü bire bir join'dir; <a href="06-concat-and-append.html">3.6 Concat ve Append</a>'deki sütun yönünde birleştirmeye benzer. Bir şirketteki çalışanlar hakkında iki <code>DataFrame</code> düşünelim:</p>
+    <div class="code-block" data-lang="python" data-filename="df1_df2_employees.py">
+      <pre><code>df1 = pd.DataFrame({'employee': ['Bob', 'Jake', 'Lisa', 'Sue'],
+                    'group': ['Accounting', 'Engineering',
+                              'Engineering', 'HR']})
+df2 = pd.DataFrame({'employee': ['Lisa', 'Bob', 'Jake', 'Sue'],
+                    'hire_date': [2004, 2008, 2012, 2014]})
+display('df1', 'df2')</code></pre>
+    </div>
+
+    <p>Bu bilgiyi tek bir <code>DataFrame</code>'de birleştirmek için <code>pd.merge</code> kullanılır:</p>
+    <div class="code-block" data-lang="python" data-filename="pd_merge_df3.py">
+      <pre><code>df3 = pd.merge(df1, df2)
+df3</code></pre>
+    </div>
+
+    <p><code>pd.merge</code>, her iki çerçevede <code>employee</code> sütununu tanır ve otomatik olarak anahtar olarak kullanır. Sonuç iki girdinin bilgisini birleştirir. Sütunlardaki giriş sırası korunmayabilir; <code>pd.merge</code> bunu doğru hesaplar. Genelde merge indeksi atar (indeks üzerinden merge için <code>left_index</code>/<code>right_index</code> istisnası).</p>
+
+    <h3 id="coka-bir-join">Çoka Bir Join</h3>
+
+    <p>Çoka bir join'de iki anahtar sütundan birinde yinelenen girişler vardır; sonuç <code>DataFrame</code>'i bu yinelenmeleri korur:</p>
+    <div class="code-block" data-lang="python" data-filename="merge_many_to_one.py">
+      <pre><code>df4 = pd.DataFrame({'group': ['Accounting', 'Engineering', 'HR'],
+                    'supervisor': ['Carly', 'Guido', 'Steve']})
+display('df3', 'df4', 'pd.merge(df3, df4)')</code></pre>
+    </div>
+
+    <p>Sonuçta, girdi gerektirdiği yerlerde tekrarlanan “supervisor” bilgisi içeren ek bir sütun vardır.</p>
+
+    <h3 id="coga-cok-join">Çoğa Çok Join</h3>
+
+    <p>Çoğa çok join kavramsal olarak kafa karıştırıcı olabilir ama iyi tanımlıdır. Her iki taraftaki anahtar sütunda yinelenme varsa sonuç çoğa çok merge olur. Bir grupla ilişkili becerileri gösteren çerçeveyle kişi başına becerileri kurtarabiliriz:</p>
+    <div class="code-block" data-lang="python" data-filename="merge_many_to_many.py">
+      <pre><code>df5 = pd.DataFrame({'group': ['Accounting', 'Accounting',
+                              'Engineering', 'Engineering', 'HR', 'HR'],
+                    'skills': ['math', 'spreadsheets', 'software', 'math',
+                               'spreadsheets', 'organization']})
+display('df1', 'df5', "pd.merge(df1, df5)")</code></pre>
+    </div>
+
+    <p>Bu üç join türü diğer Pandas araçlarıyla geniş işlevsellik sağlar. Gerçek veri kümeleri nadiren bu kadar temizdir; <code>pd.merge</code>'in join'i nasıl ayarlayacağınıza dair seçeneklere geçelim.</p>
+
+    <h2 id="merge-anahtari">Merge Anahtarının Belirtilmesi</h2>
+
+    <p><code>pd.merge</code>'in varsayılan davranışını gördük: iki girdi arasında eşleşen sütun adlarını arar ve anahtar olarak kullanır. Sütun adları genelde bu kadar uyumlu olmaz; Pandas çeşitli seçenekler sunar.</p>
+
+    <h3 id="on-anahtar">on Anahtar Sözcüğü</h3>
+
+    <p>Anahtar sütun adını açıkça <code>on</code> ile verebilirsiniz (tek ad veya liste):</p>
+    <div class="code-block" data-lang="python" data-filename="merge_on_employee.py">
+      <pre><code>display('df1', 'df2', "pd.merge(df1, df2, on='employee')")</code></pre>
+    </div>
+
+    <p>Bu seçenek yalnızca sol ve sağ <code>DataFrame</code>'de belirtilen sütun varsa çalışır.</p>
+
+    <h3 id="left-on-right-on">left_on ve right_on</h3>
+
+    <p>Farklı sütun adlarıyla birleştirmek gerekebilir; örneğin çalışan adı “name” olarak etiketlenmiş olabilir. <code>left_on</code> ve <code>right_on</code> kullanılır:</p>
+    <div class="code-block" data-lang="python" data-filename="merge_left_right_on.py">
+      <pre><code>df3 = pd.DataFrame({'name': ['Bob', 'Jake', 'Lisa', 'Sue'],
+                    'salary': [70000, 80000, 120000, 90000]})
+display('df1', 'df3', 'pd.merge(df1, df3, left_on="employee", right_on="name")')</code></pre>
+    </div>
+
+    <p>Sonuçta gereksiz bir sütun kalabilir; <code>DataFrame.drop()</code> ile düşürülebilir:</p>
+    <div class="code-block" data-lang="python" data-filename="merge_drop_name.py">
+      <pre><code>pd.merge(df1, df3, left_on="employee", right_on="name").drop('name', axis=1)</code></pre>
+    </div>
+
+    <h3 id="left-index-right-index">left_index ve right_index</h3>
+
+    <p>Bazen sütun yerine indeks üzerinden birleştirmek istersiniz:</p>
+    <div class="code-block" data-lang="python" data-filename="df1a_df2a_index.py">
+      <pre><code>df1a = df1.set_index('employee')
+df2a = df2.set_index('employee')
+display('df1a', 'df2a')</code></pre>
+    </div>
+
+    <p><code>pd.merge()</code> içinde <code>left_index</code> ve/veya <code>right_index</code> ile indeks anahtar olarak kullanılır:</p>
+    <div class="code-block" data-lang="python" data-filename="merge_by_index.py">
+      <pre><code>display('df1a', 'df2a',
+        "pd.merge(df1a, df2a, left_index=True, right_index=True)")</code></pre>
+    </div>
+
+    <p>Pandas, ek anahtar sözcük olmadan indeks tabanlı merge için <code>DataFrame.join()</code> yöntemini de sunar:</p>
+    <div class="code-block" data-lang="python" data-filename="df1a_join_df2a.py">
+      <pre><code>df1a.join(df2a)</code></pre>
+    </div>
+
+    <p>İndeks ve sütunları karıştırmak için <code>left_index</code> ile <code>right_on</code> veya <code>left_on</code> ile <code>right_index</code> birleştirilebilir:</p>
+    <div class="code-block" data-lang="python" data-filename="merge_left_index_right_on.py">
+      <pre><code>display('df1a', 'df3', "pd.merge(df1a, df3, left_index=True, right_on='name')")</code></pre>
+    </div>
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — join vs merge</div>
+      <p><code>df.join(other)</code> indeks hizalı birleştirme içindir; farklı sütun adları veya SQL tarzı join türleri için <code>pd.merge</code> daha esnektir.</p>
+    </div>
+
+    <p>Tüm bu seçenekler çoklu indeks ve/veya çoklu sütunla da çalışır. Ayrıntılar için Pandas dokümantasyonundaki <a href="https://pandas.pydata.org/docs/user_guide/merging.html" target="_blank" rel="noopener">merge bölümüne</a> bakın.</p>
+
+    <h2 id="kume-aritmetigi">Küme Aritmetiği ile Join</h2>
+
+    <p>Önceki örneklerde göz ardı ettiğimiz konu: join'de kullanılan küme aritmetiği türü. Bir anahtar sütunda değer varken diğerinde yoksa ne olur?</p>
+    <div class="code-block" data-lang="python" data-filename="df6_df7_food_drink.py">
+      <pre><code>df6 = pd.DataFrame({'name': ['Peter', 'Paul', 'Mary'],
+                    'food': ['fish', 'beans', 'bread']},
+                   columns=['name', 'food'])
+df7 = pd.DataFrame({'name': ['Mary', 'Joseph'],
+                    'drink': ['wine', 'beer']},
+                   columns=['name', 'drink'])
+display('df6', 'df7', 'pd.merge(df6, df7)')</code></pre>
+    </div>
+
+    <p>Yalnızca ortak “name” girişi Mary olan iki veri kümesi birleştirildi. Varsayılan sonuç iki girdinin <em>kesişimidir</em> — <em>iç birleşim</em> (inner join). <code>how</code> ile açıkça belirtilebilir (varsayılan <code>"inner"</code>):</p>
+    <div class="code-block" data-lang="python" data-filename="merge_how_inner.py">
+      <pre><code>pd.merge(df6, df7, how='inner')</code></pre>
+    </div>
+
+    <p><code>how</code> için diğer seçenekler <code>'outer'</code>, <code>'left'</code> ve <code>'right'</code>'tır. <em>Dış birleşim</em> (outer join) girdi sütunlarının birleşimini döndürür; eksik değerler NA ile doldurulur:</p>
+    <div class="code-block" data-lang="python" data-filename="merge_how_outer.py">
+      <pre><code>display('df6', 'df7', "pd.merge(df6, df7, how='outer')")</code></pre>
+    </div>
+
+    <p><em>Sol</em> ve <em>sağ</em> join sırasıyla sol ve sağ girdinin girişleri üzerinden birleşim döndürür:</p>
+    <div class="code-block" data-lang="python" data-filename="merge_how_left.py">
+      <pre><code>display('df6', 'df7', "pd.merge(df6, df7, how='left')")</code></pre>
+    </div>
+
+    <p>Çıktı satırları artık sol girdideki girişlere karşılık gelir. <code>how='right'</code> benzer şekilde sağ girdi için çalışır. Tüm seçenekler önceki join türlerine doğrudan uygulanabilir.</p>
+
+    <h2 id="suffixes">Çakışan Sütun Adları: suffixes</h2>
+
+    <p>İki girdide çakışan sütun adları olabilir:</p>
+    <div class="code-block" data-lang="python" data-filename="df8_df9_rank.py">
+      <pre><code>df8 = pd.DataFrame({'name': ['Bob', 'Jake', 'Lisa', 'Sue'],
+                    'rank': [1, 2, 3, 4]})
+df9 = pd.DataFrame({'name': ['Bob', 'Jake', 'Lisa', 'Sue'],
+                    'rank': [3, 1, 4, 2]})
+display('df8', 'df9', 'pd.merge(df8, df9, on="name")')</code></pre>
+    </div>
+
+    <p>Çıktıda iki <code>rank</code> sütunu çakışacağından <code>merge</code> otomatik olarak <code>_x</code> ve <code>_y</code> son eklerini ekler. Özel son ekler <code>suffixes</code> ile verilebilir:</p>
+    <div class="code-block" data-lang="python" data-filename="merge_suffixes.py">
+      <pre><code>pd.merge(df8, df9, on="name", suffixes=["_L", "_R"])</code></pre>
+    </div>
+
+    <p>Bu son ekler tüm join desenlerinde ve birden fazla çakışan sütunda çalışır.</p>
+
+    <p>Bu desenler için <a href="08-aggregation-and-grouping.html">3.8 Agregasyon ve Gruplama</a>'da ilişkisel cebire daha derin bakılır. Ayrıca Pandas dokümantasyonundaki <a href="https://pandas.pydata.org/docs/user_guide/merging.html" target="_blank" rel="noopener">Merge, join, concat and compare</a> bölümüne bakın.</p>
+
+    <h2 id="ornek-abd-eyaletleri">Örnek: ABD Eyalet Verisi</h2>
+
+    <p>Merge ve join en çok farklı kaynaklardan veri birleştirirken gündeme gelir. ABD eyaletleri ve nüfusları hakkında örnek veri kullanacağız. Veri dosyaları <a href="http://github.com/jakevdp/data-USstates" target="_blank" rel="noopener">github.com/jakevdp/data-USstates</a> adresindedir:</p>
+    <div class="code-block" data-lang="text" data-filename="download_us_states.sh" data-readonly="true">
+      <pre><code># Following are commands to download the data
+# repo = "https://raw.githubusercontent.com/jakevdp/data-USstates/master"
+# !cd data &amp;&amp; curl -O {repo}/state-population.csv
+# !cd data &amp;&amp; curl -O {repo}/state-areas.csv
+# !cd data &amp;&amp; curl -O {repo}/state-abbrevs.csv</code></pre>
+    </div>
+
+    <p>Üç veri kümesine Pandas <code>read_csv</code> ile bakalım (dosyalar <code>data/</code> altında olmalıdır):</p>
+    <div class="code-block" data-lang="python" data-filename="read_us_states_csv.py">
+      <pre><code>pop = pd.read_csv('data/state-population.csv')
+areas = pd.read_csv('data/state-areas.csv')
+abbrevs = pd.read_csv('data/state-abbrevs.csv')
+
+display('pop.head()', 'areas.head()', 'abbrevs.head()')</code></pre>
+    </div>
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Pyodide ve CSV</div>
+      <p>Tarayıcıdaki Pyodide ortamında <code>data/</code> dosyaları yoksa bu hücreler çalışmayabilir; mantığı anlamak için kodu okuyun veya veriyi yerel Jupyter'de indirin.</p>
+    </div>
+
+    <p>Bu bilgiyle 2010 nüfus yoğunluğuna göre ABD eyalet ve bölgelerini sıralamak isteyelim. Veri elimizde; birleştirmemiz gerekir.</p>
+
+    <p>Önce <code>pop</code> ile <code>abbrevs</code> arasında çoka bir merge yaparak tam eyalet adlarını alalım. <code>pop</code>'taki <code>state/region</code> ile <code>abbrevs</code>'teki <code>abbreviation</code> üzerinden birleştiririz; etiket uyumsuzluğunda veri kaybı olmasın diye <code>how='outer'</code>:</p>
+    <div class="code-block" data-lang="python" data-filename="merge_pop_abbrevs.py">
+      <pre><code>merged = pd.merge(pop, abbrevs, how='outer',
+                  left_on='state/region', right_on='abbreviation')
+merged = merged.drop('abbreviation', axis=1) # drop duplicate info
+merged.head()</code></pre>
+    </div>
+
+    <p>Uyumsuzluk olup olmadığını null satırlara bakarak kontrol edelim:</p>
+    <div class="code-block" data-lang="python" data-filename="merged_isnull.py">
+      <pre><code>merged.isnull().any()</code></pre>
+    </div>
+
+    <p>Bazı <code>population</code> değerleri null; hangileri olduğuna bakalım:</p>
+    <div class="code-block" data-lang="python" data-filename="merged_null_population.py">
+      <pre><code>merged[merged['population'].isnull()].head()</code></pre>
+    </div>
+
+    <p>Null nüfus değerlerinin çoğu 2000 öncesi Porto Riko kayıtlarından geliyor olabilir. Daha önemlisi bazı yeni <code>state</code> girişleri de null — <code>abbrevs</code> anahtarında karşılık yok:</p>
+    <div class="code-block" data-lang="python" data-filename="merged_null_state_region.py">
+      <pre><code>merged.loc[merged['state'].isnull(), 'state/region'].unique()</code></pre>
+    </div>
+
+    <p>Sorun: nüfus verisinde Porto Riko (PR) ve bir bütün olarak ABD (USA) var; kısaltma tablosunda yok. Hızlıca doldurabiliriz:</p>
+    <div class="code-block" data-lang="python" data-filename="fill_pr_usa.py">
+      <pre><code>merged.loc[merged['state/region'] == 'PR', 'state'] = 'Puerto Rico'
+merged.loc[merged['state/region'] == 'USA', 'state'] = 'United States'
+merged.isnull().any()</code></pre>
+    </div>
+
+    <p><code>state</code> sütununda artık null yok; devam edebiliriz.</p>
+
+    <p>Şimdi alan verisiyle <code>state</code> sütunu üzerinden birleştirelim:</p>
+    <div class="code-block" data-lang="python" data-filename="merge_final_areas.py">
+      <pre><code>final = pd.merge(merged, areas, on='state', how='left')
+final.head()</code></pre>
+    </div>
+
+    <p>Yine uyumsuzluk için null kontrolü:</p>
+    <div class="code-block" data-lang="python" data-filename="final_isnull.py">
+      <pre><code>final.isnull().any()</code></pre>
+    </div>
+
+    <p><code>area</code> sütununda null var; hangi bölgelerin atlandığına bakalım:</p>
+    <div class="code-block" data-lang="python" data-filename="final_null_area_states.py">
+      <pre><code>final['state'][final['area (sq. mi)'].isnull()].unique()</code></pre>
+    </div>
+
+    <p><code>areas</code> çerçevesinde ABD bütününün alanı yok. Toplam eyalet alanı eklenebilir; burada tüm ABD yoğunluğu tartışmamızla ilgili olmadığı için null satırları düşüyoruz:</p>
+    <div class="code-block" data-lang="python" data-filename="final_dropna.py">
+      <pre><code>final.dropna(inplace=True)
+final.head()</code></pre>
+    </div>
+
+    <p>Artık gereken veri hazır. 2010 yılı ve toplam nüfus dilimini <code>query</code> ile seçelim (<a href="12-performance-eval-and-query.html">3.12 Performans: eval ve query</a> — NumExpr gerekebilir):</p>
+    <div class="code-block" data-lang="python" data-filename="data2010_query.py">
+      <pre><code>data2010 = final.query("year == 2010 &amp; ages == 'total'")
+data2010.head()</code></pre>
+    </div>
+
+    <p>Nüfus yoğunluğunu hesaplayıp sıralayalım; eyalet üzerinden yeniden indeksleyerek:</p>
+    <div class="code-block" data-lang="python" data-filename="density_compute.py">
+      <pre><code>data2010.set_index('state', inplace=True)
+density = data2010['population'] / data2010['area (sq. mi)']</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="density_sort.py">
+      <pre><code>density.sort_values(ascending=False, inplace=True)
+density.head()</code></pre>
+    </div>
+
+    <p>Sonuç, 2010 nüfus yoğunluğuna göre (km² başına kişi) ABD eyaletleri, Washington DC ve Porto Riko sıralamasıdır. En yoğun bölge Washington DC; eyaletler arasında en yoğun New Jersey.</p>
+
+    <p>Listenin sonuna da bakalım:</p>
+    <div class="code-block" data-lang="python" data-filename="density_tail.py">
+      <pre><code>density.tail()</code></pre>
+    </div>
+
+    <p>En seyrek eyalet açık ara Alaska — km² başına bir kişiden biraz fazla.</p>
+
+    <p>Bu tür veri birleştirme, gerçek dünya kaynaklarıyla soru yanıtlarken yaygındır. Bu örnek, öğrendiğimiz araçları birleştirerek veriden içgörü kazanmanın yollarından birini göstermiştir.</p>
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>İki küçük çerçeveyi <code>pd.merge</code> ile <code>how='inner'</code> ve <code>how='outer'</code> karşılaştırın:</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_merge_how.py">
+      <pre><code>import pandas as pd
+left = pd.DataFrame({'k': [1, 2, 3], 'v': ['a', 'b', 'c']})
+right = pd.DataFrame({'k': [2, 3, 4], 'w': [10, 20, 30]})
+print("inner:\n", pd.merge(left, right, on='k', how='inner'))
+print("\nouter:\n", pd.merge(left, right, on='k', how='outer'))</code></pre>
+    </div>
+
+    </div>
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="08-aggregation-and-grouping.html">3.8 Agregasyon ve Gruplama →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

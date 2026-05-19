@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2.4 Toplama İşlemleri: Min, Max ve Aradaki Her Şey — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="02-numpy" data-section="04-aggregates" data-preload-numpy="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.04-computation-on-arrays-aggregates.html" target="_blank" rel="noopener">04 Computation On Arrays Aggregates</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>2.4 Toplama İşlemleri: Min, Max ve Aradaki Her Şey</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.04-computation-on-arrays-aggregates.html" target="_blank" rel="noopener">Aggregations: Min, Max, and Everything in Between</a></em></p>
+
+    <p>Herhangi bir veri kümesini keşfetmenin ilk adımı genelde çeşitli özet istatistikleri hesaplamaktır. En yaygın özet istatistikler ortalama ve standart sapmadır; veri kümesindeki "tipik" değerleri özetlerler. Ancak toplam, çarpım, medyan, minimum ve maksimum, çeyrekler (quantile) vb. diğer toplama işlemleri de yararlıdır.</p>
+
+    <p>NumPy, diziler üzerinde çalışmak için hızlı yerleşik toplama fonksiyonları sunar; burada birkaçını ele alıp deneyeceğiz.</p>
+
+    <h2 id="dizi-toplami">Dizideki değerlerin toplanması</h2>
+
+    <p>Hızlı bir örnek olarak bir dizideki tüm değerlerin toplamını hesaplamayı düşünelim. Python bunu yerleşik <code>sum</code> fonksiyonuyla yapabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="python_sum.py">
+      <pre><code>import numpy as np
+rng = np.random.default_rng()
+
+L = rng.random(100)
+print(sum(L))</code></pre>
+    </div>
+
+    <p>Sözdizimi NumPy'nin <code>sum</code> fonksiyonuna oldukça benzer; en basit durumda sonuç aynıdır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="numpy_sum.py">
+      <pre><code>print(np.sum(L))</code></pre>
+    </div>
+
+    <p>Ancak işlem derlenmiş kodda yürütüldüğü için NumPy sürümü çok daha hızlı hesaplanır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="timeit_sum.py">
+      <pre><code>import time
+
+big_array = rng.random(1000000)
+
+t0 = time.perf_counter()
+sum(big_array)
+print(f"Python sum: {(time.perf_counter()-t0)*1000:.1f} ms")
+
+t0 = time.perf_counter()
+np.sum(big_array)
+print(f"NumPy sum:  {(time.perf_counter()-t0)*1000:.1f} ms")
+
+# IPython'da kitaptaki karşılaştırma:
+# %timeit sum(big_array)      → ~89.9 ms
+# %timeit np.sum(big_array)   → ~521 µs</code></pre>
+    </div>
+
+    <p>Dikkat: <code>sum</code> ile <code>np.sum</code> özdeş değildir; bu bazen kafa karıştırır! Özellikle isteğe bağlı argümanların anlamları farklıdır (<code>sum(x, 1)</code> toplamı 1'den başlatır; <code>np.sum(x, 1)</code> eksen 1 boyunca toplar) ve <code>np.sum</code> çok boyutlu dizileri bilir — bir sonraki bölümde göreceğiz.</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — <code>sum</code> vs <code>np.sum</code></div>
+      <p>NumPy dizisi üzerinde toplama yaparken Python'un <code>sum()</code> fonksiyonunu değil <code>np.sum()</code> veya <code>arr.sum()</code> kullanın. Büyük dizilerde fark onlarca–yüzlerce kat olabilir.</p>
+    </div>
+
+    <h2 id="min-max">Minimum ve maksimum</h2>
+
+    <p>Benzer şekilde Python'da yerleşik <code>min</code> ve <code>max</code> fonksiyonları vardır; herhangi bir dizinin minimum ve maksimum değerini bulmak için kullanılır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="python_minmax.py">
+      <pre><code>print(min(big_array), max(big_array))</code></pre>
+    </div>
+
+    <p>NumPy'nin karşılık gelen fonksiyonları benzer sözdizimine sahiptir ve yine çok daha hızlı çalışır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="numpy_minmax.py">
+      <pre><code>print(np.min(big_array), np.max(big_array))
+
+# IPython'da kitaptaki karşılaştırma:
+# %timeit min(big_array)      → ~72 ms
+# %timeit np.min(big_array)   → ~564 µs</code></pre>
+    </div>
+
+    <p><code>min</code>, <code>max</code>, <code>sum</code> ve birkaç diğer NumPy toplaması için daha kısa sözdizimi, dizi nesnesinin kendi yöntemlerini kullanmaktır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="dizi_yontemleri.py">
+      <pre><code>print(big_array.min(), big_array.max(), big_array.sum())</code></pre>
+    </div>
+
+    <p>Mümkün olduğunca NumPy dizileri üzerinde bu toplama işlemlerinin NumPy sürümünü kullandığınızdan emin olun!</p>
+
+    <h3 id="cok-boyutlu-toplama">Çok boyutlu toplama işlemleri</h3>
+
+    <p>Yaygın toplama türlerinden biri satır veya sütun boyunca toplamadır. Verileriniz iki boyutlu bir dizide saklansın:</p>
+
+    <div class="code-block" data-lang="python" data-filename="matris_M.py">
+      <pre><code>M = rng.integers(0, 10, (3, 4))
+print(M)</code></pre>
+    </div>
+
+    <p>NumPy toplama işlemleri çok boyutlu dizinin tüm elemanlarına uygulanır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="matris_toplam.py">
+      <pre><code>print(M.sum())</code></pre>
+    </div>
+
+    <p>Toplama fonksiyonları, toplamanın yapılacağı <em>ekseni</em> belirten ek bir argüman alır. Örneğin her sütundaki minimum değeri <code>axis=0</code> ile bulabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="axis_0.py">
+      <pre><code>print(M.min(axis=0))</code></pre>
+    </div>
+
+    <p>Fonksiyon dört sütuna karşılık gelen dört değer döndürür.</p>
+
+    <p>Benzer şekilde her satırdaki maksimum değeri bulabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="axis_1.py">
+      <pre><code>print(M.max(axis=1))</code></pre>
+    </div>
+
+    <p>Buradaki <code>axis</code> belirtimi başka dillerden gelen kullanıcılar için kafa karıştırıcı olabilir. <code>axis</code> anahtar sözcüğü, <em>döndürülecek</em> boyutu değil, <em>daraltılacak</em> (collapse) boyutu belirtir. Yani <code>axis=0</code> demek eksen 0 daraltılacak demektir: iki boyutlu dizilerde her sütundaki değerler toplanır.</p>
+
+    <div class="alert alert-warning handbook-addon">
+      <div class="alert-title">⚠️ Ders notu — axis mantığı</div>
+      <p><code>axis=0</code> → sütunlar boyunca (satırları birleştirir). <code>axis=1</code> → satırlar boyunca (sütunları birleştirir). “Hangi eksen kayboluyor?” diye düşünün.</p>
+    </div>
+
+    <h3 id="diger-toplama-fonksiyonlari">Diğer toplama fonksiyonları</h3>
+
+    <p>NumPy benzer API'ye sahip birkaç toplama fonksiyonu daha sunar; çoğunun eksik değerleri (<code>NaN</code>) yok sayan <code>NaN</code>-güvenli karşılığı vardır — eksik değerler IEEE kayan nokta <code>NaN</code> ile işaretlenir (bkz. <a href="../03-pandas/index.html">Eksik Veri</a> bölümü).</p>
+
+    <p>NumPy'de yararlı toplama fonksiyonlarının listesi:</p>
+
+    <div class="table-wrapper">
+      <table class="vocab-table">
+        <thead><tr><th>Fonksiyon adı</th><th>NaN-güvenli sürüm</th><th>Açıklama</th></tr></thead>
+        <tbody>
+          <tr><td><code>np.sum</code></td><td><code>np.nansum</code></td><td>Elemanların toplamı</td></tr>
+          <tr><td><code>np.prod</code></td><td><code>np.nanprod</code></td><td>Elemanların çarpımı</td></tr>
+          <tr><td><code>np.mean</code></td><td><code>np.nanmean</code></td><td>Elemanların ortalaması</td></tr>
+          <tr><td><code>np.std</code></td><td><code>np.nanstd</code></td><td>Standart sapma</td></tr>
+          <tr><td><code>np.var</code></td><td><code>np.nanvar</code></td><td>Varyans</td></tr>
+          <tr><td><code>np.min</code></td><td><code>np.nanmin</code></td><td>Minimum değer</td></tr>
+          <tr><td><code>np.max</code></td><td><code>np.nanmax</code></td><td>Maksimum değer</td></tr>
+          <tr><td><code>np.argmin</code></td><td><code>np.nanargmin</code></td><td>Minimum değerin indeksi</td></tr>
+          <tr><td><code>np.argmax</code></td><td><code>np.nanargmax</code></td><td>Maksimum değerin indeksi</td></tr>
+          <tr><td><code>np.median</code></td><td><code>np.nanmedian</code></td><td>Elemanların medyanı</td></tr>
+          <tr><td><code>np.percentile</code></td><td><code>np.nanpercentile</code></td><td>Sıra tabanlı istatistikler (yüzdelik)</td></tr>
+          <tr><td><code>np.any</code></td><td>Yok</td><td>Herhangi bir eleman doğru mu?</td></tr>
+          <tr><td><code>np.all</code></td><td>Yok</td><td>Tüm elemanlar doğru mu?</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Kitabın geri kalanında bu toplama işlemlerini sık göreceksiniz.</p>
+
+    <h2 id="ornek-baskan-boylari">Örnek: ABD başkanlarının ortalama boyu kaç?</h2>
+
+    <p>NumPy'deki toplama işlemleri bir değer kümesi için özet istatistik görevi görebilir. Küçük bir örnek olarak tüm ABD başkanlarının boylarını ele alalım. Bu veri <em>president_heights.csv</em> dosyasında bulunur; virgülle ayrılmış etiket ve değer listesidir:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="president_heights.csv">
+      <pre><code>order,name,height(cm)
+1,George Washington,189
+2,John Adams,170
+3,Thomas Jefferson,189
+...</code></pre>
+    </div>
+
+    <p>Kitapta dosyayı okumak için Pandas kullanılır (<a href="../03-pandas/index.html">Bölüm 3</a>'te ayrıntılı ele alınır). Boylar santimetre cinsindendir. Bu sayfada veriyi doğrudan NumPy dizisi olarak kullanıyoruz (orijinal CSV ile aynı değerler):</p>
+
+    <div class="code-block" data-lang="python" data-filename="baskan_boylari.py">
+      <pre><code>import numpy as np
+
+# president_heights.csv — height(cm) sütunu (44 başkan)
+heights = np.array([
+    189, 170, 189, 163, 183, 171, 185, 168, 173, 183, 173, 173, 175, 178, 183, 193, 178, 173,
+    174, 183, 183, 168, 170, 178, 182, 180, 183, 178, 182, 188, 175, 179, 183, 193, 182, 183,
+    177, 185, 188, 188, 182, 185, 191, 182
+])
+print(heights)</code></pre>
+    </div>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Pandas ile okuma</div>
+      <p>Jupyter ortamında kitaptaki gibi okumak için: <code>import pandas as pd</code> · <code>data = pd.read_csv('data/president_heights.csv')</code> · <code>heights = np.array(data['height(cm)'])</code></p>
+    </div>
+
+    <p>Veri dizimiz hazır; çeşitli özet istatistikleri hesaplayabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="baskan_ozet.py">
+      <pre><code>print("Ortalama boy:     ", heights.mean())
+print("Standart sapma:   ", heights.std())
+print("Minimum boy:      ", heights.min())
+print("Maksimum boy:     ", heights.max())</code></pre>
+    </div>
+
+    <p>Her durumda toplama işlemi tüm diziyi tek bir özet değere indirgedi; dağılım hakkında bilgi verdi. Çeyrekleri (quantile) de hesaplayabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="baskan_ceyrek.py">
+      <pre><code>print("25. yüzdelik:     ", np.percentile(heights, 25))
+print("Medyan:           ", np.median(heights))
+print("75. yüzdelik:     ", np.percentile(heights, 75))</code></pre>
+    </div>
+
+    <p>ABD başkanlarının medyan boyu 182 cm'dir — yaklaşık altı fitten biraz kısa.</p>
+
+    <p>Bazen bu verinin görsel temsilini görmek daha yararlıdır; Matplotlib araçlarıyla yapılabilir (Matplotlib <a href="../04-matplotlib/index.html">Bölüm 4</a>'te ayrıntılı ele alınır). Kitaptaki kod şu grafiği üretir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="baskan_histogram.py">
+      <pre><code># Matplotlib gerektirir (Jupyter / tam Python ortamı)
+# %matplotlib inline
+import matplotlib.pyplot as plt
+plt.style.use('seaborn-v0_8-whitegrid')  # kitapta 'seaborn-whitegrid'
+
+plt.hist(heights)
+plt.title('Height Distribution of US Presidents')
+plt.xlabel('height (cm)')
+plt.ylabel('number')
+plt.show()</code></pre>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>Başkan boyları üzerinde <code>np.mean</code>, <code>np.std</code> ve <code>np.percentile(heights, [25, 50, 75])</code> hesaplayın; sonuçları yorumlayın:</p>
+      <div class="code-block" data-lang="python" data-filename="deneme_baskan.py">
+        <pre><code>import numpy as np
+heights = np.array([
+    189, 170, 189, 163, 183, 171, 185, 168, 173, 183, 173, 173, 175, 178, 183, 193, 178, 173,
+    174, 183, 183, 168, 170, 178, 182, 180, 183, 178, 182, 188, 175, 179, 183, 193, 182, 183,
+    177, 185, 188, 188, 182, 185, 191, 182
+])
+print("Ortalama:", heights.mean())
+print("Std:", heights.std())
+print("Çeyrekler:", np.percentile(heights, [25, 50, 75]))</code></pre>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="05-broadcasting.html">2.5 Dizilerde Hesaplama: Broadcasting →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EDA, Görselleştirme ve Temel ML (Bölüm 6) | Büyük Veri Teknolojileri</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body>
+
+<header class="top-nav">
+  <a href="hafta1.html" class="nav-brand">📊 Büyük Veri Teknolojileri</a>
+  <div class="nav-links">
+    <a href="uygulamalar2.html">🧪 Uygulamalar</a>
+    <a href="odev1.html">📝 Ödev 1</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<section class="hero">
+  <span class="week-badge">📅 BÖLÜM 6</span>
+  <h1>EDA, Görselleştirme ve Temel Makine Öğrenmesi</h1>
+  <p class="subtitle">Veriyi anlamak, grafikle göstermek ve basit tahmin modelleri kurmak — istatistik veya ML geçmişi olmadan, sıfırdan.</p>
+  <div class="meta-info">
+    <span>📖 Teori: 3 saat</span>
+    <span>💻 Uygulama: 3 saat</span>
+    <span>📊 Seviye: Sıfırdan başlangıç</span>
+  </div>
+</section>
+
+<div class="main-container">
+
+  <aside class="sidebar">
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list">
+      <a href="hafta1.html">📘 Dağıtık Sistemler & Python</a>
+      <a href="hafta2.html">📗 Veri Modelleme & Pandas</a>
+      <a href="hafta3.html">📙 ETL & PySpark</a>
+      <a href="hafta4.html">📕 Streaming & Güvenlik</a>
+      <a href="hafta5.html">🧪 Kod Atölyesi</a>
+      <a href="hafta6.html" class="current-page">📊 Analiz & ML</a>
+      <a href="../pds-handbook/index.html" target="_blank" rel="noopener">📚 PDS Handbook</a>
+      <a href="uygulamalar2.html">🧪 Uygulamalar</a>
+      <a href="odev1.html">📝 Ödev 1</a>
+    </div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav>
+      <ul>
+        <li><a href="#kazanimlar">🎯 Kazanımlar</a></li>
+        <li><a href="#hikaye">🗺️ Hikaye Haritası</a></li>
+        <li><a href="#on-bilgi">🧭 Sıfırdan: Temel Kavramlar</a></li>
+        <li><a href="#veri-tipleri">📐 Veri Tipleri ve Kelimeler</a></li>
+        <li><a href="#gorsellestirme-nedir">👁️ Görselleştirme Nedir?</a></li>
+        <li><a href="#eda">🔍 Bölüm 1: EDA</a></li>
+        <li><a href="#grafik-rehber">📊 Bölüm 2: Grafik Rehberi</a></li>
+        <li><a href="#grafik-galeri">🖼️ Bölüm 2b: Grafik Galerisi</a></li>
+        <li><a href="#grafik-ornekleri">🖼️ Bölüm 2c: Grafik Okuma Örnekleri</a></li>
+        <li><a href="#matplotlib">📈 Bölüm 3: Matplotlib</a></li>
+        <li><a href="#seaborn">🎨 Bölüm 4: Seaborn</a></li>
+        <li><a href="#plotly">✨ Bölüm 5: Plotly</a></li>
+        <li><a href="#ml-nedir">🤖 Makine Öğrenmesi Nedir?</a></li>
+        <li><a href="#metrik-formulleri">📐 Metrik Formülleri</a></li>
+        <li><a href="#sklearn">🧪 Bölüm 6: scikit-learn</a></li>
+        <li><a href="#ml-panorama">🗺️ Bölüm 6b: Algoritmalar Detaylı</a></li>
+        <li><a href="#uc-uc">🔗 Bölüm 7: Uçtan Uca Akış</a></li>
+        <li><a href="#kaynaklar">📚 Kaynaklar</a></li>
+        <li><a href="#ozet">📝 Özet</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="content">
+
+    <h2 id="kazanimlar">🎯 Bu Haftanın Kazanımları</h2>
+
+    <ul class="objectives-list">
+      <li><span class="obj-icon">✅</span> EDA (keşifsel veri analizi) checklist'ini uygulayabilir: şekil, eksik değer, aykırı değer, dağılım</li>
+      <li><span class="obj-icon">✅</span> <code>describe()</code>, <code>info()</code>, <code>groupby()</code> ile veri setine ilk bakışı yapabilir</li>
+      <li><span class="obj-icon">✅</span> Her grafik türünün güçlü ve zayıf yönlerini; yanlış kullanımda yanıltıcı olabileceği durumları açıklayabilir</li>
+      <li><span class="obj-icon">✅</span> KDE (Kernel Density Estimation) ile histogram farkını anlayabilir</li>
+      <li><span class="obj-icon">✅</span> Matplotlib, Seaborn ve Plotly'nin rol farkını ve temel kullanım kalıplarını bilir</li>
+      <li><span class="obj-icon">✅</span> Regresyon ve sınıflandırma metriklerinin formülünü ve ne ölçtüklerini açıklayabilir (MAE, R², precision, recall, F1)</li>
+      <li><span class="obj-icon">✅</span> Regresyon ve sınıflandırmanın ne olduğunu, kodda hangi parçanın ne işe yaradığını açıklayabilir</li>
+      <li><span class="obj-icon">✅</span> scikit-learn ile regresyon, sınıflandırma, kümeleme ve ağaç tabanlı modellere giriş yapabilir</li>
+      <li><span class="obj-icon">✅</span> "Spark hazırlar → Pandas/sklearn analiz eder" desenini küçük bir örnekle uygulayabilir</li>
+    </ul>
+
+    <hr>
+
+    <h2 id="hikaye">🗺️ Hikaye Haritası — Veriden İçgörüye</h2>
+
+    <p>Önceki bölümlerde veriyi <em>topladık</em> (ETL), <em>ölçekledik</em> (Spark), <em>hızlandık</em> (Kafka) ve <em>koruduk</em> (KVKK, anonimleştirme). Bu bölümde cevapladığımız soru: <strong>"Peki bu veri bize ne anlatıyor?"</strong></p>
+
+    <div class="diagram-container story-map">
+      <div class="diagram-box">
+        <div class="mermaid">
+flowchart TD
+    P1["Temiz CSV / Parquet<br/>(Bölüm 2–3'ten)"] --> A1["EDA — veriye ilk bakış<br/>(Bölüm 1)"]
+    A1 --> P2["Hangi soruyu soruyoruz?"]
+    P2 --> A2["Grafik seç<br/>(Bölüm 2–5)"]
+    A2 --> P3["Tahmin mi, açıklama mı?"]
+    P3 --> A3["scikit-learn model<br/>(Bölüm 6)"]
+    A3 --> P4["Sonuç güvenilir mi?"]
+    P4 --> A4["Metrik + grafik + rapor<br/>(Bölüm 7)"]
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil 0: Analitik hattı — ham veriden grafik ve modele</div>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Önceki bölümlerden geçiş</div>
+      <p><strong>Bölüm 5</strong>'te Bölüm 3–4 konularını kodla pekiştirdiniz. Burada analitik katmana geçiyoruz: <strong>Bölüm 2</strong>'deki Pandas, <strong>Bölüm 3</strong>'teki temiz veri ve <strong>Bölüm 4</strong>'teki güvenlik farkındalığı üzerine EDA + grafik + basit model kuruyoruz.</p>
+    </div>
+
+    <hr>
+
+    <h2 id="on-bilgi">🧭 Sıfırdan Başlayanlar İçin — Bu Bölümün Mantığı</h2>
+
+    <div class="alert alert-info">
+      <div class="alert-title">👋 Ön koşul yok</div>
+      <p>Bu bölümde <strong>istatistik, matematik veya makine öğrenmesi bilmeniz beklenmiyor</strong>. Bölüm 2'de Pandas ile tablo okumayı, Bölüm 5'te kod yazmayı gördünüz — burada o tabloların <em>ne anlama geldiğini</em> ve <em>nasıl görselleştirileceğini</em> öğreneceğiz. İngilizce terimler geçecek; her birini Türkçe ve günlük örnekle açıklıyoruz.</p>
+    </div>
+
+    <p>Veri analizi üç katmandan oluşur:</p>
+    <ol>
+      <li><strong>EDA (Keşif):</strong> Veriye soru sormadan önce "elimizde ne var?" diye bakmak — tıpkı yemek yapmadan önce dolaptaki malzemeleri kontrol etmek gibi.</li>
+      <li><strong>Görselleştirme:</strong> Sayıları grafikle göstermek — insan gözü 200 satırlık tabloda örüntüyü kaçırır, grafikte görür.</li>
+      <li><strong>Makine öğrenmesi (isteğe bağlı):</strong> Geçmiş veriden <em>geleceği tahmin etmeye</em> çalışan basit formüller — "bu müşteri ayrılır mı?", "gelecek ay satış kaç TL?"</li>
+    </ol>
+
+    <hr>
+
+    <h2 id="veri-tipleri">📐 Veri Tipleri ve Sık Geçen Kelimeler</h2>
+
+    <p>Tablodaki her kolon farklı türde bilgi taşır. Grafik ve model seçimi <strong>kolonun türüne</strong> bağlıdır — yanlış türde yanlış araca giderseniz sonuç anlamsız olur.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">🔢 Sayısal — sürekli (continuous)</div>
+        <div class="card-desc">
+          <p>Arada sınırsız ara değer olabilir. Örnek: <strong>aylık harcama 247,50 TL</strong>, <strong>yaş 34</strong>, <strong>sıcaklık 22,3°C</strong>.</p>
+          <p><strong>Grafik:</strong> histogram, scatter, boxplot, line (zaman ise).</p>
+          <p><strong>ML:</strong> regresyon hedefi olabilir ("harcama ne kadar olur?").</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🏷️ Kategorik (categorical)</div>
+        <div class="card-desc">
+          <p>Sabit etiketlerden biri. Örnek: <strong>şehir = Ankara</strong>, <strong>kanal = Web</strong>, <strong>cinsiyet = K</strong>.</p>
+          <p><strong>Grafik:</strong> bar chart, countplot, pasta (az kategori).</p>
+          <p><strong>ML:</strong> sınıflandırma hedefi veya gruplama için kullanılır.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">0️⃣1️⃣ İkili / binary</div>
+        <div class="card-desc">
+          <p>Sadece iki değer. Örnek: <strong>churn = 0 (kaldı) veya 1 (ayrıldı)</strong>, <strong>spam = evet/hayır</strong>.</p>
+          <p>Özel bir kategorik tür; sınıflandırmanın en yaygın hali.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📅 Tarih-zaman</div>
+        <div class="card-desc">
+          <p><strong>2025-05-19 10:30</strong> gibi. Analizde genelde türetim yapılır: yıl, ay, hafta, gün adı.</p>
+          <p><strong>Grafik:</strong> line chart (zaman ekseninde trend).</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>📖 Kelime haznesi — günlük dille</h3>
+
+    <div class="glossary">
+      <div class="glossary-title">Analiz ve grafik terimleri</div>
+      <div class="table-wrapper">
+        <table class="vocab-table">
+          <thead>
+            <tr><th>Terim</th><th>Günlük dille ne demek?</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="vocab-term-cell"><strong>Dağılım</strong><span class="vocab-en">distribution</span></td>
+              <td>Verinin "nasıl yayıldığı". Örnek: "Yaşlar 20–60 arasına mı toplanmış, yoksa çoğu 30 civarında mı?" — histogram veya KDE ile görülür.</td>
+            </tr>
+            <tr>
+              <td class="vocab-term-cell"><strong>Ortalama</strong><span class="vocab-en">mean</span></td>
+              <td>Tüm değerleri topla, kişi sayısına böl. <strong>Aykırı değere çok duyarlı:</strong> 9 kişi 30.000 TL maaş, 1 kişi 1.000.000 TL → ortalama ~127.000 TL; "tipik maaş" gibi görünür ama yanıltıcıdır.</td>
+            </tr>
+            <tr>
+              <td class="vocab-term-cell"><strong>Medyan</strong><span class="vocab-en">median</span></td>
+              <td>Değerleri küçükten büyüğe dizince <strong>ortadaki</strong> sayı. Aykırı değerlerden etkilenmez. Maaş örneğinde medyan ~30.000 TL — çoğunluğu daha iyi temsil eder.</td>
+            </tr>
+            <tr>
+              <td class="vocab-term-cell"><strong>Çeyrek Q1, Q3</strong><span class="vocab-en">quartile</span></td>
+              <td>Veriyi dört eş parçaya bölen sınırlar. Q1 = alt %25, Q3 = üst %25. Boxplot'ta kutu Q1–Q3 arası; ortadaki çizgi medyandır.</td>
+            </tr>
+            <tr>
+              <td class="vocab-term-cell"><strong>Aykırı değer</strong><span class="vocab-en">outlier</span></td>
+              <td>Diğerlerinden <em>çok uzak</em> tek kayıt. Örnek: ortalama sepet 150 TL iken bir sipariş 99.999 TL. Ortalamayı ve bazı modelleri bozar — EDA'da mutlaka kontrol edilir.</td>
+            </tr>
+            <tr>
+              <td class="vocab-term-cell"><strong>Eksik değer</strong><span class="vocab-en">missing / NaN</span></td>
+              <td>Boş hücre. Excel'de boş; Pandas'ta <code>NaN</code>. "Bilinmiyor" — silmek, doldurmak veya modelle tahmin etmek gerekir.</td>
+            </tr>
+            <tr>
+              <td class="vocab-term-cell"><strong>Frekans</strong><span class="vocab-en">frequency</span></td>
+              <td>Bir değerin veya aralığın <strong>kaç kez</strong> geçtiği. Histogram'da sütun yüksekliği = frekans (adet).</td>
+            </tr>
+            <tr>
+              <td class="vocab-term-cell"><strong>Korelasyon</strong><span class="vocab-en">correlation</span></td>
+              <td>İki sayısal kolonun <strong>birlikte mi hareket ettiği</strong>. Biri artarken diğeri de artıyorsa pozitif; azalıyorsa negatif. <strong>Nedensellik değildir</strong> — sadece birlikte hareket.</td>
+            </tr>
+            <tr>
+              <td class="vocab-term-cell"><strong>Histogram</strong></td>
+              <td>Sayısal değerleri kutulara böler; her kutunun yüksekliği o aralıktaki kayıt <strong>sayısı</strong>dır (frekans).</td>
+            </tr>
+            <tr>
+              <td class="vocab-term-cell"><strong>KDE</strong><span class="vocab-en">kernel density estimation</span></td>
+              <td>Histogramın pürüzsüz eğri versiyonu. Her noktanın etrafına küçük tepe koyup toplarsınız. Y ekseni <strong>yoğunluk</strong> (frekans değil). Az veride abartılı olabilir.</td>
+            </tr>
+            <tr>
+              <td class="vocab-term-cell"><strong>Özellik / girdi</strong><span class="vocab-en">feature</span></td>
+              <td>Modelin baktığı kolonlar: yaş, harcama, destek çağrısı → tahmin için ipuçları.</td>
+            </tr>
+            <tr>
+              <td class="vocab-term-cell"><strong>Hedef / etiket</strong><span class="vocab-en">target / label</span></td>
+              <td>Tahmin etmek istediğin kolon: churn (0/1) veya gelecek ay satış (TL).</td>
+            </tr>
+            <tr>
+              <td class="vocab-term-cell"><strong>Eğitim ve test</strong><span class="vocab-en">train / test</span></td>
+              <td>Veriyi ikiye böl: model bir kısmıyla <em>öğrenir</em> (train), görmediği kısımda <em>sınava girer</em> (test).</td>
+            </tr>
+            <tr>
+              <td class="vocab-term-cell"><strong>Ezberleme</strong><span class="vocab-en">overfitting</span></td>
+              <td>Model eğitim verisini ezberler, yeni veride başarısız olur. Sınav sorularını ezberleyip farklı soruda kalakalmak gibi.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <hr>
+
+    <h2 id="gorsellestirme-nedir">👁️ Görselleştirme Nedir? Neden Grafik?</h2>
+
+    <p>200 müşterinin yaş ve harcamasını tabloda görmek zordur. Aynı veriyi scatter grafiğine koyunca: "gençler mi daha çok harcıyor?", "sağ üstte tek başına duran nokta var mı (aykırı)?" gibi sorular <strong>saniyeler içinde</strong> cevaplanır.</p>
+
+    <div class="comparison">
+      <div class="side">
+        <div class="side-title">❌ Tablo</div>
+        <p>200 satır × 5 kolon = 1000 hücre. İnsan gözü örüntü bulamaz. Raporlarda "ham veri" olarak nadiren konur.</p>
+      </div>
+      <div class="side">
+        <div class="side-title">✅ Grafik</div>
+        <p>Örüntü, trend, aykırı değer, grup farkı görsel olarak öne çıkar. Sunum ve karar için kullanılır — ama <em>doğru grafik türü</em> seçilmeli.</p>
+      </div>
+    </div>
+
+    <p>Bu bölümde üç kütüphane kullanacağız:</p>
+    <ul>
+      <li><strong>Matplotlib</strong> — tuval ve fırça; en temel, en esnek.</li>
+      <li><strong>Seaborn</strong> — Matplotlib üzerine istatistik grafikleri; daha az kod, daha şık varsayılan.</li>
+      <li><strong>Plotly</strong> — fare ile zoom/hover; sunum ve keşif için interaktif.</li>
+    </ul>
+
+    <hr>
+
+    <h2 id="eda">🔍 Bölüm 1: EDA — Veriye İlk Bakış</h2>
+
+    <p><strong>EDA (Exploratory Data Analysis — Keşifsel Veri Analizi)</strong>, modele veya karmaşık grafiğe geçmeden önce veriyi tanımaktır. Amacı: sürprizleri erken yakalamak — boş hücreler, yanlış yazılmış 99.999 TL, hiç gelmeyen bir kategori…</p>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">🎬 Günlük analoji</div>
+      <p>Market alışverişine çıkmadan önce dolaba bakmak EDA'dır. "Yumurta var mı, süt bitmiş mi, bozuk bir domates var mı?" — yemek tarifine (modele) geçmeden önce malzemeyi kontrol edersiniz.</p>
+    </div>
+
+    <h3>Checklist — her adım ne demek?</h3>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">1️⃣</div>
+        <div class="card-title">Şekil (shape)</div>
+        <div class="card-desc">
+          <p><strong>Kaç satır, kaç kolon?</strong> <code>df.shape</code> → <code>(200, 5)</code> = 200 müşteri, 5 bilgi alanı.</p>
+          <p>Az satır (&lt;100) istatistiksel sonuçları zayıflatır; çok kolon (&gt;50) karmaşıklığı artırır.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">2️⃣</div>
+        <div class="card-title">Tipler (dtypes)</div>
+        <div class="card-desc">
+          <p>Her kolon sayı mı, metin mi, tarih mi? <code>df.dtypes</code> ve <code>df.info()</code>.</p>
+          <p><strong>Hata kaynağı:</strong> fiyat kolonu metin (<code>"120,50"</code>) olarak gelmişse toplama/ortalama çalışmaz — önce sayıya çevirmek gerekir.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">3️⃣</div>
+        <div class="card-title">Eksik değer</div>
+        <div class="card-desc">
+          <p><code>df.isna().sum()</code> — hangi kolonda kaç boş hücre?</p>
+          <p>%5 eksik: doldurulabilir. %40 eksik: o kolonu düşünmek veya kaynağı sorgulamak gerekebilir.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">4️⃣</div>
+        <div class="card-title">Dağılım (describe)</div>
+        <div class="card-desc">
+          <p><code>df.describe()</code> — min, max, ortalama, medyan (50%), çeyrekler.</p>
+          <p>Min=0, max=999999 ise aykırı veya hata şüphesi. Ortalama >> medyan ise birkaç çok büyük değer ortalamayı şişiriyor demektir.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">5️⃣</div>
+        <div class="card-title">Grup özeti (groupby)</div>
+        <div class="card-desc">
+          <p>"Ankara'daki müşteriler İstanbul'dakinden daha mı çok harcıyor?" → <code>groupby("sehir")["harcama"].mean()</code></p>
+          <p>Kategorik kolona göre sayısal kolonu özetler.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">6️⃣</div>
+        <div class="card-title">Aykırı değer</div>
+        <div class="card-desc">
+          <p><code>df.nlargest(5, "harcama")</code> veya boxplot ile uç noktalar.</p>
+          <p>99.999 TL tek sipariş: veri hatası mı, VIP müşteri mi? Karar verip silmek, kırpmak veya olduğu gibi bırakmak gerekir — gerekçeyi yazın.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>🐍 Mini Uygulama: EDA checklist</h3>
+
+    <p>Aşağıdaki örnek veri seti, abonelik uygulamasından gelen müşteri kayıtlarını simüle eder (Bölüm 4'teki churn senaryosuyla aynı dünya).</p>
+
+    <div class="code-block" data-lang="python" data-filename="eda_checklist.py">
+      <pre><code>import pandas as pd
+import numpy as np
+
+np.random.seed(42)
+df = pd.DataFrame({
+    "yas":           np.random.randint(18, 65, 200),
+    "aylik_harcama": np.round(np.random.uniform(50, 500, 200), 2),
+    "sehir":         np.random.choice(["Ankara", "İstanbul", "İzmir", "Bursa"], 200),
+    "destek_cagri":  np.random.poisson(1.2, 200),
+    "churn":         np.random.choice([0, 1], 200, p=[0.72, 0.28]),
+})
+# Bilerek birkaç eksik ve aykırı ekleyelim (gerçek veri gibi)
+df.loc[3:5, "aylik_harcama"] = np.nan
+df.loc[10, "aylik_harcama"] = 9999.0
+
+# 1) Şekil
+print("Satır × kolon:", df.shape)
+print("Kolonlar:", list(df.columns))
+
+# 2) Tipler
+print(df.dtypes)
+print(df.info())
+
+# 3) Eksik değer
+print("\nEksik sayısı:\n", df.isna().sum())
+
+# 4) Sayısal özet
+print("\n", df.describe())
+
+# 5) Grup bazlı özet — hangi şehirde ortalama harcama daha yüksek?
+print("\nŞehir bazında ortalama harcama:")
+print(df.groupby("sehir")["aylik_harcama"].mean().sort_values(ascending=False))
+
+# 6) Aykırı değer ipucu — 9999 TL tek satırda mı?
+print("\nEn yüksek 5 harcama:\n", df.nlargest(5, "aylik_harcama")[["sehir", "aylik_harcama"]])</code></pre>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 Eksik değerle ne yapılır?</div>
+      <p>Üç yaygın yol:</p>
+      <ul>
+        <li><strong>Satırı sil</strong> — eksik az ise ve rastgele dağılmışsa.</li>
+        <li><strong>Ortalama / medyan ile doldur</strong> — sayısal kolonlarda; medyan aykırı değerden daha güvenli.</li>
+        <li><strong>Model içinde doldur</strong> — sklearn <code>SimpleImputer</code>; pipeline'ın parçası olur.</li>
+      </ul>
+      <p>Hangisini seçtiğinizi kısa gerekçeyle not edin: "Harcama eksikleri medyan ile dolduruldu çünkü aykırı değer ortalamayı bozardı."</p>
+    </div>
+
+    <hr>
+
+    <h2 id="grafik-rehber">📊 Bölüm 2: Hangi Grafik Hangi Soruya Cevap Verir?</h2>
+
+    <p>Doğru grafik seçmek, doğru algoritma seçmek kadar önemli. <strong>Her grafik türü her zaman uygun değildir</strong> — yanlış grafik ya hiçbir şey göstermez ya da yanlış sonuç çıkarırsınız. Önce soruyu netleştirin, sonra grafiği seçin.</p>
+
+    <div class="alert alert-warning">
+      <div class="alert-title">⚠️ Altın kural</div>
+      <p>Grafik bir <em>iddia</em> taşır. "Bu dağılım normal mi?", "Bu iki değişken birlikte mi artıyor?", "Bu gruplar farklı mı?" — soruyu cümle olarak yazın; tablo satırına bakın.</p>
+    </div>
+
+    <h3>📋 Grafik türleri karşılaştırması</h3>
+
+    <div class="table-wrapper">
+      <table class="chart-guide-table">
+        <thead>
+          <tr><th>Grafik</th><th>Hangi soruya cevap?</th><th>Ne zaman iyi?</th><th>Ne zaman kötü / dikkat</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Histogram</strong></td>
+            <td>Tek sayısal kolonun dağılımı nasıl?</td>
+            <td>Yaş, fiyat, süre gibi sürekli değişkenler; aykırı değer ve çarpıklık görmek</td>
+            <td>Kategori saymak için kullanma (bar kullan). <code>bins</code> sayısı grafiği yanıltır — çok az = detay kaybı, çok fazla = gürültü</td>
+          </tr>
+          <tr>
+            <td><strong>KDE</strong> (yoğunluk eğrisi)</td>
+            <td>Dağılımın "şekli" nedir? Gruplar üst üste mi?</td>
+            <td>İki+ grubun dağılımını aynı eksende kıyaslamak; histograma göre daha akıcı görünüm</td>
+            <td>Az veride (< ~30 nokta) abartılı eğriler üretir. Kesikli/aralıklı veride yanıltıcı olabilir</td>
+          </tr>
+          <tr>
+            <td><strong>Bar / Countplot</strong></td>
+            <td>Hangi kategori kaç kez geçiyor?</td>
+            <td>Şehir, ürün tipi, HTTP status gibi <em>sayılabilir</em> kategoriler</td>
+            <td>Çok kategori (50+) okunmaz — filtrele veya sırala. Sayısal sürekli değişken için bar kullanma</td>
+          </tr>
+          <tr>
+            <td><strong>Scatter</strong> (nokta)</td>
+            <td>İki sayısal değişken birlikte mi hareket ediyor?</td>
+            <td>İlişki, küme, aykırı nokta aramak; 3. boyutu renkle/boyutla kodlamak</td>
+            <td>10.000+ noktada "mürekkep lekesi" — <code>alpha</code> düşür, hexbin veya örnekle. Zaman serisinde line tercih et</td>
+          </tr>
+          <tr>
+            <td><strong>Line</strong> (çizgi)</td>
+            <td>Zaman içinde trend var mı?</td>
+            <td>Günlük satış, sıcaklık, trafik — <em>x ekseni zaman</em> olduğunda</td>
+            <td>Kategoriler arası kıyas için line kullanma (bar/boxplot). Eksik tarihlerde çizgi yanıltır — önce doldur</td>
+          </tr>
+          <tr>
+            <td><strong>Boxplot</strong></td>
+            <td>Gruplar arasında dağılım farkı var mı? Aykırı var mı?</td>
+            <td>Churn vs harcama, şehir vs maaş — medyan ve çeyrekler net görünür</td>
+            <td>Dağılım şeklini (çok modlu) iyi göstermez — violin veya histogram ekle. Az gözlem (<5) anlamsız</td>
+          </tr>
+          <tr>
+            <td><strong>Violin</strong></td>
+            <td>Boxplot + dağılım şekli bir arada</td>
+            <td>Grup dağılımları simetrik değilse, çift tepeli ise</td>
+            <td>Az veride KDE gürültüsü yapar. Okuması boxplot'tan zor</td>
+          </tr>
+          <tr>
+            <td><strong>Heatmap</strong></td>
+            <td>Kolonlar birbiriyle ne kadar korele?</td>
+            <td>Çok sayısal kolonlu EDA; korelasyon matrisi</td>
+            <td>Korelasyon ≠ nedensellik. Kategorik veride anlamsız. Çok büyük matrisler okunmaz</td>
+          </tr>
+          <tr>
+            <td><strong>Pie / pasta</strong></td>
+            <td>Parçalar bütünün yüzde kaçı?</td>
+            <td>2–4 dilim, sunum slaytı, basit paylaşım hikâyesi</td>
+            <td>5+ dilim okunmaz — bar chart genelde daha iyi. Küçük farkları abartır</td>
+          </tr>
+          <tr>
+            <td><strong>Plotly (interaktif)</strong></td>
+            <td>Detay incelemek, filtrelemek, sunmak</td>
+            <td>Dashboard, rapor sunumu, hover ile nokta detayı</td>
+            <td>Statik PDF/Word raporunda işe yaramaz — PNG export veya Matplotlib kullan</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>🔬 Histogram vs KDE — fark ne?</h3>
+
+    <div class="comparison">
+      <div class="side">
+        <div class="side-title">Histogram</div>
+        <p>Veriyi sabit genişlikte kutulara böler; her kutunun yüksekliği = o aralıktaki kayıt sayısı. Basit, yorumlaması kolay. Kutu sayısı (<code>bins</code>) sizin kararınız — az kutu = detay kaybı, çok kutu = tırtıklı gürültü.</p>
+      </div>
+      <div class="side">
+        <div class="side-title">KDE (Kernel Density Estimation)</div>
+        <p>Her veri noktasının etrafına küçük bir "tepe" (Gauss çan eğrisi) koyar; tepeleri toplayınca pürüzsüz bir eğri çıkar. "Hangi yaşlar daha yoğun?" sorusuna histogram gibi cevap verir. İki grubu aynı grafikte kıyaslamak (churn vs kalan) için histogramdan okunaklı olabilir.</p>
+      </div>
+    </div>
+
+    <figure class="chart-gallery-figure">
+      <img src="images/grafik_histogram_kde.png" alt="Histogram ve KDE yan yana karşılaştırma" loading="lazy" width="880">
+      <figcaption>Şekil 2a: Aynı yaş verisi — solda histogram (kutu yüksekliği = kişi sayısı), sağda KDE. Açıklama kutuları grafiğin altında; başlıkla çakışmaz.</figcaption>
+    </figure>
+
+    <figure class="chart-gallery-figure">
+      <img src="images/grafik_boxplot_aciklama.png" alt="Boxplot okuma rehberi — medyan, çeyrekler, aykırı" loading="lazy" width="560">
+      <figcaption>Şekil 2b: Boxplot anatomisi — üstte şema, altta solda sarı not kutusu ve sağda mini gerçek veri örneği (çakışmaz).</figcaption>
+    </figure>
+
+    <figure class="chart-gallery-figure">
+      <img src="images/grafik_scatter_korelasyon.png" alt="Scatter plot pozitif ilişki vs ilişkisiz veri" loading="lazy" width="880">
+      <figcaption>Şekil 2c: Scatter — sol: destek arttıkça harcama artma eğilimi (pozitif korelasyon); sağ: ilişki yok.</figcaption>
+    </figure>
+
+    <figure class="chart-gallery-figure">
+      <img src="images/grafik_bar_vs_pie.png" alt="Bar chart vs pasta grafiği karşılaştırması" loading="lazy" width="800">
+      <figcaption>Şekil 2d: Bar vs pasta — üç kategori için ikisi de olur; bar'da uzunluk kıyaslamak genelde daha kolay.</figcaption>
+    </figure>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 Pratik seçim</div>
+      <ul>
+        <li><strong>Tek kolon, hızlı bakış</strong> → histogram</li>
+        <li><strong>İki grubu kıyasla</strong> (ör. churn vs kalan harcama) → KDE veya üst üste histogram</li>
+        <li><strong>Az veri (&lt; 50 satır)</strong> → histogram; KDE abartabilir</li>
+        <li><strong>Kategori say</strong> → bar/countplot — asla histogram değil</li>
+      </ul>
+    </div>
+
+    <hr>
+
+    <h2 id="grafik-galeri">🖼️ Bölüm 2b: Grafik Türleri Galerisi — Tek Script, On Altı Grafik</h2>
+
+    <p>Aşağıdaki script iki PNG üretir: <strong>12 grafik</strong> (4×3 ızgara) + <strong>4 ek grafik</strong> (area, hexbin, yatay bar, histogram+KDE). Colab'da çalıştırmak için kodu kopyalayın veya repodaki script'i doğrudan çalıştırın:</p>
+    <p><code>python docs/ders-notlari/scripts/generate_grafik_galeri.py</code></p>
+
+    <div class="code-block" data-lang="python" data-filename="scripts/generate_grafik_galeri.py">
+      <pre><code># Tam kod: scripts/generate_grafik_galeri.py
+# Özet — 4×3 galeri (1–12):
+fig, axes = plt.subplots(4, 3, figsize=(16, 18))
+# 1 histogram  2 bar  3 scatter
+# 4 line       5 boxplot  6 heatmap
+# 7 countplot  8 kde      9 violin
+# 10 pasta     11 yığılmış bar  12 stripplot
+plt.savefig("grafik_galeri.png")
+
+# Ek galeri (13–16):
+fig, axes = plt.subplots(2, 2, figsize=(12, 9))
+# 13 area (zaman)  14 hexbin (çok nokta)
+# 15 yatay bar     16 histogram + KDE birlikte
+plt.savefig("grafik_galeri_ek.png")</code></pre>
+    </div>
+
+    <p>Tam, çalıştırılabilir kod için dosyayı açın — her grafik satır satır yorumlu:</p>
+
+    <div class="code-block" data-lang="python" data-colab-only="true" data-filename="scripts/generate_grafik_galeri.py">
+      <pre><code># Colab: !git clone ... veya dosyayı yükleyin, sonra:
+# %run generate_grafik_galeri.py
+# veya aşağıdaki fonksiyonları hücre hücre çalıştırın
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+np.random.seed(42)
+df = pd.DataFrame({
+    "tarih": pd.date_range("2025-01-01", periods=120, freq="D"),
+    "satis": np.random.randint(80, 220, 120) + np.sin(np.linspace(0, 6, 120)) * 30,
+    "sehir": np.random.choice(["Ankara", "İstanbul", "İzmir"], 120),
+    "kanal": np.random.choice(["Web", "Mobil", "Mağaza"], 120),
+    "yas": np.random.randint(18, 65, 120),
+    "harcama": np.random.uniform(50, 500, 120),
+})
+df["ay"] = df["tarih"].dt.to_period("M").astype(str)
+aylik = df.groupby("ay")["satis"].sum()
+
+fig, axes = plt.subplots(4, 3, figsize=(16, 18))
+fig.suptitle("Grafik türleri galerisi (1/2)", fontsize=14)
+
+axes[0,0].hist(df["yas"], bins=12, color="#6366f1", edgecolor="white")
+axes[0,0].set_title("1) Histogram")
+axes[0,1].bar(df["sehir"].value_counts().index, df["sehir"].value_counts().values, color="#16a34a")
+axes[0,1].set_title("2) Bar")
+axes[0,2].scatter(df["yas"], df["harcama"], alpha=0.5, c="#dc2626", s=25)
+axes[0,2].set_title("3) Scatter")
+axes[1,0].plot(aylik.index, aylik.values, marker="o", color="#2563eb")
+axes[1,0].set_title("4) Line")
+sns.boxplot(data=df, x="kanal", y="harcama", ax=axes[1,1], hue="kanal", legend=False)
+axes[1,1].set_title("5) Boxplot")
+sns.heatmap(df[["satis","yas","harcama"]].corr(), annot=True, ax=axes[1,2], cmap="RdBu_r", center=0)
+axes[1,2].set_title("6) Heatmap")
+sns.countplot(data=df, x="sehir", hue="kanal", ax=axes[2,0])
+axes[2,0].set_title("7) Countplot")
+sns.kdeplot(data=df, x="harcama", hue="sehir", ax=axes[2,1], fill=True, alpha=0.3)
+axes[2,1].set_title("8) KDE")
+sns.violinplot(data=df, x="kanal", y="harcama", ax=axes[2,2], hue="kanal", legend=False)
+axes[2,2].set_title("9) Violin")
+axes[3,0].pie(df["kanal"].value_counts(), labels=df["kanal"].value_counts().index, autopct="%1.0f%%")
+axes[3,0].set_title("10) Pasta")
+df.groupby(["ay","kanal"])["satis"].sum().unstack(fill_value=0).plot(kind="bar", stacked=True, ax=axes[3,1])
+axes[3,1].set_title("11) Yığılmış bar")
+sns.stripplot(data=df, x="sehir", y="harcama", ax=axes[3,2], alpha=0.5)
+axes[3,2].set_title("12) Stripplot")
+plt.tight_layout()
+plt.savefig("grafik_galeri.png", dpi=125, bbox_inches="tight")
+plt.show()</code></pre>
+    </div>
+
+    <h3>Grafik türleri (1–12) — ne işe yarar?</h3>
+    <p>Önce her türün kısa açıklamasını okuyun; ardından aşağıdaki galeri görselinde numaralarla eşleştirin.</p>
+    <ol class="chart-type-catalog">
+      <li><strong>Histogram</strong> — tek sayısal dağılım; frekans kutuları</li>
+      <li><strong>Bar</strong> — kategorik sayım; sütun yüksekliği = adet</li>
+      <li><strong>Scatter</strong> — iki sayısal kolon arası ilişki</li>
+      <li><strong>Line</strong> — zaman trendi (x ekseni tarih olmalı)</li>
+      <li><strong>Boxplot</strong> — gruplar arası medyan, çeyrek ve aykırı kıyası</li>
+      <li><strong>Heatmap</strong> — sayısal kolonlar arası korelasyon matrisi</li>
+      <li><strong>Countplot</strong> — iki kategorik kolonun frekans dağılımı</li>
+      <li><strong>KDE</strong> — yoğunluk eğrisi; grupları üst üste kıyas</li>
+      <li><strong>Violin</strong> — boxplot + yoğunluk bir arada</li>
+      <li><strong>Pasta</strong> — az kategoride oran vurgusu (≤5 dilim ideal)</li>
+      <li><strong>Yığılmış bar</strong> — parçaların toplam içindeki payı</li>
+      <li><strong>Stripplot</strong> — her veri noktasını tek tek gösterir</li>
+    </ol>
+
+    <figure class="chart-gallery-figure">
+      <img src="images/grafik_galeri.png" alt="On iki grafik türü galerisi — histogram, bar, scatter, line, boxplot, heatmap, countplot, KDE, violin, pasta, yığılmış bar, stripplot" loading="lazy" width="980">
+      <figcaption>Şekil 2e: Grafik galerisi 1/2 — yukarıdaki 1–12 numaraları bu ızgaradaki alt grafiklerle eşleşir</figcaption>
+    </figure>
+
+    <h3>Ek türler (13–16)</h3>
+    <ol class="chart-type-catalog">
+      <li><strong>Area</strong> — zaman serisinde hacim / birikim hissi</li>
+      <li><strong>Hexbin</strong> — binlerce noktada yoğunluk hücreleri</li>
+      <li><strong>Yatay bar</strong> — uzun kategori etiketleri için</li>
+      <li><strong>Hist+KDE</strong> — yoğunluk (density) ölçeğinde sütun + pürüzsüz eğri birlikte</li>
+    </ol>
+
+    <figure class="chart-gallery-figure">
+      <img src="images/grafik_galeri_ek.png" alt="Ek dört grafik — area, hexbin, yatay bar, histogram KDE" loading="lazy" width="880">
+      <figcaption>Şekil 2f: Grafik galerisi 2/2 — 13–16 numaralı ek türler. 16) Histogram+KDE: sütunlar ve kırmızı eğri <strong>yoğunluk (density)</strong> ölçeğinde — frekans (adet) ile KDE aynı eksende karıştırılmaz.</figcaption>
+    </figure>
+
+    <hr>
+
+    <h2 id="grafik-ornekleri">🖼️ Bölüm 2c: Grafikleri Okumayı Öğrenmek</h2>
+
+    <p>Yukarıdaki görselleri şu sırayla inceleyin: önce <strong>tek başına ne gösteriyor</strong>, sonra <strong>yanlış yorum riski</strong> nedir?</p>
+
+    <div class="table-wrapper">
+      <table class="chart-guide-table">
+        <thead>
+          <tr><th>Şekil</th><th>Ne okuyorsunuz?</th><th>Yanlış yorum örneği</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>2a Histogram/KDE</td><td>En sık görülen değer aralığı; tek mi çift mi tepe var</td><td>"Tepe 28 yaş" ≠ "herkes 28 yaşında"</td></tr>
+          <tr><td>2b Boxplot</td><td>Gruplar arası medyan farkı; aykırı noktalar</td><td>Kutu kısa = herkes aynı değerde değil; sadece orta %50 sıkışık</td></tr>
+          <tr><td>2c Scatter</td><td>İki değişken birlikte mi hareket ediyor</td><td>"Birlikte artıyor" ≠ "biri diğerine neden oluyor"</td></tr>
+          <tr><td>2d Bar vs Pasta</td><td>Kategori payları; bar'da uzunluk kıyası</td><td>Pasta dilimlerini "hangisi daha büyük" diye gözle kıyaslamak zor</td></tr>
+          <tr><td>2e Galeri</td><td>Her grafik türünün tipik görünümü</td><td>Hepsini aynı veriye uygulamak — soruya göre seçim</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr>
+
+    <h2 id="matplotlib">📈 Bölüm 3: Matplotlib — Temel Grafikler</h2>
+
+    <p><strong><a href="https://matplotlib.org/" target="_blank" rel="noopener">Matplotlib</a></strong> Python'da grafik çizmenin temel katmanıdır. Pandas'ın <code>.plot()</code> metodu arka planda çoğu zaman Matplotlib kullanır. Seaborn ve Plotly de bir noktada Matplotlib'e (veya benzer bir render katmanına) dayanır.</p>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🧰 Nasıl kullanılır? — 4 adımlı kalıp</div>
+      <ol>
+        <li><code>import matplotlib.pyplot as plt</code></li>
+        <li>Figure + axes oluştur: <code>fig, ax = plt.subplots()</code> (veya birden fazla alt grafik için <code>plt.subplots(1, 3)</code>)</li>
+        <li>Çiz: <code>ax.hist(...)</code>, <code>ax.scatter(...)</code>, <code>ax.plot(...)</code></li>
+        <li>Başlık/etiket ekle, kaydet: <code>plt.tight_layout()</code> → <code>plt.savefig("grafik.png")</code> → <code>plt.show()</code></li>
+      </ol>
+    </div>
+
+    <p>Aşağıdaki kod EDA bölümündeki <code>df</code> üzerinde çalışır. Her satırın ne yaptığı yorumlu.</p>
+
+    <div class="code-block" data-lang="python" data-filename="eda_matplotlib.py">
+      <pre><code>import matplotlib.pyplot as plt
+
+# EDA'daki df hazır olsun; eksikleri medyan ile dolduralım
+df_plot = df.copy()
+df_plot["aylik_harcama"] = df_plot["aylik_harcama"].fillna(df_plot["aylik_harcama"].median())
+
+# fig = tüm şekil, axes = alt grafik listesi (burada 1 satır × 3 sütun)
+fig, axes = plt.subplots(1, 3, figsize=(14, 4))
+
+# ── Grafik 1: Histogram ──
+# bins = kaç kutuya böleceğiz. Tek sayısal kolon (yas) dağılımı.
+axes[0].hist(df_plot["yas"], bins=15, color="#6366f1", edgecolor="white")
+axes[0].set_title("Yaş dağılımı")
+axes[0].set_xlabel("Yaş")
+axes[0].set_ylabel("Frekans")
+
+# ── Grafik 2: Scatter ──
+# İki sayısal kolon; c= renk kodu (churn 0/1). alpha = şeffaflık (üst üste binen noktalar)
+axes[1].scatter(df_plot["aylik_harcama"], df_plot["destek_cagri"],
+                alpha=0.5, c=df_plot["churn"], cmap="coolwarm")
+axes[1].set_title("Harcama vs destek çağrısı (renk = churn)")
+axes[1].set_xlabel("Aylık harcama")
+axes[1].set_ylabel("Destek çağrısı")
+
+# ── Grafik 3: Line ──
+# groupby ile şehir ortalaması; line kategoriler arası trend için ideal DEĞİL ama
+# karşılaştırma için kullanılabilir — bar da olurdu.
+sehir_avg = df_plot.groupby("sehir")["aylik_harcama"].mean().sort_values()
+axes[2].plot(sehir_avg.index, sehir_avg.values, marker="o", color="#16a34a")
+axes[2].set_title("Şehir bazında ort. harcama")
+axes[2].tick_params(axis="x", rotation=30)
+
+plt.tight_layout()          # Alt grafikler üst üste binmesin
+plt.savefig("eda_matplotlib.png", dpi=120)
+plt.show()</code></pre>
+    </div>
+
+    <hr>
+
+    <h2 id="seaborn">🎨 Bölüm 4: Seaborn — İstatistiksel Grafikler</h2>
+
+    <p><strong><a href="https://seaborn.pydata.org/" target="_blank" rel="noopener">Seaborn</a></strong>, Matplotlib üzerine kurulu istatistik odaklı bir kütüphanedir. Tek satırla countplot, boxplot, heatmap, violin çizebilirsiniz; varsayılan tema genelde daha şıktır.</p>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🧰 Nasıl kullanılır?</div>
+      <ul>
+        <li><code>import seaborn as sns</code> + <code>import matplotlib.pyplot as plt</code> (Seaborn çizimi Matplotlib'e gider)</li>
+        <li>Veriyi <code>data=df</code> ile verin; kolon adlarını <code>x=</code>, <code>y=</code>, <code>hue=</code> ile belirtin</li>
+        <li><code>sns.set_theme(style="whitegrid")</code> — tutarlı görünüm</li>
+        <li>Çoğu fonksiyon <code>ax=axes[i]</code> alır; subplot ile birleştirmek kolay</li>
+      </ul>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="scripts/generate_seaborn_ornek.py">
+      <pre><code>import seaborn as sns
+import matplotlib.pyplot as plt
+
+sns.set_theme(style="whitegrid")
+df_plot["churn_etiket"] = df_plot["churn"].map({0: "Kaldı", 1: "Ayrıldı"})
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+
+# countplot = kategorik frekans. hue = ikinci kategori (gruplu bar)
+sns.countplot(data=df_plot, x="sehir", hue="churn_etiket", ax=axes[0])
+axes[0].set_title("Şehir × churn dağılımı")
+axes[0].tick_params(axis="x", rotation=30)
+
+# boxplot = medyan, çeyrekler, aykırı noktalar. Gruplar arası sayısal kıyas.
+sns.boxplot(data=df_plot, x="churn_etiket", y="aylik_harcama", ax=axes[1])
+axes[1].set_title("Churn vs harcama")
+
+plt.tight_layout()
+plt.savefig("seaborn_ornek.png", dpi=120)
+plt.show()
+
+# Korelasyon ısı haritası — sadece sayısal kolonlar
+num = df_plot[["yas", "aylik_harcama", "destek_cagri", "churn"]]
+plt.figure(figsize=(6, 4))
+sns.heatmap(num.corr(), annot=True, cmap="RdBu_r", center=0, fmt=".2f")
+plt.title("Korelasyon matrisi")
+plt.tight_layout()
+plt.show()</code></pre>
+    </div>
+
+    <figure class="chart-gallery-figure">
+      <img src="images/seaborn_ornek.png" alt="Seaborn countplot, boxplot, heatmap ve violin örnekleri" loading="lazy" width="960">
+      <figcaption>Şekil 4: Seaborn ile countplot, boxplot, heatmap ve violin — <code>python scripts/generate_seaborn_ornek.py</code></figcaption>
+    </figure>
+
+    <hr>
+
+    <h2 id="plotly">✨ Bölüm 5: Plotly — İnteraktif Grafikler</h2>
+
+    <p><strong><a href="https://plotly.com/python/" target="_blank" rel="noopener">Plotly</a></strong> grafikleri tarayıcıda zoom, pan ve hover (fare üzerine gelince detay) ile etkileşimli yapar. Jupyter / Colab sunumları ve dashboard'lar için uygundur; statik Word/PDF raporunda Matplotlib tercih edilir.</p>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🧰 Nasıl kullanılır?</div>
+      <ul>
+        <li><strong>Plotly Express (<code>px</code>):</strong> Hızlı grafik — <code>px.scatter(df, x=..., y=..., color=...)</code></li>
+        <li><strong>Plotly Graph Objects (<code>go</code>):</strong> İnce ayar, çok katmanlı grafikler</li>
+        <li><code>fig.show()</code> — Colab/Jupyter'da interaktif açılır</li>
+        <li>Statik PNG için <code>fig.write_image()</code> (kaleido paketi gerekir) veya ekran görüntüsü</li>
+      </ul>
+    </div>
+
+    <div class="code-block" data-lang="python" data-colab-only="true" data-filename="scripts/generate_plotly_ornek.py">
+      <pre><code>import plotly.express as px
+
+# hover_data = fare ile üzerine gelince gösterilecek ek kolonlar
+fig = px.scatter(
+    df_plot, x="aylik_harcama", y="destek_cagri",
+    color=df_plot["churn"].map({0: "Kaldı", 1: "Ayrıldı"}),
+    hover_data=["sehir", "yas"],
+    title="İnteraktif scatter — fare ile nokta detayı",
+    labels={"aylik_harcama": "Aylık harcama (TL)", "destek_cagri": "Destek çağrısı"},
+)
+fig.update_traces(marker=dict(size=9, opacity=0.7))
+fig.show()  # Colab / Jupyter'da zoom + hover aktif</code></pre>
+    </div>
+
+    <figure class="chart-gallery-figure">
+      <img src="images/plotly_ornek.png" alt="Plotly scatter örneği — harcama vs destek, churn renkli" loading="lazy" width="900">
+      <figcaption>Şekil 5: Plotly scatter'ın statik önizlemesi. Canlı sürümde noktaların üzerine gelince şehir/yaş bilgisi görünür.</figcaption>
+    </figure>
+
+    <hr>
+
+    <h2 id="ml-nedir">🤖 Makine Öğrenmesi Nedir? — Sıfırdan</h2>
+
+    <p><strong>Makine öğrenmesi (ML)</strong>, bilgisayara "if harcama &gt; 500 then churn" gibi elle yazılmış kurallar vermek yerine, <strong>geçmiş örneklerden örüntü çıkarmayı</strong> öğretmektir. Binlerce müşteri satırına bakılır; model hangi özellik kombinasyonlarının ayrılma veya yüksek harcamayla birlikte geldiğini sayısal olarak öğrenir. Yeni müşteri gelince aynı özellikleri okuyup tahmin üretir.</p>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">🎬 Günlük analoji — meyve seçmek</div>
+      <p>Size 100 elma gösterilir: "Bunlar olgun, bunlar ham." Siz renk, yumuşaklık, koku gibi ipuçlarından <em>kendi kuralınızı</em> çıkarırsınız. ML de aynı mantıkla çalışır — fark, kuralları insan cümlesi değil <strong>katsayılar ve eşikler</strong> olarak saklar.</p>
+    </div>
+
+    <h3>Model, özellik, hedef — üç kelime</h3>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Kavram</th><th>Ne demek?</th><th>Churn örneği</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Özellik (feature, X)</strong></td>
+            <td>Modelin baktığı girdi kolonları</td>
+            <td><code>yas</code>, <code>aylik_harcama</code>, <code>destek_cagri</code></td>
+          </tr>
+          <tr>
+            <td><strong>Hedef (target, y)</strong></td>
+            <td>Tahmin etmek istediğiniz kolon</td>
+            <td><code>churn</code> (0=kaldı, 1=ayrıldı) veya <code>aylik_harcama</code> (TL)</td>
+          </tr>
+          <tr>
+            <td><strong>Model</strong></td>
+            <td>Özelliklerden hedefe giden öğrenilmiş fonksiyon</td>
+            <td>"Bu üç sayıya bak → %68 ayrılma olasılığı" veya "312 TL harcama"</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p><strong>fit</strong> = model eğitim verisindeki (X, y) çiftlerine bakıp iç parametrelerini ayarlar. <strong>predict</strong> = eğitimde görmediği yeni X satırlarına tahmin yazar. sklearn'de neredeyse her algoritma aynı isimleri kullanır — bu tutarlılık başlangıç için büyük rahatlık.</p>
+
+    <h3>İki büyük aile</h3>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Denetimli öğrenme (Supervised)</div>
+        <div class="card-desc">
+          <p>Her satırda <strong>doğru cevap (etiket)</strong> vardır. Model "girdi → cevap" çiftlerinden öğrenir.</p>
+          <p><strong>Regresyon:</strong> cevap sürekli sayı — aylık harcama, sıcaklık, fiyat.</p>
+          <p><strong>Sınıflandırma:</strong> cevap sınıf — kaldı/ayrıldı, spam/değil, A/B/C segmenti.</p>
+          <p><em>Ne zaman?</em> Geçmişte hem özellik hem doğru cevap kayıtlıysa.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Denetimsiz öğrenme (Unsupervised)</div>
+        <div class="card-desc">
+          <p>Etiket yok. Model verideki <strong>doğal grupları veya yapıyı</strong> bulur.</p>
+          <p><strong>Kümeleme (KMeans):</strong> "Benzer müşteriler hangi kümelerde?" — pazarlama segmentasyonu.</p>
+          <p><strong>Boyut indirgeme (PCA):</strong> 50 kolonu 2–3 özet eksene sıkıştır — görselleştirme.</p>
+          <p><em>Ne zaman?</em> "Kime kampanya atayacağımızı bilmiyoruz, önce grupları keşfedelim" dediğinizde.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Hangi problem → hangi yöntem?</h3>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Soru</th><th>Problem tipi</th><th>Örnek algoritma</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>"Gelecek ay kaç TL harcar?"</td><td>Regresyon</td><td>LinearRegression, RandomForestRegressor</td></tr>
+          <tr><td>"Ayrılır mı, kalm mı?"</td><td>İkili sınıflandırma</td><td>LogisticRegression, DecisionTree</td></tr>
+          <tr><td>"Hangi ürün kategorisi?"</td><td>Çok sınıflı sınıflandırma</td><td>LogisticRegression (multinomial), RandomForest</td></tr>
+          <tr><td>"Müşterileri gruplara ayır"</td><td>Kümeleme</td><td>KMeans</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Eğitim adım adım — churn örneği</h3>
+
+    <ol>
+      <li><strong>Veri hazırla:</strong> Eksik satırları temizle veya doldur; kategorik kolonları sayıya çevir (one-hot encoding).</li>
+      <li><strong>X ve y ayır:</strong> <code>X = df[["yas","harcama","destek"]]</code>, <code>y = df["churn"]</code>.</li>
+      <li><strong>Train / test böl:</strong> Örneğin %75 eğitim, %25 test. Test seti eğitimde <em>hiç kullanılmaz</em> — sadece "gerçekten öğrendi mi?" diye son kontrol.</li>
+      <li><strong>model.fit(X_train, y_train):</strong> Model parametrelerini öğrenir.</li>
+      <li><strong>model.predict(X_test):</strong> Görmediği müşterilere tahmin yazar.</li>
+      <li><strong>Metrik hesapla:</strong> Tahminler ne kadar isabetli? (Aşağıdaki formül bölümüne bakın.)</li>
+    </ol>
+
+    <div class="diagram-container">
+      <div class="diagram-box">
+        <div class="mermaid">
+flowchart LR
+    A["Veri tablosu"] --> B["X = özellikler\ny = hedef"]
+    B --> C["Train / Test böl"]
+    C --> D["Model.fit\neğitim seti"]
+    D --> E["Model.predict\ntest seti"]
+    E --> F["Metrik:\nne kadar iyi?"]
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil 6: ML'in her algoritmada tekrarlanan iskeleti</div>
+    </div>
+
+    <h3>Overfitting (ezberleme) — en sık yapılan hata</h3>
+
+    <p><strong>Underfitting:</strong> Model çok basit — hem eğitimde hem testte kötü. "Herkes kaldı der" gibi.</p>
+    <p><strong>Overfitting:</strong> Model eğitim setini <em>ezberler</em> — eğitim metrikleri mükemmel, test metrikleri düşer. Sınavda sadece çözdüğü soruları bilen öğrenci gibi: ezber listesi işe yaramaz.</p>
+
+    <ul>
+      <li><strong>Çözüm:</strong> Daha fazla veri, daha basit model, <code>max_depth</code> sınırı, cross-validation, train/test ayrımına sadık kalmak.</li>
+      <li><strong>Kırmızı bayrak:</strong> %99+ accuracy + dengesiz sınıflar → muhtemelen veri sızıntısı veya ezber.</li>
+    </ul>
+
+    <h3>Eğitim vs çıkarım (inference)</h3>
+
+    <p><strong>Eğitim</strong> pahalıdır — tüm veri taranır, parametreler güncellenir. <strong>Çıkarım</strong> ucuzdur — tek satır için <code>predict</code> milisaniyeler sürer. Üretimde (canlı sistem) genelde önceden eğitilmiş model yüklenir; gelen müşteri kaydına anında skor verilir. Bölüm 3–4'teki Spark → Pandas → sklearn hattı tam olarak budur: büyük veriyi eğitim için küçült, modeli kaydet, sonra tek tek tahmin.</p>
+
+    <div class="alert alert-warning">
+      <div class="alert-title">⚠️ ML sihir değil</div>
+      <ul>
+        <li>Kötü veya eksik veri → kötü tahmin (<em>garbage in, garbage out</em>).</li>
+        <li>Geçmişte görülmemiş durum (COVID, yeni ürün) → model şaşırır.</li>
+        <li>Özellikler hedefi "hileyle" içeriyorsa (veri sızıntısı) metrikler yanıltır — örn. <code>ayrilma_tarihi</code> kolonunu churn tahmininde kullanmak.</li>
+        <li>%100 accuracy genelde ezberleme veya sızıntı işaretidir.</li>
+      </ul>
+    </div>
+
+    <hr>
+
+    <h2 id="metrik-formulleri">📐 Metrik Formülleri — Regresyon ve Sınıflandırma</h2>
+
+    <p>Model "tahmin etti" — peki ne kadar iyi? Metrikler sayısal cevap verir. Her formülün altında <strong>sözel açıklama</strong> ve <strong>elle hesaplanmış mini örnek</strong> var; formülü ezberlemek yerine "ne ölçüyor?" sorusuna cevap arayın.</p>
+
+    <h3>Regresyon metrikleri (hedef = sayı)</h3>
+
+    <p>Diyelim ki model müşterilerin aylık harcamasını (TL) tahmin ediyor. Test setinde \(n\) müşteri var. Her müşteri için:</p>
+    <ul>
+      <li>\(y_i\) = gerçek harcama (TL)</li>
+      <li>\(\hat{y}_i\) = modelin tahmini (TL)</li>
+      <li>Hata = \(y_i - \hat{y}_i\) (pozitif = model düşük tahmin etti, negatif = yüksek tahmin etti)</li>
+    </ul>
+
+    <div class="formula-panel">
+      <div class="formula-title">MAE — Mean Absolute Error (ortalama mutlak hata)</div>
+      <div class="formula-expr">\[\mathrm{MAE} = \frac{1}{n}\sum_{i=1}^{n}\left|y_i - \hat{y}_i\right|\]</div>
+      <div class="formula-note">
+        <strong>Sözel:</strong> "Tahminler gerçekten ortalama kaç TL uzakta?" Her hatayı mutlak değerle alırsınız — +50 ile −50 aynı "50 TL sapma" sayılır. Sonuç doğrudan TL cinsinden okunur.<br>
+        <strong>Ne zaman bakılır?</strong> Ortalama sapma büyüklüğünü anlamak istediğinizde. Aykırı birkaç çok kötü tahmin MAE'yi aşırı şişirmez.
+      </div>
+    </div>
+
+    <div class="formula-panel">
+      <div class="formula-title">RMSE — Root Mean Squared Error (kök ortalama kare hata)</div>
+      <div class="formula-expr">\[\mathrm{RMSE} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(y_i - \hat{y}_i\right)^2}\]</div>
+      <div class="formula-note">
+        <strong>Sözel:</strong> Hataları kare alıp ortalamasını alırsınız, sonra karekök alırsınız. Büyük hatalar (kare yüzünden) daha ağır cezalandırılır — 100 TL'lik tek bir felaket tahmin RMSE'yi MAE'den daha çok yükseltir.<br>
+        <strong>Ne zaman bakılır?</strong> "Büyük patlamalar var mı?" sorusu önemliyse. RMSE ≫ MAE ise birkaç çok kötü tahmin var demektir.
+      </div>
+    </div>
+
+    <div class="formula-panel">
+      <div class="formula-title">R² — R-kare (açıklanan varyans oranı)</div>
+      <div class="formula-expr">\[R^2 = 1 - \frac{SS_{\mathrm{res}}}{SS_{\mathrm{tot}}}\]</div>
+      <div class="formula-note">
+        <strong>Sözel:</strong> Model, "hep ortalama harcama desek" basit tahminine kıyasla ne kadar iyileşme sağladı?<br>
+        \(SS_{\mathrm{res}}\) = modelin kare hataları toplamı · \(SS_{\mathrm{tot}}\) = herkese ortalama desek ne kadar hata kalırdı?<br>
+        \(R^2 = 1\) → mükemmel; \(R^2 = 0\) → ortalamayı söylemek kadar; negatif → ortalamadan bile kötü.
+      </div>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">🔢 Elle hesap — regresyon (4 müşteri)</div>
+      <p>Test setinde 4 müşteri var. Gerçek ve tahmin harcamaları:</p>
+      <div class="table-wrapper">
+        <table class="walkthrough-table">
+          <thead><tr><th>Müşteri</th><th>Gerçek y<sub>i</sub> (TL)</th><th>Tahmin (TL)</th><th>Hata</th><th>|Hata|</th><th>Hata²</th></tr></thead>
+          <tbody>
+            <tr><td>A</td><td>100</td><td>110</td><td>−10</td><td>10</td><td>100</td></tr>
+            <tr><td>B</td><td>200</td><td>180</td><td>+20</td><td>20</td><td>400</td></tr>
+            <tr><td>C</td><td>300</td><td>290</td><td>+10</td><td>10</td><td>100</td></tr>
+            <tr><td>D</td><td>400</td><td>320</td><td>+80</td><td>80</td><td>6400</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="metric-walkthrough">
+        <div class="walkthrough-step">
+          <div class="walkthrough-step-title">Adım 1 — MAE</div>
+          <div class="walkthrough-math">\[
+\mathrm{MAE} = \frac{10 + 20 + 10 + 80}{4} = \frac{120}{4} = 30 \text{ TL}
+\]</div>
+          <p class="walkthrough-note"><strong>Sonuç:</strong> 30 TL · <strong>Yorum:</strong> Tahminler gerçek değerden ortalama 30 TL uzakta.</p>
+        </div>
+
+        <div class="walkthrough-step">
+          <div class="walkthrough-step-title">Adım 2 — RMSE</div>
+          <div class="walkthrough-math">\[
+\mathrm{RMSE} = \sqrt{\frac{100 + 400 + 100 + 6400}{4}}
+= \sqrt{1750} \approx 41{,}8 \text{ TL}
+\]</div>
+          <p class="walkthrough-note"><strong>Sonuç:</strong> 41,8 TL · MAE (30) &lt; RMSE (41,8) → D müşterisindeki +80 TL'lik büyük hata RMSE'yi MAE'den daha çok şişirmiş (kare alma etkisi).</p>
+        </div>
+
+        <div class="walkthrough-step">
+          <div class="walkthrough-step-title">Adım 3 — R²</div>
+          <p class="walkthrough-intro">Önce basit tahmine kıyas: "Herkese ortalama harcama desek" ne kadar hata kalır?</p>
+          <div class="walkthrough-math">\[
+\bar{y} = \frac{100 + 200 + 300 + 400}{4} = 250 \text{ TL}
+\]</div>
+          <div class="walkthrough-math">\[
+SS_{\mathrm{tot}} = (100{-}250)^2 + (200{-}250)^2 + (300{-}250)^2 + (400{-}250)^2 = 50\,000
+\]</div>
+          <div class="walkthrough-math">\[
+SS_{\mathrm{res}} = 100 + 400 + 100 + 6400 = 7\,000
+\]</div>
+          <div class="walkthrough-math">\[
+R^2 = 1 - \frac{SS_{\mathrm{res}}}{SS_{\mathrm{tot}}}
+= 1 - \frac{7\,000}{50\,000} = 1 - 0{,}14 = 0{,}86
+\]</div>
+          <p class="walkthrough-note"><strong>Sonuç:</strong> R² = 0,86 · <strong>Yorum:</strong> Model, "hep 250 TL de" demekten çok daha iyi — varyansın yaklaşık %86'sını açıklıyor (bu mini örnekte).</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="metrik_ornek_regresyon.py">
+      <pre><code>import numpy as np
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+
+y_true = np.array([100, 200, 300, 400])
+y_pred = np.array([110, 180, 290, 320])
+
+print("MAE :", mean_absolute_error(y_true, y_pred), "TL")
+print("RMSE:", np.sqrt(mean_squared_error(y_true, y_pred)), "TL")
+print("R²  :", round(r2_score(y_true, y_pred), 3))</code></pre>
+    </div>
+
+    <h3>Sınıflandırma metrikleri (hedef = sınıf)</h3>
+
+    <p>Churn örneğinde iki sınıf: <strong>Kaldı</strong> (0) ve <strong>Ayrıldı</strong> (1). Model her müşteriye bir tahmin yazar. Sonuçları dört kutuya ayırırız — <strong>confusion matrix</strong> (karmaşıklık matrisi):</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th></th><th>Tahmin: Kaldı</th><th>Tahmin: Ayrıldı</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Gerçek: Kaldı</strong></td><td>TN — doğru, kaldı dedik kaldı</td><td>FP — yanlış alarm, ayrılır dedik ama kaldı</td></tr>
+          <tr><td><strong>Gerçek: Ayrıldı</strong></td><td>FN — kaçırdık, kaldı dedik ama ayrıldı</td><td>TP — doğru, ayrılır dedik ayrıldı</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="formula-panel">
+      <div class="formula-title">Accuracy — doğruluk</div>
+      <div class="formula-expr">\[\mathrm{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}\]</div>
+      <div class="formula-note">
+        <strong>Sözel:</strong> "Tüm tahminlerin yüzde kaçı doğru?" Basit ve anlaşılır — ama sınıflar dengesizse aldatıcı. %95 müşteri "kaldı" ise herkese kaldı deseniz %95 accuracy alırsınız; hiç ayrılan yakalamazsınız.
+      </div>
+    </div>
+
+    <div class="formula-panel">
+      <div class="formula-title">Precision — kesinlik</div>
+      <div class="formula-expr">\[\mathrm{Precision} = \frac{TP}{TP + FP}\]</div>
+      <div class="formula-note">
+        <strong>Sözel:</strong> "Ayrılır dediğimiz müşterilerin kaçı gerçekten ayrıldı?" Payda = modelin <em>pozitif</em> dediği herkes (doğru + yanlış alarm). Düşük precision = çok gereksiz kupon/indirim/telefon.
+      </div>
+    </div>
+
+    <div class="formula-panel">
+      <div class="formula-title">Recall — duyarlılık (sensitivity)</div>
+      <div class="formula-expr">\[\mathrm{Recall} = \frac{TP}{TP + FN}\]</div>
+      <div class="formula-note">
+        <strong>Sözel:</strong> "Gerçekten ayrılan müşterilerin kaçını yakaladık?" Payda = gerçekten ayrılanların tamamı. Düşük recall = ayrılanları kaçırıyorsunuz — müşteri kaybı pahalıysa kritik.
+      </div>
+    </div>
+
+    <div class="formula-panel">
+      <div class="formula-title">F1 — precision ve recall'un harmonik ortalaması</div>
+      <div class="formula-expr">\[F_1 = 2 \cdot \frac{\mathrm{Precision} \cdot \mathrm{Recall}}{\mathrm{Precision} + \mathrm{Recall}}\]</div>
+      <div class="formula-note">
+        <strong>Sözel:</strong> Precision ile recall'u tek skora indirger. Biri çok yüksek biri çok düşükse F1 ortalamaz — ikisinin de makul olmasını ödüllendirir. 0–1 arası; 1 = mükemmel denge.
+      </div>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">🔢 Elle hesap — sınıflandırma (100 müşteri)</div>
+      <p>70 müşteri kaldı, 30 müşteri ayrıldı. Model 20 kişiye "ayrılır" dedi:</p>
+      <div class="table-wrapper">
+        <table class="walkthrough-table">
+          <thead><tr><th></th><th>Tahmin: Kaldı</th><th>Tahmin: Ayrıldı</th><th>Toplam (gerçek)</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Gerçek: Kaldı</strong></td><td>TN = 55</td><td>FP = 5</td><td>70</td></tr>
+            <tr><td><strong>Gerçek: Ayrıldı</strong></td><td>FN = 15</td><td>TP = 15</td><td>30</td></tr>
+            <tr><td><strong>Toplam (tahmin)</strong></td><td>70</td><td>20</td><td>100</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="metric-walkthrough">
+        <div class="walkthrough-step">
+          <div class="walkthrough-step-title">Accuracy</div>
+          <div class="walkthrough-math">\[
+\mathrm{Accuracy} = \frac{TP + TN}{100} = \frac{15 + 55}{100} = 0{,}70
+\]</div>
+          <p class="walkthrough-note">100 tahminin 70'i doğru.</p>
+        </div>
+        <div class="walkthrough-step">
+          <div class="walkthrough-step-title">Precision</div>
+          <div class="walkthrough-math">\[
+\mathrm{Precision} = \frac{TP}{TP + FP} = \frac{15}{15 + 5} = 0{,}75
+\]</div>
+          <p class="walkthrough-note">"Ayrılır" dediğimiz 20 kişinin 15'i (%75) gerçekten ayrıldı.</p>
+        </div>
+        <div class="walkthrough-step">
+          <div class="walkthrough-step-title">Recall</div>
+          <div class="walkthrough-math">\[
+\mathrm{Recall} = \frac{TP}{TP + FN} = \frac{15}{15 + 15} = 0{,}50
+\]</div>
+          <p class="walkthrough-note">Gerçekten ayrılan 30 müşterinin yarısını yakaladık, yarısını kaçırdık.</p>
+        </div>
+        <div class="walkthrough-step">
+          <div class="walkthrough-step-title">F1</div>
+          <div class="walkthrough-math">\[
+F_1 = 2 \cdot \frac{0{,}75 \times 0{,}50}{0{,}75 + 0{,}50} = \frac{0{,}75}{1{,}25} = 0{,}60
+\]</div>
+          <p class="walkthrough-note"><em>İş kararı:</em> Kaçırmak pahalıysa recall'u artırın; yanlış alarm pahalıysa precision'a bakın.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="metrik_ornek_siniflandirma.py">
+      <pre><code>from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
+# Gerçek: 70 kaldı (0), 30 ayrıldı (1)
+y_true  = [0]*55 + [1]*15 + [0]*5 + [1]*15   # 70 sıfır, 30 bir
+# Tahmin: 20 kişiye ayrılır dedik (15 doğru + 5 yanlış alarm)
+y_pred  = [0]*55 + [1]*15 + [1]*5 + [0]*15
+
+print("Accuracy :", round(accuracy_score(y_true, y_pred), 2))
+print("Precision:", round(precision_score(y_true, y_pred), 2))
+print("Recall   :", round(recall_score(y_true, y_pred), 2))
+print("F1       :", round(f1_score(y_true, y_pred), 2))</code></pre>
+    </div>
+
+    <hr>
+
+    <h2 id="sklearn">🧪 Bölüm 6: scikit-learn ile Uygulama</h2>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Bölüm 3 & 4 ile bağlantı</div>
+      <p>Bölüm 3'te "Spark büyük veriyi filtreler → küçük Pandas tablosu → sklearn" desenini gördünüz. Bölüm 4'te anonim veriyle pipeline örneği vardı. Burada aynı iskeleti adım adım, yorumlu kodla kuruyoruz.</p>
+    </div>
+
+    <p><strong><a href="https://scikit-learn.org/" target="_blank" rel="noopener">scikit-learn</a></strong> (sklearn) Python'da ML için standart başlangıç kütüphanesidir. Derin öğrenme yapmaz; tablo verisi (müşteri, satış, sensör) için idealdir. Tüm modellerde aynı API: <code>fit</code> (öğren), <code>predict</code> (tahmin).</p>
+
+    <h3>6a. Doğrusal regresyon — sayı tahmini</h3>
+
+    <p><strong>Ne yapar?</strong> Özelliklerle hedef arasında <strong>düz bir formül</strong> arar. Matematik bilmek zorunda değilsiniz; mantık şu:</p>
+    <p style="text-align:center;font-family:var(--font-mono,monospace);background:var(--bg-secondary);padding:0.75rem;border-radius:8px;">
+      tahmin = sabit + (a × yaş) + (b × destek_çağrısı)
+    </p>
+    <p><code>a</code> ve <code>b</code> katsayıları eğitim sırasında veriden öğrenilir. "Yaş 1 artınca harcama ortalama a kadar artıyor" gibi yorumlanabilir — bu yüzden <strong>yorumlanabilir</strong> bir modeldir.</p>
+
+    <figure class="chart-gallery-figure">
+      <img src="images/ml_regression_gorsel.png" alt="Regresyon scatter — renk destek çağrısı, model formül arar" loading="lazy" width="640">
+      <figcaption>Şekil 6a: Regresyonda her nokta bir müşteri; model bu noktalara en uygun düzlem/formülü bulmaya çalışır.</figcaption>
+    </figure>
+
+    <div class="code-block" data-lang="python" data-filename="sklearn_linear_regression.py">
+      <pre><code>from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, r2_score
+
+ml = df_plot.dropna(subset=["aylik_harcama"]).copy()
+X = ml[["yas", "destek_cagri"]]   # girdiler — model bunlara bakar
+y = ml["aylik_harcama"]           # hedef — tahmin edilecek SAYI (regresyon)
+
+# %75 eğitim, %25 test — model test kısmını eğitimde GÖRMEDİ
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
+
+model_reg = LinearRegression()
+model_reg.fit(X_train, y_train)      # fit = "bu X-y çiftlerinden öğren"
+pred = model_reg.predict(X_test)     # predict = "görmediğin X'lere tahmin yap"
+
+print("Katsayılar (yaş, destek):", model_reg.coef_)
+print("Sabit terim:", round(model_reg.intercept_, 2))
+print("MAE (TL):", round(mean_absolute_error(y_test, pred), 2))
+print("R²:", round(r2_score(y_test, pred), 3))</code></pre>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">📏 Metrikleri yorumlama</div>
+      <p>Formüller için yukarıdaki <a href="#metrik-formulleri">Metrik Formülleri</a> bölümüne bakın. Kısa özet:</p>
+      <ul>
+        <li><strong>MAE:</strong> Ortalama mutlak sapma (TL). MAE=45 → tahminler gerçekten ortalama 45 TL uzakta.</li>
+        <li><strong>R²:</strong> 0.3 = varyansın yaklaşık %30'unu açıklıyor; 1.0 mükemmel (nadir).</li>
+      </ul>
+    </div>
+
+    <h3>6b. Lojistik regresyon — sınıf tahmini (churn)</h3>
+
+    <p><strong>Ne yapar?</strong> İsimde "regresyon" geçse de bu bir <strong>sınıflandırma</strong> algoritmasıdır. Her sınıf için olasılık hesaplar: "Bu müşteri %73 ihtimalle ayrılır" → eşik 0.5 üzerindeyse sınıf = 1 (ayrıldı).</p>
+
+    <p><strong>Ne zaman?</strong> Hedef iki veya birkaç kategoriden biri: spam/değil, hastalık var/yok, churn evet/hayır.</p>
+
+    <figure class="chart-gallery-figure">
+      <img src="images/ml_confusion_matrix.png" alt="Confusion matrix — gerçek vs tahmin tablosu" loading="lazy" width="480">
+      <figcaption>Şekil 6b: Karmaşıklık matrisi — köşegen (sol üst + sağ alt) doğru tahminler; off-diagonal hatalar.</figcaption>
+    </figure>
+
+    <div class="code-block" data-lang="python" data-filename="sklearn_logistic_regression.py">
+      <pre><code>from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.model_selection import train_test_split
+
+X = ml[["yas", "aylik_harcama", "destek_cagri"]]
+y = ml["churn"]   # 0 veya 1 — SINIF, sayı değil (anlam olarak)
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.25, random_state=42, stratify=y
+)
+# stratify=y → train ve test'te ayrılan oranı aynı tut (dengesiz veri)
+
+model_clf = LogisticRegression(max_iter=1000)
+model_clf.fit(X_train, y_train)
+pred_clf = model_clf.predict(X_test)
+
+print("Accuracy:", round(accuracy_score(y_test, pred_clf), 3))
+print(classification_report(y_test, pred_clf, target_names=["Kaldı", "Ayrıldı"]))
+print(confusion_matrix(y_test, pred_clf))</code></pre>
+    </div>
+
+    <div class="alert alert-warning">
+      <div class="alert-title">⚠️ Metrikler — accuracy yetmez</div>
+      <p><strong>Accuracy</strong> formülü ve TP/TN/FP/FN kutuları için <a href="#metrik-formulleri">Metrik Formülleri</a> bölümüne bakın.</p>
+      <p>Dengesiz veride accuracy yanıltır: %94'ü "kaldı" olan veride herkese "kaldı" derseniz %94 accuracy alırsınız — ama hiç ayrılanı yakalayamazsınız.</p>
+      <ul>
+        <li><strong>Precision:</strong> "Ayrıldı dediklerimizin kaçı gerçekten ayrıldı?" — gereksiz alarm maliyeti yüksekse önemli.</li>
+        <li><strong>Recall:</strong> "Gerçekten ayrılanların kaçını yakaladık?" — kaçırmak pahalıysa önemli.</li>
+        <li><strong>F1:</strong> İkisinin dengesi — tek skor istiyorsanız.</li>
+      </ul>
+    </div>
+
+    <hr>
+
+    <h2 id="ml-panorama">🗺️ Bölüm 6b: Diğer Algoritmalar — Detaylı</h2>
+
+    <p>sklearn yalnızca doğrusal modellerle sınırlı değil. Aşağıda her algoritmayı <strong>ne zaman, nasıl çalışır, ne zaman kullanma</strong> açısından ele alıyoruz.</p>
+
+    <h3>6c. KMeans kümeleme — etiket olmadan gruplama</h3>
+
+    <p><strong>Fikir:</strong> Haritada yakın duran noktalar aynı gruba. Algoritma K adet "merkez" seçer; her noktayı en yakın merkeze atar; merkezleri günceller — ta ki gruplar oturana kadar.</p>
+    <p><strong>Ne zaman?</strong> Müşteri segmentasyonu, "hangi ürünler birlikte alınır" grupları — <em>hedef kolon yokken</em>.</p>
+    <p><strong>Dikkat:</strong> K'yı siz seçersiniz (3 segment mi, 5 mi?). Özellikleri aynı ölçeğe getirmek gerekir (StandardScaler) — yoksa TL kolonu diğerlerini bastırır.</p>
+
+    <figure class="chart-gallery-figure">
+      <img src="images/ml_kmeans_gorsel.png" alt="KMeans üç küme — X işaretli merkezler" loading="lazy" width="560">
+      <figcaption>Şekil 6c: KMeans — renkli noktalar kümeler; X = küme merkezi (centroid).</figcaption>
+    </figure>
+
+    <div class="code-block" data-lang="python" data-filename="sklearn_kmeans.py">
+      <pre><code>from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+
+X_clust = ml[["aylik_harcama", "destek_cagri", "yas"]]
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X_clust)   # her kolon ortalama 0, std 1
+
+km = KMeans(n_clusters=3, random_state=42, n_init=10)
+ml["segment"] = km.fit_predict(X_scaled)   # fit_predict = öğren + her satıra grup no
+print(ml.groupby("segment")[["aylik_harcama", "destek_cagri"]].mean())</code></pre>
+    </div>
+
+    <h3>6d. Karar ağacı — soru sorarak böl</h3>
+
+    <p><strong>Fikir:</strong> Akış şeması gibi. "Harcama &gt; 250 mi?" → Evet/Hayır → "Destek ≥ 3 mü?" … en altta yaprak = tahmin (Kaldı/Ayrıldı).</p>
+    <p><strong>Artı:</strong> İnsan okuyabilir — "Model neden ayrıldı dedi?" sorusuna cevap verir.</p>
+    <p><strong>Eksi:</strong> Derin ağaç <strong>ezberler</strong> (overfitting). <code>max_depth=4</code> gibi sınırlar konur.</p>
+
+    <figure class="chart-gallery-figure">
+      <img src="images/ml_karar_agaci_kavram.png" alt="Karar ağacı şeması — soru dalları" loading="lazy" width="720">
+      <figcaption>Şekil 6d: Karar ağacı kavramı — her düğüm bir soru, yapraklar tahmin.</figcaption>
+    </figure>
+
+    <div class="code-block" data-lang="python" data-filename="sklearn_decision_tree.py">
+      <pre><code>from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+X = ml[["yas", "aylik_harcama", "destek_cagri"]]
+y = ml["churn"]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, stratify=y)
+
+tree = DecisionTreeClassifier(max_depth=4, random_state=42)
+tree.fit(X_train, y_train)
+print("Accuracy:", accuracy_score(y_test, tree.predict(X_test)))</code></pre>
+    </div>
+
+    <h3>6e. Rastgele orman — çok ağacın oylaması</h3>
+
+    <p><strong>Fikir:</strong> Yüzlerce karar ağacı, her biri verinin rastgele bir alt kümesiyle eğitilir. Tahmin = çoğunluk oyu (sınıflandırma) veya ortalama (regresyon).</p>
+    <p><strong>Ne zaman?</strong> Tabular veride genelde tek ağaçtan daha iyi skor; yorumlanması daha zor.</p>
+    <p><strong>Parametre:</strong> <code>n_estimators=100</code> = 100 ağaç. Daha fazla ağaç = genelde daha stabil, ama daha yavaş.</p>
+
+    <div class="code-block" data-lang="python" data-filename="sklearn_random_forest.py">
+      <pre><code>from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+
+rf = RandomForestClassifier(n_estimators=100, max_depth=6, random_state=42)
+rf.fit(X_train, y_train)
+print("Random Forest accuracy:", accuracy_score(y_test, rf.predict(X_test)))</code></pre>
+    </div>
+
+    <h3>6f. Cross-validation — tek bölünme yetmez</h3>
+
+    <p>Tek train/test şans eseri kolay veya zor gelebilir. <strong>5-fold CV:</strong> Veriyi 5 parçaya böl; her seferinde 4 parça eğitim, 1 parça test; 5 skorun ortalamasını al.</p>
+
+    <div class="code-block" data-lang="python" data-filename="sklearn_cross_validation.py">
+      <pre><code>from sklearn.model_selection import cross_val_score
+from sklearn.linear_model import LogisticRegression
+
+model = LogisticRegression(max_iter=1000)
+scores = cross_val_score(model, X, y, cv=5, scoring="accuracy")
+print(f"Ortalama accuracy: {scores.mean():.3f} (±{scores.std():.3f})")
+print("Her fold:", scores.round(3))</code></pre>
+    </div>
+
+    <h3>6g. Pipeline — ön işleme + model tek pakette</h3>
+
+    <p>Bölüm 4'te gördüğünüz gibi: eksik doldurma, kategorik encode, ölçekleme ve model <strong>tek pipeline</strong>'da birleşir. Test setine sızıntı olmaz — fit sadece train'de yapılır.</p>
+
+    <div class="code-block" data-lang="python" data-filename="sklearn_pipeline.py">
+      <pre><code>from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+
+pipe = Pipeline([
+    ("doldur", SimpleImputer(strategy="median")),
+    ("olcek", StandardScaler()),
+    ("model", LogisticRegression(max_iter=1000)),
+])
+pipe.fit(X_train, y_train)
+print("Pipeline accuracy:", accuracy_score(y_test, pipe.predict(X_test)))</code></pre>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Algoritma</th><th>Problem</th><th>Güçlü yanı</th><th>Zayıf yanı</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Doğrusal regresyon</td><td>Sayı tahmini</td><td>Hızlı, yorumlanabilir</td><td>Doğrusal olmayan ilişkileri kaçırır</td></tr>
+          <tr><td>Lojistik regresyon</td><td>0/1 sınıf</td><td>Olasılık çıktısı, hızlı</td><td>Karmaşık sınırlarda zayıf</td></tr>
+          <tr><td>KMeans</td><td>Grup bulma</td><td>Basit segmentasyon</td><td>K ve ölçek seçimi sizde</td></tr>
+          <tr><td>Karar ağacı</td><td>Sınıf / sayı</td><td>Kuralları okuyabilirsiniz</td><td>Derinleşince ezberler</td></tr>
+          <tr><td>Rastgele orman</td><td>Sınıf / sayı</td><td>Genelde güçlü tabular skor</td><td>Kara kutu, yavaş</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🌍 sklearn sonrası nereye?</div>
+      <p><strong>XGBoost / LightGBM:</strong> Tabular yarışmalarda sık kazanan — sklearn API'sine benzer. <strong>PyTorch / TensorFlow:</strong> görüntü, ses, metin. <strong>Spark MLlib:</strong> veri hâlâ cluster'dayken model. Bu ders sklearn ile temeli atar; ileride ihtiyaca göre dalarsınız.</p>
+    </div>
+
+    <hr>
+
+    <h2 id="uc-uc">🔗 Bölüm 7: Uçtan Uca Mini Akış</h2>
+
+    <p>Özet pipeline — gerçek projelerde tekrarlanan analitik hattı:</p>
+
+    <div class="diagram-container">
+      <div class="diagram-box">
+        <div class="mermaid">
+flowchart LR
+    A["📥 Veri yükle<br/>read_csv / Parquet"] --> B["🧹 Temizle<br/>eksik, aykırı"]
+    B --> C["🔍 EDA<br/>describe, groupby"]
+    C --> D["📊 Grafik<br/>matplotlib / seaborn"]
+    D --> E["🤖 Model<br/>sklearn"]
+    E --> F["📄 Rapor<br/>grafik + yorum"]
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil 7: Analitik hattı — Bölüm 5'teki ETL çıktısı burada analiz edilir</div>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="uc_uc_analiz.py">
+      <pre><code># Tek script iskeleti — EDA → grafik → (isteğe bağlı) model
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+
+# 1) Yükle — Bölüm 5'teki Parquet çıktısı da olabilir
+df = pd.read_csv("veri.csv")
+
+# 2) EDA
+print(df.shape, df.describe())
+print(df.isna().sum())
+
+# 3) Grafik — soruya uygun türü Bölüm 2 tablosundan seç
+sns.histplot(data=df, x="hedef_kolon", kde=True)
+plt.savefig("grafik1.png")
+plt.close()
+
+# 4) Model (örnek — hedef sınıfsa sınıflandırma, sayıysa regresyon)
+# X = df[["ozellik1", "ozellik2"]]; y = df["hedef"]
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
+# ...
+
+# 5) Yorum — notebook'ta markdown: "Grafik X'i gösteriyor çünkü ..."</code></pre>
+    </div>
+
+    <hr>
+
+    <h2 id="kaynaklar">📚 Kaynaklar ve Kütüphaneler</h2>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📦</div>
+        <div class="card-title"><a href="https://www.kaggle.com/datasets" target="_blank" rel="noopener">Kaggle Datasets</a></div>
+        <div class="card-desc">Pratik için hazır CSV veri setleri — Titanic, Netflix, Stack Overflow vb.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📖</div>
+        <div class="card-title"><a href="https://jakevdp.github.io/PythonDataScienceHandbook/" target="_blank" rel="noopener">Python Data Science Handbook</a></div>
+        <div class="card-desc">Pandas + Matplotlib + sklearn ücretsiz online kitap.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧪</div>
+        <div class="card-title"><a href="uygulamalar2.html">Uygulamalar sayfası</a></div>
+        <div class="card-desc">Colab / Jupyter ortamında ek pratik örnekler.</div>
+      </div>
+    </div>
+
+    <h3>🛠️ Bu bölümde geçen kütüphaneler</h3>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🐼</div>
+        <div class="card-title"><a href="https://pandas.pydata.org/docs/" target="_blank" rel="noopener">Pandas</a></div>
+        <div class="card-desc">EDA'nın temeli — Bölüm 2'den devam.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📈</div>
+        <div class="card-title"><a href="https://matplotlib.org/stable/users/index.html" target="_blank" rel="noopener">Matplotlib</a></div>
+        <div class="card-desc">Histogram, scatter, line — her şeyin alt katmanı.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎨</div>
+        <div class="card-title"><a href="https://seaborn.pydata.org/tutorial.html" target="_blank" rel="noopener">Seaborn</a></div>
+        <div class="card-desc">countplot, boxplot, heatmap, kdeplot, violin.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">✨</div>
+        <div class="card-title"><a href="https://plotly.com/python/getting-started/" target="_blank" rel="noopener">Plotly</a></div>
+        <div class="card-desc">İnteraktif grafikler; dashboard ve sunum.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <div class="card-title"><a href="https://scikit-learn.org/stable/user_guide.html" target="_blank" rel="noopener">scikit-learn</a></div>
+        <div class="card-desc">Regresyon, sınıflandırma, kümeleme, CV, pipeline.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔥</div>
+        <div class="card-title"><a href="https://xgboost.readthedocs.io/" target="_blank" rel="noopener">XGBoost</a></div>
+        <div class="card-desc">İsteğe bağlı — tabular veride sklearn'den genelde daha güçlü (Bölüm 3 panorama).</div>
+      </div>
+    </div>
+
+    <hr>
+
+    <h2 id="ozet">📝 Özet</h2>
+
+    <div class="alert alert-success">
+      <div class="alert-title">🎓 Bu Hafta Ne Öğrendik?</div>
+      <ul>
+        <li><strong>Kelime haznesi:</strong> Sürekli/kategorik veri, aykırı değer, eksik değer, medyan, korelasyon — günlük dille.</li>
+        <li><strong>EDA:</strong> Modele geçmeden veriyi tanı — şekil, tip, eksik, dağılım, groupby, aykırı.</li>
+        <li><strong>Grafik:</strong> Her türün ne işe yaradığı, ne zaman yanıltır; histogram vs KDE vs bar; 8+ örnek görsel.</li>
+        <li><strong>ML temeli:</strong> Denetimli/denetimsiz; regresyon vs sınıflandırma; train/test; ezberleme tuzağı.</li>
+        <li><strong>Algoritmalar:</strong> Doğrusal/lojistik regresyon, KMeans, karar ağacı, rastgele orman, CV, pipeline — teori + kod.</li>
+      </ul>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">📚 Daha Fazla Okuma (Opsiyonel)</div>
+      <ul>
+        <li><a href="https://jakevdp.github.io/PythonDataScienceHandbook/" target="_blank" rel="noopener">Python Data Science Handbook</a></li>
+        <li><a href="https://scikit-learn.org/stable/tutorial/basic/tutorial.html" target="_blank" rel="noopener">scikit-learn — Tutorial</a></li>
+        <li><a href="https://seaborn.pydata.org/examples/index.html" target="_blank" rel="noopener">Seaborn — Example gallery</a></li>
+        <li><a href="https://www.kaggle.com/learn/pandas" target="_blank" rel="noopener">Kaggle Learn — Pandas</a></li>
+        <li><a href="https://www.kaggle.com/learn/data-visualization" target="_blank" rel="noopener">Kaggle Learn — Data Visualization</a></li>
+      </ul>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🤔 Düşünme Soruları</div>
+      <ol>
+        <li>Bir veri setinde %40 eksik değer varsa satır silmek mi, doldurmak mı? Ne zaman hangisi?</li>
+        <li>Churn tahmininde %95 accuracy görürsünüz — ama verinin %94'ü "kalmış". Bu iyi bir model mi?</li>
+        <li>Histogram ile bar chart arasındaki fark nedir? KDE ne zaman histograma tercih edilir?</li>
+        <li>Korelasyon gördünüz diye "X, Y'ye neden oluyor" diyebilir misiniz? Neden hayır?</li>
+        <li>Regresyon ile sınıflandırma arasındaki farkı kendi cümlelerinizle açıklayın.</li>
+        <li>Karar ağacı mı rastgele orman mı — yorumlanabilirlik vs skor trade-off'unu tartışın.</li>
+      </ol>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">🖼️ Görselleri yeniden üretmek</div>
+      <p><code>python scripts/generate_grafik_galeri.py</code> · <code>python scripts/generate_grafik_ornekleri.py</code> · <code>python scripts/generate_seaborn_ornek.py</code></p>
+      <p>Çıktılar: <code>grafik_galeri.png</code>, <code>grafik_galeri_ek.png</code>, <code>grafik_histogram_kde.png</code>, <code>grafik_boxplot_aciklama.png</code>, …</p>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔜 Ek pratik</div>
+      <p>Bu bölümdeki kodları Colab'da çalıştırın. Ek alıştırmalar için <a href="uygulamalar2.html">Uygulamalar</a> sayfasına bakın.</p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="hafta5.html">← Bölüm 5: Kod Atölyesi</a>
+    <a href="uygulamalar2.html">🧪 Uygulamalar →</a>
+  </div>
+  <p class="footer-text">Büyük Veri Teknolojileri Ders Notları — 2025-2026 Bahar Dönemi</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python motoru yükleniyor...</span>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

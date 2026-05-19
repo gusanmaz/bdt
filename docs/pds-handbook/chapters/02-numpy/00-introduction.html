@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NumPy'ye Giriş — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="02-numpy" data-section="00-introduction" data-preload-numpy="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.00-introduction-to-numpy.html" target="_blank" rel="noopener">00 Introduction to NumPy</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>NumPy'ye Giriş</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.00-introduction-to-numpy.html" target="_blank" rel="noopener">Introduction to NumPy</a></em></p>
+
+    <p>Kitabın bu bölümü, <a href="../03-pandas/index.html">Bölüm 3</a> ile birlikte Python'da bellek içi veriyi etkili biçimde yükleme, saklama ve işleme tekniklerini anlatır. Konu çok geniştir: veri kümeleri belge, görüntü, ses, sayısal ölçüm veya neredeyse her şey olabilir. Bu çeşitliliğe rağmen birçok veri kümesi temelde <strong>sayı dizileri</strong> olarak temsil edilebilir.</p>
+
+    <p>Örneğin dijital görüntüler, alan boyunca piksel parlaklığını temsil eden iki boyutlu sayı dizileri olarak düşünülebilir. Ses klipleri, zaman ekseninde yoğunluğu gösteren tek boyutlu dizilerdir. Metin, belirli kelimelerin veya kelime çiftlerinin frekansını temsil eden ikili basamaklar gibi çeşitli yollarla sayısal gösterimlere dönüştürülebilir. Veri ne olursa olsun, analiz edilebilir hale getirmenin ilk adımı onu sayı dizilerine dönüştürmektir. (Bu sürecin belirli örneklerini kitapta <em>Feature Engineering</em> bölümünde ele alacağız.)</p>
+
+    <p>Bu nedenle sayısal dizilerin verimli saklanması ve işlenmesi, veri bilimi yapmanın temelidir. Python'un bu tür sayısal dizileri ele almak için sunduğu özelleşmiş araçlara bakacağız: <strong>NumPy</strong> paketi ve (<a href="../03-pandas/index.html">Bölüm 3</a>'te ele alınan) <strong>Pandas</strong> paketi.</p>
+
+    <p>Kitabın bu kısmı NumPy'yi ayrıntılı ele alır. NumPy (<em>Numerical Python</em> kısaltması), yoğun veri tamponlarını saklamak ve üzerinde işlem yapmak için verimli bir arayüz sunar. Bazı yönlerden NumPy dizileri Python'un yerleşik <code>list</code> tipine benzer; ancak boyut büyüdükçe NumPy çok daha verimli depolama ve işlem sağlar. NumPy dizileri, Python'daki neredeyse tüm veri bilimi araç ekosisteminin çekirdeğini oluşturur; NumPy'yi etkili kullanmayı öğrenmek için harcanan süre, veri biliminin hangi alanıyla ilgilenirseniz ilgilenin değerlidir.</p>
+
+    <p>Önsözdeki öneriyi izleyip Anaconda yığınını kurduysanız NumPy zaten yüklüdür. Kendiniz kurmak isterseniz <a href="https://www.numpy.org/" target="_blank" rel="noopener">numpy.org</a> adresindeki kurulum talimatlarını izleyin. Kurulumdan sonra NumPy'yi içe aktarıp sürümü doğrulayabilirsiniz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="numpy_surum.py">
+      <pre><code>import numpy
+numpy.__version__</code></pre>
+    </div>
+
+    <p>Burada ele alınan bölümler için NumPy 1.8 veya üzeri önerilir. SciPy/PyData dünyasında gelenek olarak NumPy, <code>np</code> takma adıyla içe aktarılır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="numpy_import.py">
+      <pre><code>import numpy as np</code></pre>
+    </div>
+
+    <p>Kitabın bu bölümünde ve geri kalanında NumPy'yi hep bu şekilde kullanacağız.</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — neden <code>np</code>?</div>
+      <p><code>import numpy as np</code> o kadar yaygındır ki dokümantasyon, Stack Overflow ve akademik kod tabanlarında standarttır. Bu kısaltmayı alışkanlık haline getirin.</p>
+    </div>
+
+    <h2 id="yerlesik-dokumantasyon">Yerleşik dokümantasyon hatırlatması</h2>
+
+    <p>Kitabın bu kısmını okurken IPython'un paket içeriğini hızlıca keşfetme (sekme ile tamamlama) ve fonksiyon dokümantasyonuna erişme (<code>?</code> karakteri) yeteneklerini unutmayın. Bunlar için <a href="../01-ipython/01-help-and-documentation.html">1.1 IPython'da Yardım ve Dokümantasyon</a> bölümüne bakabilirsiniz.</p>
+
+    <p>Örneğin NumPy ad uzayının tüm içeriğini göstermek için:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="ipython_tab.py">
+      <pre><code>In [3]: np.&lt;TAB&gt;</code></pre>
+    </div>
+
+    <p>NumPy'nin yerleşik dokümantasyonunu göstermek için:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="ipython_help.py">
+      <pre><code>In [4]: np?</code></pre>
+    </div>
+
+    <p>Daha ayrıntılı dokümantasyon, öğreticiler ve diğer kaynaklar <a href="https://www.numpy.org/" target="_blank" rel="noopener">numpy.org</a> adresindedir.</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>NumPy'yi içe aktarın; sürümü ve birkaç temel fonksiyonu deneyin:</p>
+      <div class="code-block" data-lang="python" data-filename="numpy_hizli_deneme.py">
+        <pre><code>import numpy as np
+print("NumPy sürümü:", np.__version__)
+print(np.zeros(5, dtype=int))
+print(np.ones((2, 3)))</code></pre>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="01-understanding-data-types.html">2.1 Python'da Veri Tiplerini Anlamak →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

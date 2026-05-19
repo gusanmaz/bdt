@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Çekirdek Yoğunluk Tahmini — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="05-sklearn" data-section="13-kernel-density-estimation" data-preload-numpy="true" data-preload-pandas="true" data-preload-matplotlib="true" data-preload-sklearn="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.13-kernel-density-estimation.html" target="_blank" rel="noopener">05.13 Kernel Density Estimation</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>5.13 Derinlemesine: Çekirdek Yoğunluk Tahmini</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.13-kernel-density-estimation.html" target="_blank" rel="noopener">05.13 Kernel Density Estimation</a></em></p>
+    <p>Önceki bölümde Gauss karışım modellerini ele aldık; bunlar kümeleme tahmincisi ile yoğunluk tahmincisinin bir tür hibritidir. Yoğunluk tahmincisinin, $D$ boyutlu bir veri kümesini alıp verinin çekildiği $D$ boyutlu olasılık dağılımının tahminini üreten bir algoritma olduğunu hatırlayın. GMM algoritması yoğunluğu Gauss dağılımlarının ağırlıklı toplamı olarak temsil eder. <em>Çekirdek yoğunluk tahmini</em> (KDE), Gauss karışımı fikrini mantıksal uç noktaya taşır: <em>her nokta için bir</em> Gauss bileşeninden oluşan bir karışım kullanır; sonuçta esasen parametrik olmayan bir yoğunluk tahmincisi elde edilir. Bu bölümde KDE'nin motivasyonunu ve kullanımlarını inceleyeceğiz.</p>
+    <p>Standart içe aktarmalarla başlayalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="imports_kde.py">
+      <pre><code>%matplotlib inline
+import matplotlib.pyplot as plt
+plt.style.use(&#x27;seaborn-whitegrid&#x27;)
+import numpy as np</code></pre>
+    </div>
+
+    <h2 id="kde-histogram">KDE'yi Motive Etmek: Histogramlar</h2>
+    <p>Daha önce belirtildiği gibi yoğunluk tahmincisi, veri kümesini üreten olasılık dağılımını modellemeye çalışan bir algoritmadır. Tek boyutlu veri için muhtemelen tanıdık basit bir yoğunluk tahmincisini biliyorsunuz: histogram. Histogram veriyi ayrık kutulara böler, her kutudaki nokta sayısını sayar ve sonucu sezgisel biçimde görselleştirir.</p>
+    <p>Örneğin iki normal dağılımdan çekilmiş veri üretelim:</p>
+
+    <div class="code-block" data-lang="python" data-filename="make_data_kde.py">
+      <pre><code>def make_data(N, f=0.3, rseed=1):
+    rand = np.random.RandomState(rseed)
+    x = rand.randn(N)
+    x[int(f * N):] += 5
+    return x
+
+x = make_data(1000)</code></pre>
+    </div>
+
+    <p>Daha önce gördüğümüz gibi standart sayım tabanlı histogram <code>plt.hist</code> ile oluşturulabilir. Histogramın <code>density</code> parametresini belirterek, kutu yükseklikleri sayıları değil olasılık yoğunluğunu yansıtan normalize bir histogram elde ederiz (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="hist_density.py">
+      <pre><code>hist = plt.hist(x, bins=30, density=True)</code></pre>
+    </div>
+
+    <p>Eşit kutulama için bu normalleştirme yalnızca y eksenindeki ölçeği değiştirir; göreli yükseklikler sayım histogramıyla esasen aynı kalır. Normalleştirme, histogram altındaki toplam alanın 1 olması için seçilir; histogram fonksiyonunun çıktısıyla doğrulayabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hist_area_check.py">
+      <pre><code>density, bins, patches = hist
+widths = bins[1:] - bins[:-1]
+(density * widths).sum()</code></pre>
+    </div>
+
+    <p>Histogram yoğunluk tahmincisi olarak kullanıldığında sorunlardan biri, kutu boyutu ve konumu seçiminin niteliksel olarak farklı görünümlere yol açabilmesidir. Örneğin yalnızca 20 noktalık bu verinin farklı kutulama sürümlerine bakarsak, kutuların nasıl çizildiği tamamen farklı bir yorum ortaya çıkarabilir (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="make_data_20.py">
+      <pre><code>x = make_data(20)
+bins = np.linspace(-5, 10, 10)</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="hist_bin_compare.py">
+      <pre><code>fig, ax = plt.subplots(1, 2, figsize=(12, 4),
+                       sharex=True, sharey=True,
+                       subplot_kw={&#x27;xlim&#x27;:(-4, 9),
+                                   &#x27;ylim&#x27;:(-0.02, 0.3)})
+fig.subplots_adjust(wspace=0.05)
+for i, offset in enumerate([0.0, 0.6]):
+    ax[i].hist(x, bins=bins + offset, density=True)
+    ax[i].plot(x, np.full_like(x, -0.01), &#x27;|k&#x27;,
+               markeredgewidth=1)</code></pre>
+    </div>
+
+    <p>Solda histogram bunun iki modlu bir dağılım olduğunu net gösterir. Sağda uzun kuyruklu tek modlu bir dağılım görürüz. Önceki kodu görmeden bu iki histogramın aynı veriden yapıldığını tahmin etmek zordur. Histogramların verdiği sezgiye nasıl güvenebiliriz? Nasıl iyileştirebiliriz?</p>
+
+    <div class="code-block" data-lang="python" data-filename="block_histogram.py">
+      <pre><code>fig, ax = plt.subplots()
+bins = np.arange(-3, 8)
+ax.plot(x, np.full_like(x, -0.1), &#x27;|k&#x27;,
+        markeredgewidth=1)
+for count, edge in zip(*np.histogram(x, bins)):
+    for i in range(count):
+        ax.add_patch(plt.Rectangle(
+            (edge, i), 1, 1, ec=&#x27;black&#x27;, alpha=0.5))
+ax.set_xlim(-4, 8)
+ax.set_ylim(-0.2, 8)</code></pre>
+    </div>
+
+    <p>Histogramı, veri kümesindeki her noktanın üzerine bir blok yığdığımız bir blok yığını olarak düşünebiliriz. Bunu doğrudan görelim (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="stacked_blocks.py">
+      <pre><code>x_d = np.linspace(-4, 8, 2000)
+density = sum((abs(xi - x_d) &lt; 0.5) for xi in x)
+
+plt.fill_between(x_d, density, alpha=0.5)
+plt.plot(x, np.full_like(x, -0.1), &#x27;|k&#x27;, markeredgewidth=1)
+
+plt.axis([-4, 8, -0.2, 8]);</code></pre>
+    </div>
+
+    <p>İki kutulamadaki sorun, blok yığınının yüksekliğinin çoğu zaman yakındaki gerçek yoğunluğu değil, kutuların veri noktalarıyla hizalanmasındaki tesadüfleri yansıtmasından kaynaklanır. Noktalar ile blokları arasındaki bu hizasızlık burada görülen zayıf histogram sonuçlarının olası nedenidir. Peki blokları <em>kutularla</em> hizalamak yerine temsil ettikleri <em>noktalarla</em> hizalarsak? Bloklar hizalı olmaz; ancak x ekseni boyunca her konumdaki katkılarını toplayarak sonucu bulabiliriz. Deneyelim (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="gauss_kernel_sum.py">
+      <pre><code>from scipy.stats import norm
+x_d = np.linspace(-4, 8, 1000)
+density = sum(norm(xi).pdf(x_d) for xi in x)
+
+plt.fill_between(x_d, density, alpha=0.5)
+plt.plot(x, np.full_like(x, -0.1), &#x27;|k&#x27;, markeredgewidth=1)
+
+plt.axis([-4, 8, -0.2, 5]);</code></pre>
+    </div>
+
+    <p>Sonuç biraz dağınık görünür; ancak standart histogramdan verinin gerçek özelliklerinin çok daha sağlam bir yansımasıdır. Yine de kaba kenarlar estetik değildir ve verinin gerçek özelliklerini yansıtmaz. Yumuşatmak için her konumdaki blokları Gauss gibi düzgün bir fonksiyonla değiştirebiliriz. Her noktada standart normal eğri kullanalım (aşağıdaki şekil):</p>
+    <p>Her girdi noktasının konumunda Gauss katkısıyla yumuşatılmış bu grafik, veri dağılımının şekline çok daha doğru bir fikir verir ve çok daha az varyansa sahiptir (örneklemedeki farklara daha az duyarlıdır).</p>
+    <p>Son iki grafikte elde ettiğimiz şey, bir boyutta çekirdek yoğunluk tahminidir: her noktanın konumuna bir "çekirdek" — ilkinde kare veya "tophat", ikincide Gauss — yerleştirdik ve yoğunluk tahmini olarak toplamlarını kullandık. Bu sezgiyle KDE'yi daha ayrıntılı inceleyeceğiz.</p>
+
+    <h2 id="kde-uygulama">Uygulamada Çekirdek Yoğunluk Tahmini</h2>
+    <p>KDE'nin serbest parametreleri <em>çekirdek</em> (her noktaya yerleştirilen dağılımın şekli) ve <em>çekirdek bant genişliği</em> (her noktadaki çekirdeğin boyutu)dir. Scikit-Learn KDE altı çekirdek destekler (<a href="https://scikit-learn.org/stable/modules/density.html" target="_blank" rel="noopener">Density Estimation</a> bölümü). Python'da birkaç KDE uygulaması olsa da (SciPy, statsmodels), verimlilik ve esneklik için Scikit-Learn sürümünü tercih ediyorum. <code>sklearn.neighbors.KernelDensity</code> altı çekirdek ve birkaç düzine uzaklık metriğiyle çok boyutlu KDE yapar. Ağaç tabanlı algoritma kullanır; <code>atol</code>/<code>rtol</code> ile hız/doğruluk dengesi kurulabilir. Bant genişliği çapraz doğrulama araçlarıyla belirlenebilir.</p>
+    <p>Önceki grafiği Scikit-Learn <code>KernelDensity</code> ile çoğaltan basit bir örnekle başlayalım (aşağıdaki şekil):</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — KDE çekirdekleri</div>
+      Scikit-Learn KDE altı çekirdek ve birkaç düzine uzaklık metriğini destekler. Büyük veride <code>atol</code>/<code>rtol</code> ile hız/doğruluk dengesi ayarlanır.
+    </div>
+
+
+    <div class="code-block" data-lang="python" data-filename="sklearn_kde_fit.py">
+      <pre><code>from sklearn.neighbors import KernelDensity
+
+# instantiate and fit the KDE model
+kde = KernelDensity(bandwidth=1.0, kernel=&#x27;gaussian&#x27;)
+kde.fit(x[:, None])
+
+# score_samples returns the log of the probability density
+logprob = kde.score_samples(x_d[:, None])
+
+plt.fill_between(x_d, np.exp(logprob), alpha=0.5)
+plt.plot(x, np.full_like(x, -0.01), &#x27;|k&#x27;, markeredgewidth=1)
+plt.ylim(-0.02, 0.22);</code></pre>
+    </div>
+
+    <p>Buradaki sonuç, eğri altındaki alan 1 olacak şekilde normalize edilmiştir.</p>
+
+    <h2 id="bant-genisligi">Bant Genişliğini Çapraz Doğrulama ile Seçmek</h2>
+    <p>KDE'nin nihai tahmini bant genişliğine oldukça duyarlıdır; yoğunluk tahmininde önyargı–varyans dengesini kontrol eder. Çok dar bant yüksek varyans (aşırı uyum); çok geniş bant yüksek önyargı (yapının yıkanması). Makine öğrenmesinde hiperparametre ayarı genelde çapraz doğrulamayla yapılır. Scikit-Learn <code>KernelDensity</code> grid search ile kullanılabilir. Küçük veri kümesi için leave-one-out CV kullanacağız:</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 </div>
+      <p>Basit 1B KDE ile histogram karşılaştırması:</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_kde_1d.py">
+      <pre><code>import numpy as np
+from sklearn.neighbors import KernelDensity
+rng = np.random.default_rng(0)
+x = np.concatenate([rng.normal(0, 1, 500), rng.normal(4, 1, 500)])
+X = x[:, None]
+kde = KernelDensity(bandwidth=0.8).fit(X)
+log_dens = kde.score_samples(np.linspace(-3, 8, 100)[:, None])
+print("max log-density:", log_dens.max().round(2))</code></pre>
+    </div>
+
+    </div>
+
+
+    <div class="code-block" data-lang="python" data-filename="kde_gridsearch.py">
+      <pre><code>from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import LeaveOneOut
+
+bandwidths = 10 ** np.linspace(-1, 1, 100)
+grid = GridSearchCV(KernelDensity(kernel=&#x27;gaussian&#x27;),
+                    {&#x27;bandwidth&#x27;: bandwidths},
+                    cv=LeaveOneOut())
+grid.fit(x[:, None]);</code></pre>
+    </div>
+
+    <p>Bant genişliğini maksimize eden seçimi bulabiliriz (varsayılan olarak log-olabilirlik):</p>
+
+    <div class="code-block" data-lang="python" data-filename="kde_best_params.py">
+      <pre><code>grid.best_params_</code></pre>
+    </div>
+
+    <p>Optimal bant genişliği, daha önce bant genişliği 1.0 olan örnek grafige çok yakındır (<code>scipy.stats.norm</code> varsayılan genişliği).</p>
+
+    <h2 id="ornek-kde-bayes">Örnek: Tam Naive Olmayan Bayes</h2>
+    <p>Bu örnek KDE ile Bayes üretken sınıflandırmaya bakar ve Scikit-Learn mimarisinde özel bir tahminci oluşturmayı gösterir.</p>
+    <p><a href="05-naive-bayes.html">5.5 Naive Bayes Sınıflandırması</a> bölümünde naive Bayes sınıflandırmasını inceledik: her sınıf için basit bir üretken model kurup bu modellerle hızlı sınıflandırıcı oluşturduk. Gauss naive Bayes'te üretken model eksen hizalı basit Gauss'tur. KDE gibi yoğunluk tahmin algoritmasıyla "naive" unsuru kaldırıp her sınıf için daha sofistike üretken modelle aynı sınıflandırmayı yapabiliriz. Hâlâ Bayes sınıflandırmasıdır; ama artık naive değildir.</p>
+    <p>Genel üretken sınıflandırma yaklaşımı şudur:</p>
+    <p>1. Eğitim verisini etikete göre bölün.<br>2. Her küme için KDE uydurarak verinin üretken modelini elde edin. Böylece her $(x, y)$ için olabilirlik $P(x~|~y)$ hesaplanabilir.<br>3. Eğitim kümesindeki sınıf örnek sayılarından <em>sınıf önsel</em> $P(y)$ hesaplayın.<br>4. Bilinmeyen $x$ için her sınıfın posterior olasılığı $P(y~|~x) \propto P(x~|~y)P(y)$. Posterioru maksimize eden sınıf, noktaya atanan etikettir.</p>
+    <p>Algoritma basit ve sezgiseldir; zor kısım bunu grid search ve çapraz doğrulama mimarisinden yararlanmak için Scikit-Learn çerçevesine oturtmaktır. Algoritma kod bloğunda uygulanmıştır; kodu adım adım inceleyeceğiz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="kde_classifier.py">
+      <pre><code>from sklearn.base import BaseEstimator, ClassifierMixin
+
+
+class KDEClassifier(BaseEstimator, ClassifierMixin):
+    &quot;&quot;&quot;Bayesian generative classification based on KDE
+    
+    Parameters
+    ----------
+    bandwidth : float
+        the kernel bandwidth within each class
+    kernel : str
+        the kernel name, passed to KernelDensity
+    &quot;&quot;&quot;
+    def __init__(self, bandwidth=1.0, kernel=&#x27;gaussian&#x27;):
+        self.bandwidth = bandwidth
+        self.kernel = kernel
+        
+    def fit(self, X, y):
+        self.classes_ = np.sort(np.unique(y))
+        training_sets = [X[y == yi] for yi in self.classes_]
+        self.models_ = [KernelDensity(bandwidth=self.bandwidth,
+                                      kernel=self.kernel).fit(Xi)
+                        for Xi in training_sets]
+        self.logpriors_ = [np.log(Xi.shape[0] / X.shape[0])
+                           for Xi in training_sets]
+        return self
+        
+    def predict_proba(self, X):
+        logprobs = np.array([model.score_samples(X)
+                             for model in self.models_]).T
+        result = np.exp(logprobs + self.logpriors_)
+        return result / result.sum(axis=1, keepdims=True)
+        
+    def predict(self, X):
+        return self.classes_[np.argmax(self.predict_proba(X), 1)]</code></pre>
+    </div>
+
+    <h3 id="tahminci-anatomi">Özel Tahmincinin Anatomisi</h3>
+
+    <p>Kodu adım adım inceleyelim; temel özellikler:</p>
+    <p>Scikit-Learn'deki her tahminci bir sınıftır; <code>BaseEstimator</code> ve uygun mixin'den türetmek en uygunudur. <code>BaseEstimator</code> çapraz doğrulama için klonlama mantığını içerir; <code>ClassifierMixin</code> varsayılan <code>score</code> yöntemini tanımlar. Docstring IPython yardımına yakalanır (bkz. <a href="../01-ipython/01-help-and-documentation.html">1.1 Yardım ve Dokümantasyon</a>).</p>
+
+    <p>Sırada sınıf başlatma yöntemi gelir. Scikit-Learn'de <code>__init__</code> içinde, geçirilen değerleri <code>self</code>'e atamaktan başka işlem <em>olmaması</em> önemlidir — <code>BaseEstimator</code> klonlama mantığı bunu gerektirir. <code>*args</code> / <code>**kwargs</code> kaçınılmalıdır.</p>
+
+    <p>Ardından eğitim verisini işlediğimiz <code>fit</code> yöntemi gelir: eğitim verisindeki benzersiz sınıflar bulunur, her sınıf için <code>KernelDensity</code> eğitilir, sınıf önselleri örnek sayılarından hesaplanır. <code>fit</code> her zaman <code>self</code> döndürmelidir. Kalıcı sonuçlar sondaki alt çizgiyle saklanır (ör. <code>self.logpriors_</code>).</p>
+
+    <p>Son olarak yeni veride etiket tahmini: olasılıksal sınıflandırıcı olduğu için önce <code>predict_proba</code> uygulanır; <code>[i,j]</code> girişi örnek <code>i</code>'nin sınıf <code>j</code> üyesi olma posterior olasılığıdır. <code>predict</code> en büyük olasılıklı sınıfı döndürür.</p>
+
+    <p>Özel tahmincimizi daha önce gördüğümüz el yazısı rakam sınıflandırmasında deneyelim. Rakamları yükleyip <code>GridSearchCV</code> ile aday bant genişliklerinin çapraz doğrulama skorunu hesaplayacağız (bkz. <a href="03-hyperparameters-and-model-validation.html">5.3 Hiperparametreler</a>):</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 </div>
+      <p>Digits verisinde KDE sınıflandırıcı bant genişliği denemesi (kısa):</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_kde_digits.py">
+      <pre><code>from sklearn.datasets import load_digits
+from sklearn.model_selection import cross_val_score
+from sklearn.neighbors import KernelDensity
+import numpy as np
+digits = load_digits()
+# Basit tek-sınıf KDE skoru örneği
+kde = KernelDensity(bandwidth=1.0).fit(digits.data[digits.target == 0])
+print("digit-0 log-lik sample:", kde.score_samples(digits.data[:3]).round(2))</code></pre>
+    </div>
+
+    </div>
+
+
+    <div class="code-block" data-lang="python" data-filename="kde_digits_grid.py">
+      <pre><code>from sklearn.datasets import load_digits
+from sklearn.model_selection import GridSearchCV
+
+digits = load_digits()
+
+grid = GridSearchCV(KDEClassifier(),
+                    {&#x27;bandwidth&#x27;: np.logspace(0, 2, 100)})
+grid.fit(digits.data, digits.target);</code></pre>
+    </div>
+
+    <p>Bant genişliğine karşı çapraz doğrulama skorunu çizebiliriz (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="kde_cv_plot.py">
+      <pre><code>fig, ax = plt.subplots()
+ax.semilogx(np.array(grid.cv_results_[&#x27;param_bandwidth&#x27;]),
+            grid.cv_results_[&#x27;mean_test_score&#x27;])
+ax.set(title=&#x27;KDE Model Performance&#x27;, ylim=(0, 1),
+       xlabel=&#x27;bandwidth&#x27;, ylabel=&#x27;accuracy&#x27;)
+print(f&#x27;best param: {grid.best_params_}&#x27;)
+print(f&#x27;accuracy = {grid.best_score_}&#x27;)</code></pre>
+    </div>
+
+    <p>KDE sınıflandırıcımız %96'nın üzerinde çapraz doğrulama doğruluğuna ulaşır; naive Bayes sınıflandırıcısı yaklaşık %80 civarındadır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="kde_vs_gnb.py">
+      <pre><code>from sklearn.naive_bayes import GaussianNB
+from sklearn.model_selection import cross_val_score
+cross_val_score(GaussianNB(), digits.data, digits.target).mean()</code></pre>
+    </div>
+
+    <p>Böyle üretken sınıflandırıcının bir faydası, sonuçların yorumlanabilirliğidir: her bilinmeyen örnek için yalnızca olasılıksal sınıflandırma değil, karşılaştırdığımız nokta dağılımının <em>tam modeli</em> elde edilir! SVM ve rastgele orman gibi algoritmaların gizlediği nedenlere sezgisel bir pencere sunar.</p>
+    <p>Daha ileri gitmek isteyenler için iyileştirme fikirleri:</p>
+    <p>• Her sınıfta bant genişliğinin bağımsız değişmesine izin verilebilir.<br>• Bant genişlikleri yalnızca tahmin skoruna göre değil, her sınıftaki üretken model olabilirliğine göre optimize edilebilir.<br>• KDE yerine Gauss karışım modelleri kullanan benzer Bayes sınıflandırıcısı kurmak iyi bir alıştırmadır.</p>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="14-image-features.html">5.14 Görüntü Öznitelikleri →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas + Matplotlib + scikit-learn yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pandas ile Veri İşleme — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="03-pandas" data-section="00-introduction" data-preload-numpy="true" data-preload-pandas="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.00-introduction-to-pandas.html" target="_blank" rel="noopener">03.00 Introduction to Pandas</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>Pandas ile Veri İşleme</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.00-introduction-to-pandas.html" target="_blank" rel="noopener">Data Manipulation with Pandas</a></em></p>
+
+    <p><a href="../02-numpy/00-introduction.html">Bölüm 2</a>'de NumPy ve yoğun tipli dizileri verimli saklayıp işleyen <code>ndarray</code> nesnesini ayrıntılı ele aldık. Burada Pandas kütüphanesinin sunduğu veri yapılarına derinlemesine bakacağız. Pandas, NumPy üzerine kurulu daha yeni bir pakettir ve <code>DataFrame</code> için verimli bir uygulama sağlar.</p>
+
+    <p><code>DataFrame</code>'ler, satır ve sütun etiketleri eklenmiş çok boyutlu diziler gibidir; çoğu zaman heterojen tipler ve/veya eksik veri içerir. Etiketli veri için uygun bir depolama arayüzü sunmanın yanı sıra Pandas, veritabanı çerçevelerinde ve hesap tablolarında tanıdık güçlü veri işlemlerini uygular.</p>
+
+    <p>Gördüğümüz gibi NumPy'nin <code>ndarray</code> yapısı, sayısal hesaplamada görülen düzenli veri türleri için temel özellikler sunar. Bu amaca iyi hizmet eder; ancak daha fazla esneklik gerektiğinde (veriye etiket ekleme, eksik veriyle çalışma vb.) ve eleman bazlı broadcasting'e iyi uymayan işlemlerde (gruplama, pivot vb.) sınırları belirginleşir — bunların her biri dünyadaki daha az yapılandırılmış veriyi analiz etmenin önemli parçalarıdır. Pandas, özellikle <code>Series</code> ve <code>DataFrame</code> nesneleriyle NumPy dizi yapısının üzerine inşa edilir ve bir veri bilimcinin zamanının büyük kısmını alan bu tür <em>data munging</em> görevlerine verimli erişim sağlar.</p>
+
+    <p>Kitabın bu bölümünde <code>Series</code>, <code>DataFrame</code> ve ilgili yapıları etkili kullanmanın mekaniğine odaklanacağız. Uygun yerlerde gerçek veri kümelerinden örnekler kullanacağız; ancak odak noktası örneklerin kendisi değil, araçların kullanımıdır.</p>
+
+    <h2 id="pandas-kurulum">Pandas Kurulumu ve Kullanımı</h2>
+
+    <p>Pandas kurulumu için sisteminizde NumPy yüklü olmalıdır; kaynaktan derliyorsanız Pandas'ın dayandığı C/Cython kaynaklarını derlemek için uygun araçlar gerekir. Kurulum ayrıntıları <a href="https://pandas.pydata.org/" target="_blank" rel="noopener">Pandas dokümantasyonunda</a> bulunur. Önsözdeki öneriyi izleyip Anaconda yığınını kullandıysanız Pandas zaten yüklüdür.</p>
+
+    <p>Pandas kurulduktan sonra içe aktarıp sürümü kontrol edebilirsiniz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="pandas_surum.py">
+      <pre><code>import pandas
+pandas.__version__</code></pre>
+    </div>
+
+    <p>NumPy'yi genelde <code>np</code> takma adıyla içe aktardığımız gibi Pandas'ı <code>pd</code> ile içe aktarırız:</p>
+
+    <div class="code-block" data-lang="python" data-filename="pandas_import.py">
+      <pre><code>import pandas as pd</code></pre>
+    </div>
+
+    <p>Kitabın geri kalanında bu içe aktarma kuralını kullanacağız.</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — neden <code>pd</code>?</div>
+      <p><code>import pandas as pd</code>, NumPy'deki <code>np</code> gibi toplulukta standarttır. Dokümantasyon, blog yazıları ve örnek kodların neredeyse tamamı bu kısaltmayı kullanır.</p>
+    </div>
+
+    <h2 id="yerlesik-dokumantasyon">Yerleşik dokümantasyon hatırlatması</h2>
+
+    <p>Kitabın bu kısmını okurken IPython'un paket içeriğini hızlıca keşfetme (sekme ile tamamlama) ve fonksiyon dokümantasyonuna erişme (<code>?</code> karakteri) yeteneklerini unutmayın. Bunlar için <a href="../01-ipython/01-help-and-documentation.html">1.1 IPython'da Yardım ve Dokümantasyon</a> bölümüne bakabilirsiniz.</p>
+
+    <p>Örneğin Pandas ad uzayının tüm içeriğini göstermek için:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="ipython_tab.py">
+      <pre><code>In [3]: pd.&lt;TAB&gt;</code></pre>
+    </div>
+
+    <p>Pandas'ın yerleşik dokümantasyonunu göstermek için:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="ipython_help.py">
+      <pre><code>In [4]: pd?</code></pre>
+    </div>
+
+    <p>Daha ayrıntılı dokümantasyon, öğreticiler ve diğer kaynaklar <a href="https://pandas.pydata.org/" target="_blank" rel="noopener">pandas.pydata.org</a> adresindedir.</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>Pandas'ı içe aktarın; sürümü kontrol edin ve basit bir <code>Series</code> oluşturun:</p>
+      <div class="code-block" data-lang="python" data-filename="pandas_hizli_deneme.py">
+        <pre><code>import pandas as pd
+print("Pandas sürümü:", pd.__version__)
+print(pd.Series([10, 20, 30], index=["a", "b", "c"]))</code></pre>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="01-introducing-pandas-objects.html">3.1 Pandas Nesnelerine Giriş →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Performans: Değerlendirme ve Sorgu — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="03-pandas" data-section="12-performance-eval-and-query" data-preload-numpy="true" data-preload-pandas="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.12-performance-eval-and-query.html" target="_blank" rel="noopener">03.12 Performance Eval and Query</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>3.12 Performans: Değerlendirme ve Sorgu</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.12-performance-eval-and-query.html" target="_blank" rel="noopener">Performance Eval and Query</a></em></p>
+    <p>Önceki bölümlerde gördüğümüz gibi PyData yığınının gücü, NumPy ve Pandas'ın temel işlemleri sezgisel üst düzey sözdizimiyle alt düzey derlenmiş koda itme yeteneğine dayanır: NumPy'de vektörize/yayınlanmış işlemler, Pandas'ta gruplama türü işlemler buna örnektir. Bu soyutlamalar birçok yaygın kullanım için verimli olsa da genelde geçici ara nesneler oluşturmaya dayanır; bu da hesaplama süresi ve bellek kullanımında gereksiz yük yaratabilir.</p>
+    <p>Bunu gidermek için Pandas, ara dizilerin maliyetli ayrılması olmadan doğrudan C hızında işlemlere erişmeyi sağlayan yöntemler içerir: <code>eval</code> ve <code>query</code>. Bunlar <a href="https://github.com/pydata/numexpr" target="_blank" rel="noopener">NumExpr</a> paketine dayanır. Bu bölümde kullanımlarını ve ne zaman düşünmeniz gerekebileceğine dair pratik kuralları ele alacağız.</p>
+
+    <h2 id="motivasyon">query ve eval Motivasyonu: Bileşik İfadeler</h2>
+    <p>NumPy ve Pandas'ın hızlı vektörize işlemleri desteklediğini daha önce gördük; örneğin iki dizinin elemanlarını toplarken:</p>
+
+    <div class="code-block" data-lang="python" data-filename="timeit_numpy_add.py">
+      <pre><code>import numpy as np
+rng = np.random.default_rng(42)
+x = rng.random(1000000)
+y = rng.random(1000000)
+%timeit x + y</code></pre>
+    </div>
+
+    <p><a href="../02-numpy/03-computation-ufuncs.html">2.3 Evrensel Fonksiyonlar</a> bölümünde tartışıldığı gibi bu, Python döngüsü veya comprehension ile toplama yapmaktan çok daha hızlıdır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="timeit_loop_add.py">
+      <pre><code>%timeit np.fromiter((xi + yi for xi, yi in zip(x, y)),
+                    dtype=x.dtype, count=len(x))</code></pre>
+    </div>
+
+    <p>Ancak bileşik ifadeler hesaplanırken bu soyutlama daha az verimli olabilir. Şu ifadeyi düşünün:</p>
+
+    <div class="code-block" data-lang="python" data-filename="compound_mask.py">
+      <pre><code>mask = (x &gt; 0.5) &amp; (y &lt; 0.5)</code></pre>
+    </div>
+
+    <p>NumPy her alt ifadeyi ayrı değerlendirdiği için bu kabaca şuna eşdeğerdir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="compound_tmp.py">
+      <pre><code>tmp1 = (x &gt; 0.5)
+tmp2 = (y &lt; 0.5)
+mask = tmp1 &amp; tmp2</code></pre>
+    </div>
+
+    <p>Başka bir deyişle, <em>her ara adım bellekte açıkça ayrılır</em>. <code>x</code> ve <code>y</code> dizileri çok büyükse bu bellek ve hesaplama yüküne yol açabilir.</p>
+    <p>NumExpr kütüphanesi bu tür bileşik ifadeyi tam ara diziler ayırmadan eleman eleman hesaplamanıza olanak tanır. <a href="https://github.com/pydata/numexpr" target="_blank" rel="noopener">NumExpr dokümantasyonu</a> daha fazla ayrıntı içerir; şimdilik kütüphanenin hesaplamak istediğiniz NumPy tarzı ifadeyi veren bir <em>dize</em> kabul ettiğini söylemek yeterlidir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="numexpr_eval.py">
+      <pre><code>import numexpr
+mask_numexpr = numexpr.evaluate(&#x27;(x &gt; 0.5) &amp; (y &lt; 0.5)&#x27;)
+np.all(mask == mask_numexpr)</code></pre>
+    </div>
+
+    <p>NumExpr ifadeyi mümkün olduğunca geçici dizilerden kaçınarak değerlendirir; bu yüzden özellikle büyük diziler üzerinde uzun hesaplama dizilerinde NumPy'den çok daha verimli olabilir. Burada ele alacağımız Pandas <code>eval</code> ve <code>query</code> araçları kavramsal olarak benzerdir; esasen NumExpr işlevselliğinin Pandas'a özgü sarmalayıcılarıdır.</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — NumExpr</div>
+      <p>NumExpr ifadeyi dize olarak alır — sütun adları yerine değişken adları kullanılır. Pandas <code>eval</code>/<code>query</code> bu katmanı <code>DataFrame</code> bağlamına taşır.</p>
+    </div>
+
+    <h2 id="pandas-eval">Verimli İşlemler için pandas.eval</h2>
+    <p>Pandas'taki <code>eval</code> fonksiyonu dize ifadeleri kullanarak <code>DataFrame</code> nesneleri üzerinde verimli hesaplamalar yapar. Örneğin şu veriyi düşünün:</p>
+
+    <div class="code-block" data-lang="python" data-filename="eval_dataframes.py">
+      <pre><code>import pandas as pd
+nrows, ncols = 100000, 100
+df1, df2, df3, df4 = (pd.DataFrame(rng.random((nrows, ncols)))
+                      for i in range(4))</code></pre>
+    </div>
+
+    <p>Dört <code>DataFrame</code>'in toplamını tipik Pandas yaklaşımıyla yazabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="timeit_df_sum.py">
+      <pre><code>%timeit df1 + df2 + df3 + df4</code></pre>
+    </div>
+
+    <p>Aynı sonuç <code>pd.eval</code> ile dize olarak ifade kurularak elde edilebilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="timeit_pd_eval.py">
+      <pre><code>%timeit pd.eval(&#x27;df1 + df2 + df3 + df4&#x27;)</code></pre>
+    </div>
+
+    <p>Bu ifadenin <code>eval</code> sürümü yaklaşık %50 daha hızlıdır (ve çok daha az bellek kullanır) ve aynı sonucu verir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="eval_allclose.py">
+      <pre><code>np.allclose(df1 + df2 + df3 + df4,
+            pd.eval(&#x27;df1 + df2 + df3 + df4&#x27;))</code></pre>
+    </div>
+
+    <p><code>pd.eval</code> geniş bir işlem yelpazesini destekler. Göstermek için şu tamsayı verisini kullanacağız:</p>
+
+    <div class="code-block" data-lang="python" data-filename="eval_int_data.py">
+      <pre><code>df1, df2, df3, df4, df5 = (pd.DataFrame(rng.integers(0, 1000, (100, 3)))
+                           for i in range(5))</code></pre>
+    </div>
+
+    <h4 id="aritmetik">Aritmetik operatörler</h4>
+
+    <div class="code-block" data-lang="python" data-filename="eval_arithmetic.py">
+      <pre><code>result1 = -df1 * df2 / (df3 + df4) - df5
+result2 = pd.eval(&#x27;-df1 * df2 / (df3 + df4) - df5&#x27;)
+np.allclose(result1, result2)</code></pre>
+    </div>
+
+    <h4 id="karsilastirma">Karşılaştırma operatörleri</h4>
+
+    <div class="code-block" data-lang="python" data-filename="eval_comparison.py">
+      <pre><code>result1 = (df1 &lt; df2) &amp; (df2 &lt;= df3) &amp; (df3 != df4)
+result2 = pd.eval(&#x27;df1 &lt; df2 &lt;= df3 != df4&#x27;)
+np.allclose(result1, result2)</code></pre>
+    </div>
+
+    <h4 id="bitwise">Bit düzeyi operatörler</h4>
+
+    <div class="code-block" data-lang="python" data-filename="eval_bitwise.py">
+      <pre><code>result1 = (df1 &lt; 0.5) &amp; (df2 &lt; 0.5) | (df3 &lt; df4)
+result2 = pd.eval(&#x27;(df1 &lt; 0.5) &amp; (df2 &lt; 0.5) | (df3 &lt; df4)&#x27;)
+np.allclose(result1, result2)</code></pre>
+    </div>
+
+    <p>Ayrıca Boolean ifadelerde <code>and</code> ve <code>or</code> kullanımını destekler:</p>
+
+    <div class="code-block" data-lang="python" data-filename="eval_and_or.py">
+      <pre><code>result3 = pd.eval(&#x27;(df1 &lt; 0.5) and (df2 &lt; 0.5) or (df3 &lt; df4)&#x27;)
+np.allclose(result1, result3)</code></pre>
+    </div>
+
+    <h4 id="oznitelik-indeks">Nesne öznitelikleri ve indeksler</h4>
+
+    <div class="code-block" data-lang="python" data-filename="eval_attr_index.py">
+      <pre><code>result1 = df2.T[0] + df3.iloc[1]
+result2 = pd.eval(&#x27;df2.T[0] + df3.iloc[1]&#x27;)
+np.allclose(result1, result2)</code></pre>
+    </div>
+
+    <h4 id="diger-islemler">Diğer işlemler</h4>
+
+    <p>Fonksiyon çağrıları, koşullu ifadeler, döngüler ve daha karmaşık yapılar şu an <code>pd.eval</code> içinde <em>uygulanmamıştır</em>. Bu tür ifadeleri çalıştırmak için NumExpr kütüphanesinin kendisini kullanabilirsiniz.</p>
+
+    <div class="code-block" data-lang="python" data-filename="df_eval_ornek.py">
+      <pre><code>df = pd.DataFrame(rng.random((1000, 3)), columns=[&#x27;A&#x27;, &#x27;B&#x27;, &#x27;C&#x27;])
+df.head()</code></pre>
+    </div>
+
+    <p>Önceki bölümdeki gibi <code>pd.eval</code> ile üç sütunlu ifade hesaplayabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="pd_eval_columns.py">
+      <pre><code>result1 = (df[&#x27;A&#x27;] + df[&#x27;B&#x27;]) / (df[&#x27;C&#x27;] - 1)
+result2 = pd.eval(&quot;(df.A + df.B) / (df.C - 1)&quot;)
+np.allclose(result1, result2)</code></pre>
+    </div>
+
+    <p><code>DataFrame.eval</code> yöntemi sütunlarla ifadelerin çok daha özlü değerlendirilmesine izin verir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="df_eval_columns.py">
+      <pre><code>result3 = df.eval(&#x27;(A + B) / (C - 1)&#x27;)
+np.allclose(result1, result3)</code></pre>
+    </div>
+
+    <p>Burada sütun adlarını değerlendirilen ifade içinde <em>değişken</em> gibi ele aldığımıza ve sonucun istediğimiz gibi olduğuna dikkat edin.</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p><code>DataFrame.eval</code> ile sütun adlarını değişken gibi kullanın:</p>
+      <div class="code-block" data-lang="python" data-filename="deneme_df_eval.py">
+        <pre><code>import pandas as pd
+import numpy as np
+rng = np.random.default_rng(0)
+df = pd.DataFrame(rng.random((5, 3)), columns=[&quot;A&quot;, &quot;B&quot;, &quot;C&quot;])
+df.eval(&quot;D = (A + B) / C&quot;, inplace=True)
+print(df.head())</code></pre>
+      </div>
+    </div>
+
+    <h3 id="eval-atama">DataFrame.eval'de Atama</h3>
+
+    <div class="code-block" data-lang="python" data-filename="df_head.py">
+      <pre><code>df.head()</code></pre>
+    </div>
+
+    <p><code>df.eval</code> ile diğer sütunlardan hesaplanan yeni bir <code>'D'</code> sütunu oluşturup atayabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="df_eval_assign.py">
+      <pre><code>df.eval(&#x27;D = (A + B) / C&#x27;, inplace=True)
+df.head()</code></pre>
+    </div>
+
+    <p>Aynı şekilde mevcut herhangi bir sütun değiştirilebilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="df_eval_modify.py">
+      <pre><code>df.eval(&#x27;D = (A - B) / C&#x27;, inplace=True)
+df.head()</code></pre>
+    </div>
+
+    <h3 id="eval-yerel">DataFrame.eval'de Yerel Değişkenler</h3>
+
+    <div class="code-block" data-lang="python" data-filename="eval_local_var.py">
+      <pre><code>column_mean = df.mean(1)
+result1 = df[&#x27;A&#x27;] + column_mean
+result2 = df.eval(&#x27;A + @column_mean&#x27;)
+np.allclose(result1, result2)</code></pre>
+    </div>
+
+    <p>Buradaki <code>@</code> karakteri bir <em>sütun adı</em> değil <em>değişken adı</em> işaretler; sütun ad alanı ile Python nesne ad alanını içeren ifadeleri verimli değerlendirmenizi sağlar. Bu <code>@</code> yalnızca <code>DataFrame.eval</code> <em>yöntemi</em> tarafından desteklenir; <code>pandas.eval</code> <em>fonksiyonu</em> yalnızca tek (Python) ad alanına erişebildiği için <code>@</code> desteklemez.</p>
+
+    <h2 id="dataframe-query">DataFrame.query Yöntemi</h2>
+    <p><code>DataFrame</code>'in değerlendirilmiş dizelere dayanan bir başka yöntemi <code>query</code>'dir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="query_mask_equiv.py">
+      <pre><code>result1 = df[(df.A &lt; 0.5) &amp; (df.B &lt; 0.5)]
+result2 = pd.eval(&#x27;df[(df.A &lt; 0.5) &amp; (df.B &lt; 0.5)]&#x27;)
+np.allclose(result1, result2)</code></pre>
+    </div>
+
+    <p><code>DataFrame.eval</code> tartışmasındaki örnek gibi bu da <code>DataFrame</code> sütunlarını içeren bir ifadedir. Ancak <code>DataFrame.eval</code> sözdizimiyle ifade edilemez! Bu tür filtreleme için <code>query</code> yöntemini kullanabilirsiniz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="df_query.py">
+      <pre><code>result2 = df.query(&#x27;A &lt; 0.5 and B &lt; 0.5&#x27;)
+np.allclose(result1, result2)</code></pre>
+    </div>
+
+    <p>Daha verimli hesaplamanın yanı sıra maskeleme ifadesine kıyasla okunması ve anlaşılması çok daha kolaydır. <code>query</code> yöntemi yerel değişkenler için de <code>@</code> bayrağını kabul eder:</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p><code>query</code> ile okunabilir filtreleme:</p>
+      <div class="code-block" data-lang="python" data-filename="deneme_df_query.py">
+        <pre><code>import pandas as pd
+import numpy as np
+rng = np.random.default_rng(1)
+df = pd.DataFrame(rng.random((100, 3)), columns=[&quot;A&quot;, &quot;B&quot;, &quot;C&quot;])
+sub = df.query(&quot;A &lt; 0.3 and B &gt; 0.5&quot;)
+print(len(sub), &quot;satır seçildi&quot;)</code></pre>
+      </div>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="query_local_var.py">
+      <pre><code>Cmean = df[&#x27;C&#x27;].mean()
+result1 = df[(df.A &lt; Cmean) &amp; (df.B &lt; Cmean)]
+result2 = df.query(&#x27;A &lt; @Cmean and B &lt; @Cmean&#x27;)
+np.allclose(result1, result2)</code></pre>
+    </div>
+
+    <h2 id="performans-ne-zaman">Performans: Bu Fonksiyonları Ne Zaman Kullanmalı?</h2>
+    <p><code>eval</code> ve <code>query</code> kullanılıp kullanılmayacağını değerlendirirken iki faktör vardır: <em>hesaplama süresi</em> ve <em>bellek kullanımı</em>. Bellek kullanımı en öngörülebilir yöndür. Daha önce belirtildiği gibi NumPy dizileri veya Pandas <code>DataFrame</code>'leri içeren her bileşik ifade geçici dizilerin örtük oluşturulmasına yol açar. Örneğin şu:</p>
+
+    <div class="code-block" data-lang="python" data-filename="mask_filter.py">
+      <pre><code>x = df[(df.A &lt; 0.5) &amp; (df.B &lt; 0.5)]</code></pre>
+    </div>
+
+    <p>kabaca şuna eşdeğerdir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="mask_tmp_steps.py">
+      <pre><code>tmp1 = df.A &lt; 0.5
+tmp2 = df.B &lt; 0.5
+tmp3 = tmp1 &amp; tmp2
+x = df[tmp3]</code></pre>
+    </div>
+
+    <p>Geçici <code>DataFrame</code>'lerin boyutu kullanılabilir sistem belleğinize (genelde birkaç gigabayt) göre önemliyse <code>eval</code> veya <code>query</code> ifadesi kullanmak iyi bir fikirdir. Dizinizin yaklaşık bayt cinsinden boyutunu şununla kontrol edebilirsiniz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="df_nbytes.py">
+      <pre><code>df.values.nbytes</code></pre>
+    </div>
+
+    <p>Performans tarafında, sistem belleğinizi doldurmasanız bile <code>eval</code> daha hızlı olabilir. Sorun geçici nesnelerinizin sisteminizdeki L1 veya L2 CPU önbelleği boyutuyla (genelde birkaç megabayt) karşılaştırmasıdır; çok daha büyüklerse <code>eval</code> farklı bellek önbellekleri arasında yavaş değer taşınmasını önleyebilir.</p>
+    <p>Pratikte geleneksel yöntemler ile <code>eval</code>/<code>query</code> arasındaki hesaplama süresi farkı genelde önemli değildir — hatta küçük dizilerde geleneksel yöntem daha hızlı olabilir! <code>eval</code>/<code>query</code>'nin asıl faydası tasarruf edilen bellek ve bazen daha temiz sözdizimidir.</p>
+    <p>Burada <code>eval</code> ve <code>query</code>'nin çoğu ayrıntısını ele aldık; daha fazlası için Pandas dokümantasyonuna bakabilirsiniz. Özellikle bu sorguları çalıştırmak için farklı ayrıştırıcılar ve motorlar belirtilebilir; ayrıntılar için dokümantasyondaki <a href="https://pandas.pydata.org/docs/user_guide/enhancingperf.html" target="_blank" rel="noopener">"Enhancing Performance"</a> bölümüne bakın.</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — ne zaman eval?</div>
+      <p>Küçük <code>DataFrame</code>'lerde geleneksel maskeleme genelde yeterlidir. Bellek baskısı veya çok uzun bileşik ifadelerde <code>eval</code>/<code>query</code> düşünün.</p>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="13-further-resources.html">3.13 Kaynaklar →</a></p>
+    </div>
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

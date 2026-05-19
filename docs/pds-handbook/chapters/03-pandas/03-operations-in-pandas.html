@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pandas&#x27;ta İşlemler — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="03-pandas" data-section="03-operations-in-pandas" data-preload-numpy="true" data-preload-pandas="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.03-operations-in-pandas.html" target="_blank" rel="noopener">03.03 Operations in Pandas</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+
+<h1>3.3 Pandas'ta İşlemler</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.03-operations-in-pandas.html" target="_blank" rel="noopener">Operating on Data in Pandas</a></em></p>
+
+    <p>NumPy'nin güçlü yanlarından biri, temel aritmetik (toplama, çıkarma, çarpma vb.) ve daha karmaşık işlemler (trigonometrik, üstel ve logaritmik fonksiyonlar vb.) dahil hızlı eleman bazlı işlemler yapmamıza olanak tanımasıdır. Pandas bu işlevselliğin büyük kısmını NumPy'den devralır; <a href="../02-numpy/03-computation-ufuncs.html">2.3 Evrensel Fonksiyonlar</a> bölümünde tanıtılan ufunc'lar bunun temelidir.</p>
+
+    <p>Pandas birkaç kullanışlı ekleme sunar: tek terimli işlemlerde (negasyon, trigonometrik fonksiyonlar vb.) ufunc'lar çıktıda <em>indeks ve sütun etiketlerini korur</em>; ikili işlemlerde (toplama, çarpma vb.) Pandas nesneleri ufunc'e aktarılırken <em>indeksleri otomatik hizalar</em>. Ham NumPy dizilerinde hata kaynağı olabilen veri bağlamını koruma ve farklı kaynaklardan veri birleştirme, Pandas ile neredeyse hatasız hale gelir. Ayrıca bir boyutlu <code>Series</code> ile iki boyutlu <code>DataFrame</code> arasında iyi tanımlanmış işlemler vardır.</p>
+
+    <h2 id="ufuncs-indeks-koruma">Ufunc'lar: İndeks Korunması</h2>
+
+    <p>Pandas NumPy ile çalışacak şekilde tasarlandığından, herhangi bir NumPy ufunc'u Pandas <code>Series</code> ve <code>DataFrame</code> nesnelerinde çalışır. Bunu göstermek için basit bir <code>Series</code> ve <code>DataFrame</code> tanımlayalım:</p>
+    <div class="code-block" data-lang="python" data-filename="import_pd_np.py">
+      <pre><code>import pandas as pd
+import numpy as np</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="ser_ornek.py">
+      <pre><code>rng = np.random.default_rng(42)
+ser = pd.Series(rng.integers(0, 10, 4))
+ser</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="df_ornek.py">
+      <pre><code>df = pd.DataFrame(rng.integers(0, 10, (3, 4)),
+                  columns=['A', 'B', 'C', 'D'])
+df</code></pre>
+    </div>
+
+    <p>Bu nesnelerden birine NumPy ufunc uygularsak sonuç, <em>indeksleri koruyan</em> başka bir Pandas nesnesidir:</p>
+    <div class="code-block" data-lang="python" data-filename="np_exp_ser.py">
+      <pre><code>np.exp(ser)</code></pre>
+    </div>
+
+    <p>Daha karmaşık işlem dizileri için de geçerlidir:</p>
+    <div class="code-block" data-lang="python" data-filename="np_sin_df.py">
+      <pre><code>np.sin(df * np.pi / 4)</code></pre>
+    </div>
+
+    <p><a href="../02-numpy/03-computation-ufuncs.html">2.3 Evrensel Fonksiyonlar</a> bölümündeki ufunc'ların hepsi benzer şekilde kullanılabilir.</p>
+
+        <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — indeks korunur</div>
+      <p>NumPy ufunc çıktısı düz bir dizi döndürürken, Pandas ufunc çıktısı orijinal etiketleri taşır — bu, veri analizinde hata yapmayı çok zorlaştırır.</p>
+    </div>
+
+
+    <h2 id="ufuncs-indeks-hizalama">Ufunc'lar: İndeks Hizalama</h2>
+
+    <p>İki <code>Series</code> veya <code>DataFrame</code> üzerinde ikili işlemlerde Pandas, işlem sırasında indeksleri hizalar. Eksik veriyle çalışırken bu çok kullanışlıdır.</p>
+
+    <h3 id="series-indeks-hizalama">Series'te İndeks Hizalama</h3>
+
+    <p>Örnek: iki farklı kaynaktan veri birleştirip ABD'nin alan ve nüfus açısından ilk üç eyaletini bulmak isteyelim:</p>
+    <div class="code-block" data-lang="python" data-filename="area_pop.py">
+      <pre><code>area = pd.Series({'Alaska': 1723337, 'Texas': 695662,
+                  'California': 423967}, name='area')
+population = pd.Series({'California': 39538223, 'Texas': 29145505,
+                        'Florida': 21538187}, name='population')</code></pre>
+    </div>
+
+    <p>Nüfus yoğunluğu için bunları bölelim:</p>
+    <div class="code-block" data-lang="python" data-filename="pop_density.py">
+      <pre><code>population / area</code></pre>
+    </div>
+
+    <p>Sonuç dizisi, iki girdi dizisinin indekslerinin <em>birleşimini</em> içerir; doğrudan şöyle de bulunabilir:</p>
+    <div class="code-block" data-lang="python" data-filename="index_union.py">
+      <pre><code>area.index.union(population.index)</code></pre>
+    </div>
+
+    <p>Birinde veya diğerinde giriş olmayan her öğe <code>NaN</code> (Not a Number) ile işaretlenir — Pandas'ın eksik veri göstergesidir (<a href="04-missing-values.html">3.4 Eksik Veri</a>). Bu indeks eşleştirmesi Python'un yerleşik aritmetik ifadelerinin tümünde böyledir; eksik değerler <code>NaN</code> ile işaretlenir:</p>
+    <div class="code-block" data-lang="python" data-filename="series_align_nan.py">
+      <pre><code>A = pd.Series([2, 4, 6], index=[0, 1, 2])
+B = pd.Series([1, 3, 5], index=[1, 2, 3])
+A + B</code></pre>
+    </div>
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — NaN istemiyorsanız</div>
+      <p><code>A.add(B, fill_value=0)</code> operatör yerine kullanılabilir; eksik öğeler için doldurma değeri açıkça belirtilir.</p>
+    </div>
+
+    <p><code>NaN</code> istenmiyorsa, operatörler yerine nesne yöntemleriyle <code>fill_value</code> değiştirilebilir. <code>A.add(B)</code>, <code>A + B</code> ile eşdeğerdir ancak eksik öğeler için doldurma değeri belirtilebilir:</p>
+    <div class="code-block" data-lang="python" data-filename="add_fill_value.py">
+      <pre><code>A.add(B, fill_value=0)</code></pre>
+    </div>
+
+    <h3 id="dataframe-indeks-hizalama">DataFrame'de İndeks Hizalama</h3>
+
+    <p><code>DataFrame</code> işlemlerinde hem sütunlar hem indeksler için benzer hizalama yapılır:</p>
+    <div class="code-block" data-lang="python" data-filename="df_A.py">
+      <pre><code>A = pd.DataFrame(rng.integers(0, 20, (2, 2)),
+                 columns=['a', 'b'])
+A</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="df_B.py">
+      <pre><code>B = pd.DataFrame(rng.integers(0, 10, (3, 3)),
+                 columns=['b', 'a', 'c'])
+B</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="df_A_plus_B.py">
+      <pre><code>A + B</code></pre>
+    </div>
+
+    <p>İndeksler iki nesnedeki sıradan bağımsız doğru hizalanır; sonuçtaki indeksler sıralanır. <code>Series</code>'te olduğu gibi aritmetik yöntemler ve <code>fill_value</code> kullanılabilir. Burada <code>A</code>'daki tüm değerlerin ortalamasıyla dolduruyoruz:</p>
+    <div class="code-block" data-lang="python" data-filename="df_add_fill.py">
+      <pre><code>A.add(B, fill_value=A.values.mean())</code></pre>
+    </div>
+
+    <p>Python operatörleri ve eşdeğer Pandas yöntemleri:</p>
+    <div class="table-wrapper">
+      <table class="vocab-table">
+        <thead><tr><th>Python operatörü</th><th>Pandas yöntemi</th></tr></thead>
+        <tbody>
+          <tr><td><code>+</code></td><td><code>add</code></td></tr>
+          <tr><td><code>-</code></td><td><code>sub</code>, <code>subtract</code></td></tr>
+          <tr><td><code>*</code></td><td><code>mul</code>, <code>multiply</code></td></tr>
+          <tr><td><code>/</code></td><td><code>truediv</code>, <code>div</code>, <code>divide</code></td></tr>
+          <tr><td><code>//</code></td><td><code>floordiv</code></td></tr>
+          <tr><td><code>%</code></td><td><code>mod</code></td></tr>
+          <tr><td><code>**</code></td><td><code>pow</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="dataframe-series-islemler">Ufunc'lar: DataFrame ve Series Arası İşlemler</h2>
+
+    <p><code>DataFrame</code> ile <code>Series</code> arasında işlem yaparken indeks ve sütun hizalaması korunur; sonuç, iki boyutlu ile tek boyutlu NumPy dizisi işlemine benzer. Yaygın örnek: iki boyutlu diziden bir satırını çıkarmak:</p>
+    <div class="code-block" data-lang="python" data-filename="matris_A.py">
+      <pre><code>A = rng.integers(10, size=(3, 4))
+A</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="numpy_broadcast_row.py">
+      <pre><code>A - A[0]</code></pre>
+    </div>
+
+    <p>NumPy <a href="../02-numpy/05-broadcasting.html">broadcasting</a> kurallarına göre iki boyutlu dizi ile bir satırı arasındaki çıkarma satır bazında uygulanır. Pandas'ta da varsayılan olarak satır bazında çalışır:</p>
+    <div class="code-block" data-lang="python" data-filename="df_minus_row.py">
+      <pre><code>df = pd.DataFrame(A, columns=['Q', 'R', 'S', 'T'])
+df - df.iloc[0]</code></pre>
+    </div>
+
+    <p>Sütun bazında çalışmak için daha önceki nesne yöntemlerini <code>axis</code> ile kullanın:</p>
+    <div class="code-block" data-lang="python" data-filename="df_subtract_col.py">
+      <pre><code>df.subtract(df['R'], axis=0)</code></pre>
+    </div>
+
+    <p>Bu <code>DataFrame</code>/<code>Series</code> işlemleri de önceki gibi iki öğe arasında indeksleri otomatik hizalar:</p>
+    <div class="code-block" data-lang="python" data-filename="halfrow.py">
+      <pre><code>halfrow = df.iloc[0, ::2]
+halfrow</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="df_minus_halfrow.py">
+      <pre><code>df - halfrow</code></pre>
+    </div>
+
+    <p>İndeks ve sütunların korunması ve hizalanması, Pandas işlemlerinin veri bağlamını sürdürmesini sağlar; heterojen veya hizasız ham NumPy dizilerinde sık görülen hatalar önlenir.</p>
+
+        <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>İki <code>Series</code> oluşturup farklı indekslerle toplayın; <code>fill_value=0</code> ile sonucu karşılaştırın:</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_align.py">
+      <pre><code>import pandas as pd
+A = pd.Series([10, 20], index=['x', 'y'])
+B = pd.Series([1, 2, 3], index=['y', 'z', 'w'])
+print("A + B:\n", A + B)
+print("\nA.add(B, fill_value=0):\n", A.add(B, fill_value=0))</code></pre>
+    </div>
+
+    </div>
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>Küçük bir <code>DataFrame</code> oluşturup ilk satırı çıkarın (<code>df - df.iloc[0]</code>):</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_df_row.py">
+      <pre><code>import pandas as pd
+import numpy as np
+rng = np.random.default_rng(0)
+df = pd.DataFrame(rng.integers(0, 10, (3, 4)), columns=list('ABCD'))
+print(df)
+print("\nSatır farkı:\n", df - df.iloc[0])</code></pre>
+    </div>
+
+    </div>
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — axis parametresi</div>
+      <p><code>axis=0</code> satırlar boyunca, <code>axis=1</code> sütunlar boyunca işlem yapar. DataFrame–Series işlemlerinde hangi eksenin yayınlandığını kontrol etmek için yöntem formunu (<code>subtract</code>, <code>add</code> vb.) kullanın.</p>
+    </div>
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — operatör vs yöntem</div>
+      <p><code>+</code> gibi operatörler kısadır; <code>fill_value</code> veya <code>axis</code> gerektiğinde <code>.add()</code>, <code>.subtract()</code> tercih edin.</p>
+    </div>
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="04-missing-values.html">3.4 Eksik Veri →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

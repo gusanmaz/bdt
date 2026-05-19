@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doğrusal Regresyon — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="05-sklearn" data-section="06-linear-regression" data-preload-numpy="true" data-preload-pandas="true" data-preload-matplotlib="true" data-preload-sklearn="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.06-linear-regression.html" target="_blank" rel="noopener">05.06 Linear Regression</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>5.6 Derinlemesine: Doğrusal Regresyon</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.06-linear-regression.html" target="_blank" rel="noopener">05.06 Linear Regression</a></em></p>
+    <p><a href="05-naive-bayes.html">Derinlemesine: Naive Bayes Sınıflandırması</a> bölümünde tartışıldığı gibi naive Bayes sınıflandırma görevleri için iyi bir başlangıç noktasıysa, doğrusal regresyon modelleri regresyon görevleri için iyi bir başlangıç noktasıdır.
+    Bu modeller hızlı uydurulabildiği ve yorumlanması kolay olduğu için popülerdir.
+    En basit doğrusal regresyon modeline (iki boyutlu veriye düz çizgi uydurma) zaten aşinasınız; ancak bu modeller daha karmaşık veri davranışını modellemek için genişletilebilir.</p>
+    <p>Bu bölümde bu iyi bilinen problemin matematiğine kısa bir bakıştan başlayıp doğrusal modellerin daha karmaşık örüntüleri nasıl hesaba katacak şekilde genellenebileceğini göreceğiz.</p>
+    <p>Standart içe aktarmalarla başlayalım:</p>
+    <div class="code-block" data-lang="python" data-filename="imports_linreg.py" data-readonly="true">
+      <pre><code>%matplotlib inline
+import matplotlib.pyplot as plt
+plt.style.use('seaborn-whitegrid')
+import numpy as np</code></pre>
+    </div>
+
+    <h2 id="basit-dogrusal-regresyon">Basit Doğrusal Regresyon</h2>
+    <p>En tanıdık doğrusal regresyonla, veriye düz çizgi uydurmayla başlayacağız.
+    Düz çizgi uyumu şu biçimde bir modeldir: $$y = ax + b$$
+    Burada $a$ genelde <em>eğim</em>, $b$ genelde <em>kesişim</em> (intercept) olarak bilinir.</p>
+    <p>Eğimi 2, kesişimi −5 olan bir doğru etrafında dağılmış aşağıdaki veriyi düşünün (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="simple_linreg_data.py">
+      <pre><code>rng = np.random.RandomState(1)
+x = 10 * rng.rand(50)
+y = 2 * x - 5 + rng.randn(50)
+plt.scatter(x, y);</code></pre>
+    </div>
+
+    <p>Scikit-Learn'ün <code>LinearRegression</code> tahmin edicisiyle bu veriye uyum yapıp en iyi uyum doğrusunu oluşturabiliriz (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="linear_regression_fit.py">
+      <pre><code>from sklearn.linear_model import LinearRegression
+model = LinearRegression(fit_intercept=True)
+
+model.fit(x[:, np.newaxis], y)
+
+xfit = np.linspace(0, 10, 1000)
+yfit = model.predict(xfit[:, np.newaxis])
+
+plt.scatter(x, y)
+plt.plot(xfit, yfit);</code></pre>
+    </div>
+
+    <p>Verinin eğim ve kesişimi modelin uyum parametrelerinde saklanır; Scikit-Learn'de bunlar her zaman sondaki alt çizgiyle işaretlenir.
+    İlgili parametreler <code>coef_</code> ve <code>intercept_</code>:</p>
+    <div class="code-block" data-lang="python" data-filename="model_coef_intercept.py">
+      <pre><code>print("Model slope:    ", model.coef_[0])
+print("Model intercept:", model.intercept_)</code></pre>
+    </div>
+
+    <p>Sonuçların veriyi üretmek için kullanılan değerlere (eğim 2, kesişim −1) çok yakın olduğunu görüyoruz; umarız beklediğimiz gibidir.</p>
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — coef_ ve intercept_</div>
+      <p><code>model.coef_</code> çok boyutlu regresyonda vektör, <code>intercept_</code> skalerdir. Tek öznitelikte <code>coef_[0]</code> eğimdir.</p>
+    </div>
+
+    <p><code>LinearRegression</code> tahmin edicisi bundan çok daha yeteneklidir — basit düz çizgi uyumlarına ek olarak çok boyutlu doğrusal modelleri de işleyebilir:
+    $$y = a_0 + a_1 x_1 + a_2 x_2 + \cdots$$
+    Birden fazla $x$ değeri vardır.
+    Geometrik olarak bu, üç boyutta düzleme veya daha yüksek boyutlarda hiperdüzleme nokta uydurmaya benzer.</p>
+    <p>Çok boyutlu regresyonlar görselleştirmeyi zorlaştırır; ancak NumPy'nin matris çarpım operatörüyle örnek veri oluşturarak böyle bir uydurmayı görebiliriz:</p>
+    <div class="code-block" data-lang="python" data-filename="multidim_linreg.py">
+      <pre><code>rng = np.random.RandomState(1)
+X = 10 * rng.rand(100, 3)
+y = 0.5 + np.dot(X, [1.5, -2., 1.])
+
+model.fit(X, y)
+print(model.intercept_)
+print(model.coef_)</code></pre>
+    </div>
+
+    <p>Burada $y$ verisi üç rastgele $x$ değerinin doğrusal birleşiminden oluşturulmuş; doğrusal regresyon veriyi oluşturmak için kullanılan katsayıları geri kazanmıştır.</p>
+    <p>Bu şekilde tek bir <code>LinearRegression</code> tahmin edicisiyle verimize doğru, düzlem veya hiperdüzlem uydurabiliriz.
+    Bu yaklaşım değişkenler arasında yalnızca doğrusal ilişkilere sınırlı gibi görünse de bunu da gevşetebiliriz.</p>
+    <h2 id="temel-fonksiyon-regresyonu">Temel Fonksiyon Regresyonu</h2>
+    <p>Doğrusal regresyonu değişkenler arasındaki doğrusal olmayan ilişkilere uyarlamak için kullanabileceğiniz bir numara, veriyi <em>temel fonksiyonlara</em> (basis functions) göre dönüştürmektir.
+    <a href="03-hyperparameters-and-model-validation.html">Hiperparametreler ve Model Doğrulama</a> ve <a href="04-feature-engineering.html">Öznitelik Mühendisliği</a> bölümlerinde kullanılan <code>PolynomialRegression</code> pipeline'ında bunun bir sürümünü görmüştük.
+    Fikir, çok boyutlu doğrusal modelimizi almak:
+    $$y = a_0 + a_1 x_1 + a_2 x_2 + a_3 x_3 + \cdots$$
+    ve tek boyutlu girdimiz $x$'ten $x_1, x_2, x_3$ vb. oluşturmaktır; yani $x_n = f_n(x)$, burada $f_n()$ verimizi dönüştüren bir fonksiyondur.</p>
+    <p>Örneğin $f_n(x) = x^n$ ise model polinom regresyona dönüşür:
+    $$y = a_0 + a_1 x + a_2 x^2 + a_3 x^3 + \cdots$$
+    Bu hâlâ <em>doğrusal bir modeldir</em> — doğrusallık katsayıların $a_n$ birbirleriyle çarpılmaması veya bölünmemesi anlamına gelir.
+    Etkili olarak tek boyutlu $x$ değerlerimizi daha yüksek boyuta yansıttık; böylece doğrusal uyum $x$ ile $y$ arasındaki daha karmaşık ilişkileri yakalayabilir.</p>
+    <h3 id="polinom-temel">Polinom Temel Fonksiyonları</h3>
+    <p>Bu polinom projeksiyonu yeterince yararlıdır ki Scikit-Learn'e <code>PolynomialFeatures</code> dönüştürücüsüyle gömülüdür:</p>
+    <div class="code-block" data-lang="python" data-filename="polynomial_features_demo.py">
+      <pre><code>from sklearn.preprocessing import PolynomialFeatures
+x = np.array([2, 3, 4])
+poly = PolynomialFeatures(3, include_bias=False)
+poly.fit_transform(x[:, None])</code></pre>
+    </div>
+
+    <p>Dönüştürücü tek boyutlu dizimizi her sütunda üssü alınmış değeri içeren üç boyutlu bir diziye çevirmiştir.
+    Bu yeni, daha yüksek boyutlu temsil doğrusal regresyona takılabilir.</p>
+    <p><a href="04-feature-engineering.html">Öznitelik Mühendisliği</a> bölümünde gördüğümüz gibi bunu yapmanın en temiz yolu pipeline kullanmaktır.
+    Bu şekilde 7. derece polinom modeli oluşturalım:</p>
+    <div class="code-block" data-lang="python" data-filename="poly_pipeline_7.py">
+      <pre><code>from sklearn.pipeline import make_pipeline
+poly_model = make_pipeline(PolynomialFeatures(7),
+                           LinearRegression())</code></pre>
+    </div>
+
+    <p>Bu dönüşümle doğrusal model $x$ ile $y$ arasındaki çok daha karmaşık ilişkileri uydurabilir.
+    Örneğin gürültülü bir sinüs dalgası (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="sine_noise_fit.py">
+      <pre><code>rng = np.random.RandomState(1)
+x = 10 * rng.rand(50)
+y = np.sin(x) + 0.1 * rng.randn(50)
+
+poly_model.fit(x[:, np.newaxis], y)
+yfit = poly_model.predict(xfit[:, np.newaxis])
+
+plt.scatter(x, y)
+plt.plot(xfit, yfit);</code></pre>
+    </div>
+
+    <p>Yedinci derece polinom temel fonksiyonları kullanan doğrusal modelimiz bu doğrusal olmayan veriye mükemmel bir uyum sağlayabilir!</p>
+    <h3 id="gauss-temel">Gauss Temel Fonksiyonları</h3>
+    <p>Elbette başka temel fonksiyonlar da mümkündür.
+    Yararlı bir örüntü, polinom tabanlarının toplamı değil Gauss tabanlarının toplamını uyduran bir modeldir.
+    Sonuç kabaca aşağıdaki şekildeki gibi görünebilir:</p>
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.06-gaussian-basis.png" alt="Gauss temel fonksiyonları" width="700" loading="lazy">
+      <figcaption>Kaynak: <a href="https://github.com/jakevdp/PythonDataScienceHandbook/blob/master/notebooks/06.00-Figure-Code.ipynb" target="_blank" rel="noopener">Ek — Şekil kodu</a></figcaption>
+    </figure>
+    <p>Grafikteki gölgeli bölgeler ölçeklenmiş temel fonksiyonlardır; toplandığında veriden geçen düzgün eğriyi oluştururlar.
+    Bu Gauss temel fonksiyonları Scikit-Learn'e gömülü değildir; ancak bunları oluşturan özel bir dönüştürücü yazabiliriz (Scikit-Learn dönüştürücüleri Python sınıfları olarak uygulanır; kaynak kodunu okumak nasıl oluşturulacağını görmek için iyi bir yoldur):</p>
+    <div class="code-block" data-lang="python" data-filename="gaussian_features_class.py">
+      <pre><code>from sklearn.base import BaseEstimator, TransformerMixin
+
+class GaussianFeatures(BaseEstimator, TransformerMixin):
+    """Uniformly spaced Gaussian features for one-dimensional input"""
+    
+    def __init__(self, N, width_factor=2.0):
+        self.N = N
+        self.width_factor = width_factor
+    
+    @staticmethod
+    def _gauss_basis(x, y, width, axis=None):
+        arg = (x - y) / width
+        return np.exp(-0.5 * np.sum(arg ** 2, axis))
+        
+    def fit(self, X, y=None):
+        # create N centers spread along the data range
+        self.centers_ = np.linspace(X.min(), X.max(), self.N)
+        self.width_ = self.width_factor * (self.centers_[1] - self.centers_[0])
+        return self
+        
+    def transform(self, X):
+        return self._gauss_basis(X[:, :, np.newaxis], self.centers_,
+                                 self.width_, axis=1)
+    
+gauss_model = make_pipeline(GaussianFeatures(20),
+                            LinearRegression())
+gauss_model.fit(x[:, np.newaxis], y)
+yfit = gauss_model.predict(xfit[:, np.newaxis])
+
+plt.scatter(x, y)
+plt.plot(xfit, yfit)
+plt.xlim(0, 10);</code></pre>
+    </div>
+
+    <p>Bu örneği yalnızca polinom temel fonksiyonlarında sihir olmadığını netleştirmek için ekledim: verinizin üretim sürecine dair sezginiz bir temelin diğerinden daha uygun olduğunu düşündürüyorsa onu kullanabilirsiniz.</p>
+    <h2 id="duzenlilestirme">Düzenlileştirme</h2>
+    <p>Doğrusal regresyona temel fonksiyonları eklemek modeli çok daha esnek yapar; ancak çok hızlı aşırı uyuma yol açabilir (<a href="03-hyperparameters-and-model-validation.html">Hiperparametreler ve Model Doğrulama</a> bölümüne bakın).
+    Örneğin çok sayıda Gauss temel fonksiyonu kullanırsak aşağıdaki şekilde olur:</p>
+    <div class="code-block" data-lang="python" data-filename="gaussian_overfit.py">
+      <pre><code>model = make_pipeline(GaussianFeatures(30),
+                      LinearRegression())
+model.fit(x[:, np.newaxis], y)
+
+plt.scatter(x, y)
+plt.plot(xfit, model.predict(xfit[:, np.newaxis]))
+
+plt.xlim(0, 10)
+plt.ylim(-1.5, 1.5);</code></pre>
+    </div>
+
+    <p>Veri 30 boyutlu temele yansıtıldığında model fazla esnektir ve veriyle kısıtlandığı noktalar arasında aşırı değerlere gider.
+    Bunun nedenini Gauss temellerinin katsayılarını konumlarına göre çizersek görebiliriz (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="basis_plot_fn.py">
+      <pre><code>def basis_plot(model, title=None):
+    fig, ax = plt.subplots(2, sharex=True)
+    model.fit(x[:, np.newaxis], y)
+    ax[0].scatter(x, y)
+    ax[0].plot(xfit, model.predict(xfit[:, np.newaxis]))
+    ax[0].set(xlabel='x', ylabel='y', ylim=(-1.5, 1.5))
+    
+    if title:
+        ax[0].set_title(title)
+
+    ax[1].plot(model.steps[0][1].centers_,
+               model.steps[1][1].coef_)
+    ax[1].set(xlabel='basis location',
+              ylabel='coefficient',
+              xlim=(0, 10))
+    
+model = make_pipeline(GaussianFeatures(30), LinearRegression())
+basis_plot(model)</code></pre>
+    </div>
+
+    <p>Bu şeklin alt paneli her konumdaki temel fonksiyonun genliğini gösterir.
+    Temel fonksiyonlar örtüştüğünde tipik aşırı uyum davranışı budur: bitişik temellerin katsayıları şişer ve birbirini iptal eder.
+    Bu davranışın sorunlu olduğunu biliyoruz; model parametrelerinin büyük değerlerini cezalandırarak bu sıçramaları açıkça sınırlamak güzel olurdu.
+    Böyle bir ceza <em>düzenlileştirme</em> (regularization) olarak bilinir; birkaç biçimi vardır.</p>
+    <h3 id="ridge">Ridge Regresyon ($L_2$ Düzenlileştirme)</h3>
+    <p>Belki en yaygın düzenlileştirme biçimi <em>ridge regresyon</em> veya $L_2$ <em>düzenlileştirme</em> (bazen <em>Tikhonov düzenlileştirme</em>) olarak bilinir.
+    Model katsayıları $\theta_n$'nin kareler toplamını (2-norm) cezalandırır. Bu durumda uyum cezası:
+    $$P = \alpha\sum_{n=1}^N \theta_n^2$$
+    $\alpha$ cezanın gücünü kontrol eden serbest parametredir.
+    Bu tür cezalı model Scikit-Learn'de <code>Ridge</code> tahmin edicisiyle gömülüdür (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="ridge_regression.py">
+      <pre><code>from sklearn.linear_model import Ridge
+model = make_pipeline(GaussianFeatures(30), Ridge(alpha=0.1))
+basis_plot(model, title='Ridge Regression')</code></pre>
+    </div>
+
+    <p>$\alpha$ parametresi esasen ortaya çıkan modelin karmaşıklığını kontrol eden bir düğmedir.
+    $\alpha \to 0$ limitinde standart doğrusal regresyon sonucunu elde ederiz; $\alpha \to \infty$ limitinde tüm model yanıtları baskılanır.
+    Ridge regresyonun bir avantajı çok verimli hesaplanabilmesidir — neredeyse orijinal doğrusal regresyon maliyetinden fazla değildir.</p>
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 </div>
+      <p>Ridge ile polinom regresyonda aşırı uyumu azaltmayı deneyin:</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_ridge_poly.py">
+      <pre><code>import numpy as np
+from sklearn.linear_model import Ridge
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.pipeline import make_pipeline
+rng = np.random.RandomState(0)
+x = rng.rand(30)
+y = np.sin(2 * np.pi * x) + 0.1 * rng.randn(30)
+X = x[:, np.newaxis]
+model = make_pipeline(PolynomialFeatures(10), Ridge(alpha=1e-3))
+model.fit(X, y)
+print("R^2:", model.score(X, y))</code></pre>
+    </div>
+
+    </div>
+
+    <h3 id="lasso">Lasso Regresyon ($L_1$ Düzenlileştirme)</h3>
+    <p>Bir başka yaygın düzenlileştirme <em>lasso regresyon</em> veya <em>L1 düzenlileştirme</em>dir; regresyon katsayılarının mutlak değerler toplamını (1-norm) cezalandırır:
+    $$P = \alpha\sum_{n=1}^N |\theta_n|$$
+    Kavramsal olarak ridge'e çok benzer olsa da sonuçlar şaşırtıcı biçimde farklı olabilir. Örneğin yapısı nedeniyle lasso regresyon mümkün olduğunda <em>seyrek modelleri</em> tercih eder: birçok model katsayısını tam olarak sıfıra ayarlar.</p>
+    <p>Önceki örneği L1-normalize katsayılarla tekrarlarsak bunu görebiliriz (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="lasso_regression.py">
+      <pre><code>from sklearn.linear_model import Lasso
+model = make_pipeline(GaussianFeatures(30), Lasso(alpha=0.001, max_iter=2000))
+basis_plot(model, title='Lasso Regression')</code></pre>
+    </div>
+
+    <p>Lasso regresyon cezasıyla katsayıların çoğu tam olarak sıfırdır; işlevsel davranış mevcut temel fonksiyonların küçük bir alt kümesiyle modellenir.
+    Ridge düzenlileştirmede olduğu gibi $\alpha$ parametresi cezanın gücünü ayarlar ve örneğin çapraz doğrulama ile belirlenmelidir (<a href="03-hyperparameters-and-model-validation.html">Hiperparametreler ve Model Doğrulama</a> bölümüne bakın).</p>
+    <h2 id="bisiklet-ornegi">Örnek: Bisiklet Trafiği Tahmini</h2>
+    <p>Örnek olarak Seattle Fremont Köprüsü'nden geçen bisiklet yolculuk sayısını hava durumu, mevsim ve diğer faktörlere göre tahmin edip edemeyeceğimize bakalım.
+    Bu veriyi <a href="../03-pandas/11-working-with-time-series.html">Zaman Serileri</a> bölümünde görmüştük; burada bisiklet verisini başka bir veri kümesiyle birleştirip hava durumu ve mevsimsel faktörlerin — sıcaklık, yağış ve gün ışığı süresi — bisiklet trafiğini ne ölçüde etkilediğini anlamaya çalışacağız.
+    Neyse ki NOAA günlük <a href="http://www.ncdc.noaa.gov/cdo-web/search?datasetid=GHCND" target="_blank" rel="noopener">hava istasyonu verisini</a> yayınlar — istasyon USW00024233 — ve Pandas ile iki kaynağı kolayca birleştirebiliriz.
+    Hava ve diğer bilgileri bisiklet sayılarıyla ilişkilendirmek için basit doğrusal regresyon yapacağız; böylece bu parametrelerden birindeki değişimin belirli bir gündeki yolcu sayısını nasıl etkilediğini tahmin edebiliriz.</p>
+    <p>Özellikle bu, Scikit-Learn araçlarının istatistiksel modelleme çerçevesinde kullanılabileceği bir örnektir; model parametrelerinin yorumlanabilir anlamları olduğu varsayılır.
+    Daha önce tartışıldığı gibi bu makine öğrenmesi içinde standart bir yaklaşım değildir; ancak bazı modeller için böyle yorum mümkündür.</p>
+    <p>İki veri kümesini tarihe göre indeksleyerek yükleyerek başlayalım:</p>
+    <div class="code-block" data-lang="python" data-filename="bike_counts_url.py">
+      <pre><code># url = 'https://raw.githubusercontent.com/jakevdp/bicycle-data/main'
+# !curl -O {url}/FremontBridge.csv
+# !curl -O {url}/SeattleWeather.csv</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="load_bike_weather.py">
+      <pre><code>import pandas as pd
+counts = pd.read_csv('FremontBridge.csv',
+                     index_col='Date', parse_dates=True)
+weather = pd.read_csv('SeattleWeather.csv',
+                      index_col='DATE', parse_dates=True)</code></pre>
+    </div>
+
+    <p>Basitlik için COVID-19 salgınının Seattle'daki ulaşım alışkanlıklarını önemli ölçüde etkilediği 2020 sonrası etkilerden kaçınmak için 2020 öncesi veriye bakalım:</p>
+    <div class="code-block" data-lang="python" data-filename="filter_pre2020.py">
+      <pre><code>counts = counts[counts.index &lt; "2020-01-01"]
+weather = weather[weather.index &lt; "2020-01-01"]</code></pre>
+    </div>
+
+    <p>Ardından günlük toplam bisiklet trafiğini hesaplayıp kendi <code>DataFrame</code>'ine koyalım:</p>
+    <div class="code-block" data-lang="python" data-filename="daily_bike_total.py">
+      <pre><code>daily = counts.resample('d').sum()
+daily['Total'] = daily.sum(axis=1)
+daily = daily[['Total']] # remove other columns</code></pre>
+    </div>
+
+    <p>Daha önce kullanım örüntülerinin günden güne değiştiğini görmüştük. Veriye haftanın gününü gösteren ikili sütunlar ekleyelim:</p>
+    <div class="code-block" data-lang="python" data-filename="day_of_week_dummies.py">
+      <pre><code>days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+for i in range(7):
+    daily[days[i]] = (daily.index.dayofweek == i).astype(float)</code></pre>
+    </div>
+
+    <p>Benzer şekilde tatillerde sürücülerin farklı davrandığını bekleyebiliriz; bunun için de bir gösterge ekleyelim:</p>
+    <div class="code-block" data-lang="python" data-filename="holiday_flag.py">
+      <pre><code>from pandas.tseries.holiday import USFederalHolidayCalendar
+cal = USFederalHolidayCalendar()
+holidays = cal.holidays('2012', '2020')
+daily = daily.join(pd.Series(1, index=holidays, name='holiday'))
+daily['holiday'].fillna(0, inplace=True)</code></pre>
+    </div>
+
+    <p>Gün ışığı süresinin kaç kişinin bisiklete bindiğini etkileyebileceğinden şüphelenebiliriz. Standart astronomik hesapla bu bilgiyi ekleyelim (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="hours_of_daylight.py">
+      <pre><code>def hours_of_daylight(date, axis=23.44, latitude=47.61):
+    """Compute the hours of daylight for the given date"""
+    days = (date - pd.datetime(2000, 12, 21)).days
+    m = (1. - np.tan(np.radians(latitude))
+         * np.tan(np.radians(axis) * np.cos(days * 2 * np.pi / 365.25)))
+    return 24. * np.degrees(np.arccos(1 - np.clip(m, 0, 2))) / 180.
+
+daily['daylight_hrs'] = list(map(hours_of_daylight, daily.index))
+daily[['daylight_hrs']].plot()
+plt.ylim(8, 17)</code></pre>
+    </div>
+
+    <p>Ortalama sıcaklık ve toplam yağışı da ekleyebiliriz.
+    Yağış inch cinsine ek olarak günün kuru olup olmadığını (sıfır yağış) gösteren bir bayrak ekleyelim:</p>
+    <div class="code-block" data-lang="python" data-filename="weather_features.py">
+      <pre><code>weather['Temp (F)'] = 0.5 * (weather['TMIN'] + weather['TMAX'])
+weather['Rainfall (in)'] = weather['PRCP']
+weather['dry day'] = (weather['PRCP'] == 0).astype(int)
+
+daily = daily.join(weather[['Rainfall (in)', 'Temp (F)', 'dry day']])</code></pre>
+    </div>
+
+    <p>Son olarak 1. günden artan ve kaç yıl geçtiğini ölçen bir sayaç ekleyelim.
+    Bu, gözlemlenen yıllık günlük geçiş artış veya azalışını ölçmemizi sağlar:</p>
+    <div class="code-block" data-lang="python" data-filename="annual_counter.py">
+      <pre><code>daily['annual'] = (daily.index - daily.index[0]).days / 365.</code></pre>
+    </div>
+
+    <p>Verimiz hazır; bir göz atalım:</p>
+    <div class="code-block" data-lang="python" data-filename="daily_head.py">
+      <pre><code>daily.head()</code></pre>
+    </div>
+
+    <p>Bu hazır olduktan sonra kullanılacak sütunları seçip verimize doğrusal regresyon uydurabiliriz.
+    <code>fit_intercept=False</code> ayarlayacağız çünkü günlük bayraklar esasen kendi gün özel kesişimleri gibi çalışır:</p>
+    <div class="code-block" data-lang="python" data-filename="linear_model_bike.py">
+      <pre><code># Drop any rows with null values
+daily.dropna(axis=0, how='any', inplace=True)
+
+column_names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun',
+                'holiday', 'daylight_hrs', 'Rainfall (in)',
+                'dry day', 'Temp (F)', 'annual']
+X = daily[column_names]
+y = daily['Total']
+
+model = LinearRegression(fit_intercept=False)
+model.fit(X, y)
+daily['predicted'] = model.predict(X)</code></pre>
+    </div>
+
+    <p>Son olarak toplam ve tahmin edilen bisiklet trafiğini görsel olarak karşılaştırabiliriz (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="bike_predict_plot.py">
+      <pre><code>daily[['Total', 'predicted']].plot(alpha=0.5);</code></pre>
+    </div>
+
+    <p>Veri ile model tahminlerinin tam örtüşmemesinden bazı önemli öznitelikleri kaçırdığımız açıktır.
+    Ya özniteliklerimiz eksiktir (insanlar yalnızca bunlara göre değil daha fazlasına göre karar verir) ya da hesaba katmadığımız doğrusal olmayan ilişkiler vardır (örneğin hem yüksek hem düşük sıcaklıkta daha az binme).
+    Yine de kaba yaklaşımımız içgörü vermeye yeter; doğrusal modelin katsayılarına bakarak her özniteliğin günlük bisiklet sayısına ne kadar katkıda bulunduğunu tahmin edebiliriz:</p>
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — fetch_openml / ağ</div>
+      Bisiklet verisi örnekte URL'den okunur; Pyodide'da ağ erişimi sınırlı olabilir. Tam örnek için yerel Jupyter notebook kullanın.
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="model_coef_series.py">
+      <pre><code>params = pd.Series(model.coef_, index=X.columns)
+params</code></pre>
+    </div>
+
+    <p>Bu sayıları belirsizlik ölçüsü olmadan yorumlamak zordur.
+    Bootstrap yeniden örnekleme ile bu belirsizlikleri hızlıca hesaplayabiliriz:</p>
+    <div class="code-block" data-lang="python" data-filename="bootstrap_errors.py">
+      <pre><code>from sklearn.utils import resample
+np.random.seed(1)
+err = np.std([model.fit(*resample(X, y)).coef_
+              for i in range(1000)], 0)</code></pre>
+    </div>
+
+    <p>Bu hatalar tahmin edildikten sonra sonuçlara tekrar bakalım:</p>
+    <div class="code-block" data-lang="python" data-filename="effect_with_errors.py">
+      <pre><code>print(pd.DataFrame({'effect': params.round(0),
+                    'uncertainty': err.round(0)}))</code></pre>
+    </div>
+
+    <p>Buradaki <code>effect</code> sütunu kabaca söz konusu öznitelikteki değişimin yolcu sayısını nasıl etkilediğini gösterir.
+    Örneğin haftanın günü açık bir ayrım gösterir: hafta sonlarında hafta içine göre binlerce daha az yolcu vardır.
+    Ek her gün ışığı saati başına 409 ± 26 kişinin bisikleti seçtiğini, bir Fahrenheit derece artışının 179 ± 7 kişiyi teşvik ettiğini, kuru günün ortalama 2.111 ± 101 ek yolcu, her inch yağmurun 2.790 ± 186 yolcuyu başka ulaşım moduna yönlendirdiğini görüyoruz.
+    Tüm bu etkiler hesaba katıldığında yılda 324 ± 22 yeni günlük yolcu artışı görüyoruz.</p>
+    <p>Basit modelimiz neredeyse kesinlikle ilgili bilgileri kaçırıyor. Örneğin daha önce belirtildiği gibi doğrusal olmayan etkiler (yağış <em>ve</em> soğuk sıcaklık etkileri) ve her değişken içindeki doğrusal olmayan eğilimler (çok soğuk ve çok sıcakta binme isteksizliği) basit doğrusal modelde hesaba katılamaz.
+    Ayrıca daha ince ayrıntılı bilgiyi attık (yağmurlu sabah ile yağmurlu öğleden sonra farkı) ve günler arası korelasyonları yok saydık (yağmurlu salının çarşamba sayısına etkisi veya yağmurlu günlerden sonra beklenmedik güneşli gün).
+    Bunların hepsi ilginç olası etkilerdir; artık keşfetmek için araçlara sahipsiniz!</p>
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="07-support-vector-machines.html">5.7 Destek Vektör Makineleri →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas + Matplotlib + scikit-learn yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

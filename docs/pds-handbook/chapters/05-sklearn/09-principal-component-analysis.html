@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Temel Bileşen Analizi — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="05-sklearn" data-section="09-principal-component-analysis" data-preload-numpy="true" data-preload-pandas="true" data-preload-matplotlib="true" data-preload-sklearn="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.09-principal-component-analysis.html" target="_blank" rel="noopener">05.09 Principal Component Analysis</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>5.9 Derinlemesine: Temel Bileşen Analizi</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.09-principal-component-analysis.html" target="_blank" rel="noopener">05.09 Principal Component Analysis</a></em></p>
+    <p>Şimdiye kadar etiketli eğitim verisine dayalı denetimli tahmin edicilerini inceledik. Burada bilinen etiketlere başvurmadan verinin ilginç yönlerini vurgulayan denetimsiz tahmin edicilere bakmaya başlıyoruz.</p>
+    <p>Bu bölümde en yaygın kullanılan denetimsiz algoritmalardan biri olan temel bileşen analizini (PCA) ele alacağız. PCA temelde boyut indirgeme algoritmasıdır; görselleştirme, gürültü filtreleme ve öznitelik çıkarımı için de kullanılır.</p>
+    <p>Standart içe aktarmalarla başlayalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="imports_pca.py">
+      <pre><code>%matplotlib inline
+import numpy as np
+import matplotlib.pyplot as plt
+plt.style.use(&#x27;seaborn-whitegrid&#x27;)</code></pre>
+    </div>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Varyans oranı</div>
+      <p><code>explained_variance_ratio_</code> her bileşenin toplam varyansa katkısını verir. Yüksek boyutta ilk birkaç bileşene bakarak verinin içsel boyutunu kestirebilirsiniz.</p>
+    </div>
+
+
+    <h2 id="pca-giris">Temel Bileşen Analizine Giriş</h2>
+
+    <div class="code-block" data-lang="python" data-filename="pca_sample_data.py">
+      <pre><code>rng = np.random.RandomState(1)
+X = np.dot(rng.rand(2, 2), rng.randn(2, 200)).T
+plt.scatter(X[:, 0], X[:, 1])
+plt.axis(&#x27;equal&#x27;);</code></pre>
+    </div>
+
+    <p>Gözle <em>x</em> ve <em>y</em> değişkenleri arasında neredeyse doğrusal bir ilişki olduğu görülür. Bu <a href="06-linear-regression.html">5.6 Doğrusal Regresyon</a> verisini anımsatır; ancak burada <em>y</em> değerlerini <em>x</em> değerlerinden tahmin etmek yerine, <em>x</em> ve <em>y</em> arasındaki ilişkiyi öğrenmeye çalışıyoruz.</p>
+
+    <div class="code-block" data-lang="python" data-filename="pca_fit.py">
+      <pre><code>from sklearn.decomposition import PCA
+pca = PCA(n_components=2)
+pca.fit(X)</code></pre>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>İki boyutlu veriye PCA uygulayın:</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_pca_2d.py">
+      <pre><code>import numpy as np
+from sklearn.decomposition import PCA
+rng = np.random.RandomState(1)
+X = np.dot(rng.rand(2, 2), rng.randn(2, 200)).T
+pca = PCA(n_components=2)
+pca.fit(X)
+print("Bileşenler:\n", pca.components_)
+print("Açıklanan varyans:", pca.explained_variance_ratio_)</code></pre>
+    </div>
+
+    </div>
+
+
+    <p>PCA bu ilişkiyi verideki <em>temel eksenler</em> listesini bularak niceler. Scikit-Learn <code>PCA</code> tahmin edicisiyle bunu hesaplayabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="pca_components_print.py">
+      <pre><code>print(pca.components_)</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="pca_variance_print.py">
+      <pre><code>print(pca.explained_variance_)</code></pre>
+    </div>
+
+    <p>Bu sayıların anlamını, bileşenleri girdi verisi üzerinde vektör olarak görselleştirerek görelim (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="draw_vector.py">
+      <pre><code>def draw_vector(v0, v1, ax=None):
+    ax = ax or plt.gca()
+    arrowprops=dict(arrowstyle=&#x27;-&gt;&#x27;, linewidth=2,
+                    shrinkA=0, shrinkB=0)
+    ax.annotate(&#x27;&#x27;, v1, v0, arrowprops=arrowprops)
+
+# plot data
+plt.scatter(X[:, 0], X[:, 1], alpha=0.2)
+for length, vector in zip(pca.explained_variance_, pca.components_):
+    v = vector * 3 * np.sqrt(length)
+    draw_vector(pca.mean_, pca.mean_ + v)
+plt.axis(&#x27;equal&#x27;);</code></pre>
+    </div>
+
+    <p>Bu vektörler verinin temel eksenlerini temsil eder; uzunlukları o eksene yansıtıldığında varyansın ne kadar "önemli" olduğunu gösterir.</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.09-PCA-rotation.png" alt="PCA dönüşümü" width="700" loading="lazy">
+    </figure>
+
+    <p>Veri eksenlerinden temel eksenlere bu dönüşüm, öteleme, dönme ve ölçümlemeden oluşan bir <em>affine dönüşümdür</em>.</p>
+
+    <h3 id="pca-boyut-indirgeme">Boyut İndirgeme Olarak PCA</h3>
+
+    <div class="code-block" data-lang="python" data-filename="pca_n_components_1.py">
+      <pre><code>pca = PCA(n_components=1)
+pca.fit(X)
+X_pca = pca.transform(X)
+print(&quot;original shape:   &quot;, X.shape)
+print(&quot;transformed shape:&quot;, X_pca.shape)</code></pre>
+    </div>
+
+    <p>Dönüştürülmüş veri tek boyuta indirgendi. Etkiyi görmek için ters dönüşümü yapıp orijinal veriyle birlikte çizebiliriz (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="pca_inverse_transform.py">
+      <pre><code>X_new = pca.inverse_transform(X_pca)
+plt.scatter(X[:, 0], X[:, 1], alpha=0.2)
+plt.scatter(X_new[:, 0], X_new[:, 1], alpha=0.8)
+plt.axis(&#x27;equal&#x27;);</code></pre>
+    </div>
+
+    <p>Açık noktalar orijinal veri, koyu noktalar yansıtılmış sürümdür. En az önemli eksen(ler) boyunca bilgi atılır; atılan varyans oranı yaklaşık olarak atılan bilgi miktarını ölçer.</p>
+
+    <h3 id="pca-rakamlar">Görselleştirme için PCA: El Yazısı Rakamlar</h3>
+
+    <div class="code-block" data-lang="python" data-filename="load_digits_pca.py">
+      <pre><code>from sklearn.datasets import load_digits
+digits = load_digits()
+digits.data.shape</code></pre>
+    </div>
+
+    <p>Digits veri kümesi 8×8 piksel görüntülerden oluşur — 64 boyutludur. İlişkileri görmek için PCA ile iki boyuta indirebiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="pca_2d_digits.py">
+      <pre><code>pca = PCA(2)  # project from 64 to 2 dimensions
+projected = pca.fit_transform(digits.data)
+print(digits.data.shape)
+print(projected.shape)</code></pre>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>Digits verisini 2D'ye indirin:</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_pca_digits.py">
+      <pre><code>from sklearn.datasets import load_digits
+from sklearn.decomposition import PCA
+digits = load_digits()
+proj = PCA(2).fit_transform(digits.data)
+print("Projeksiyon şekli:", proj.shape)</code></pre>
+    </div>
+
+    </div>
+
+
+    <p>İlk iki temel bileşeni çizerek veri hakkında bilgi ediniriz (aşağıdaki şekil). Bu bileşenler 64 boyutlu nokta bulutunun en büyük varyans yönlerine yansımasıdır.</p>
+
+    <div class="code-block" data-lang="python" data-filename="pca_scatter_digits.py">
+      <pre><code>plt.scatter(projected[:, 0], projected[:, 1],
+            c=digits.target, edgecolor=&#x27;none&#x27;, alpha=0.5,
+            cmap=plt.cm.get_cmap(&#x27;rainbow&#x27;, 10))
+plt.xlabel(&#x27;component 1&#x27;)
+plt.ylabel(&#x27;component 2&#x27;)
+plt.colorbar();</code></pre>
+    </div>
+
+    <p>Veri 64 boyutlu bir nokta bulutudur; bu yansıtmalar en büyük varyans yönleri boyunca yapılır — denetimsiz biçimde, etiketlere başvurmadan.</p>
+
+    <h3 id="bilesen-anlami">Bileşenler Ne Anlama Gelir?</h3>
+    <p>Biraz daha ileri gidip indirgenmiş boyutların <em>ne anlama geldiğini</em> sorabiliriz. Bu anlam, temel vektörlerin kombinasyonları cinsinden anlaşılabilir. Örneğin eğitim kümesindeki her görüntü 64 piksel değeriyle tanımlanır; buna $x$ vektörü diyelim:</p>
+    <p>$$
+x = [x_1, x_2, x_3 \cdots x_{64}]
+$$</p>
+    <p>Bunu piksel temeli cinsinden düşünebiliriz: görüntüyü oluşturmak için vektörün her elemanını ilgili pikselle çarpıp sonuçları toplarız:</p>
+    <p>$$
+{\rm image}(x) = x_1 \cdot{\rm (piksel~1)} + x_2 \cdot{\rm (piksel~2)} + x_3 \cdot{\rm (piksel~3)} \cdots x_{64} \cdot{\rm (piksel~64)}
+$$</p>
+    <p>Boyutu indirmek için bu temel vektörlerin çoğunu sıfırlayabiliriz. Örneğin yalnızca ilk sekiz pikseli kullanırsak sekiz boyutlu bir projeksiyon elde ederiz (aşağıdaki şekil); ancak görüntünün bütününü yansıtmaz — piksellerin neredeyse %90'ını attık!</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.09-digits-pixel-components.png" alt="Piksel temel bileşenleri" width="700" loading="lazy">
+    </figure>
+
+    <p>Üst sıra tek tek pikselleri, alt sıra bu piksellerin görüntü oluşturmadaki kümülatif katkısını gösterir. Yalnızca sekiz piksel temel bileşeniyle 64 piksellik görüntünün yalnızca küçük bir kısmı oluşturulur.</p>
+
+    <p>Piksel temsili tek temel seçeneği değildir. Her pikselden önceden tanımlı katkı içeren başka temel fonksiyonlar da kullanılabilir:</p>
+    <p>$$
+{\rm image}(x) = {\rm mean} + x_1 \cdot{\rm (temel~1)} + x_2 \cdot{\rm (temel~2)} + x_3 \cdot{\rm (temel~3)} \cdots
+$$</p>
+    <p>PCA, yalnızca ilk birkaçının toplanmasının veri kümesinin büyük kısmını uygun biçimde yeniden oluşturmasına yetecek optimal temel fonksiyonları seçme süreci olarak düşünülebilir. Temel bileşenler, verinin düşük boyutlu temsilidir. Aşağıdaki şekil aynı rakamı ortalama artı ilk sekiz PCA temel fonksiyonuyla yeniden oluşturmayı gösterir.</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/05.09-digits-pca-components.png" alt="PCA temel bileşenleri" width="700" loading="lazy">
+    </figure>
+
+    <p>Piksel temeline göre PCA temeli, yalnızca ortalama artı sekiz bileşenle girdinin belirgin özelliklerini kurtarır!</p>
+
+    <h3 id="bilesen-sayisi">Bileşen Sayısını Seçmek</h3>
+
+    <div class="code-block" data-lang="python" data-filename="pca_full_fit_digits.py">
+      <pre><code>pca = PCA().fit(digits.data)
+plt.plot(np.cumsum(pca.explained_variance_ratio_))
+plt.xlabel(&#x27;number of components&#x27;)
+plt.ylabel(&#x27;cumulative explained variance&#x27;);</code></pre>
+    </div>
+
+    <p>Bu eğri, toplam 64 boyutlu varyansın ilk $N$ bileşende ne kadarının kaldığını gösterir. İlk 10 bileşen yaklaşık %75 varyans içerir; %100'e yakın için yaklaşık 50 bileşen gerekir.</p>
+
+    <h2 id="pca-gurultu">Gürültü Filtreleme Olarak PCA</h2>
+
+    <div class="code-block" data-lang="python" data-filename="plot_digits_fn.py">
+      <pre><code>def plot_digits(data):
+    fig, axes = plt.subplots(4, 10, figsize=(10, 4),
+                             subplot_kw={&#x27;xticks&#x27;:[], &#x27;yticks&#x27;:[]},
+                             gridspec_kw=dict(hspace=0.1, wspace=0.1))
+    for i, ax in enumerate(axes.flat):
+        ax.imshow(data[i].reshape(8, 8),
+                  cmap=&#x27;binary&#x27;, interpolation=&#x27;nearest&#x27;,
+                  clim=(0, 16))
+plot_digits(digits.data)</code></pre>
+    </div>
+
+    <p>Önce gürültüsüz birkaç örnek çizelim (aşağıdaki şekil), sonra rastgele gürültü ekleyip yeniden çizelim:</p>
+
+    <div class="code-block" data-lang="python" data-filename="add_noise_digits.py">
+      <pre><code>rng = np.random.default_rng(42)
+rng.normal(10, 2)</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="plot_noisy_digits.py">
+      <pre><code>rng = np.random.default_rng(42)
+noisy = rng.normal(digits.data, 4)
+plot_digits(noisy)</code></pre>
+    </div>
+
+    <p>Gürültülü veride PCA ile varyansın %50'sini koruyarak projeksiyon isteyelim:</p>
+
+    <div class="code-block" data-lang="python" data-filename="pca_denoise_fit.py">
+      <pre><code>pca = PCA(0.50).fit(noisy)
+pca.n_components_</code></pre>
+    </div>
+
+    <p>%50 varyans 64 öznitelikten 12 temel bileşene karşılık gelir. Ters dönüşümle filtrelenmiş rakamları elde ederiz (aşağıdaki şekil).</p>
+
+    <div class="code-block" data-lang="python" data-filename="pca_denoise_inverse.py">
+      <pre><code>components = pca.transform(noisy)
+filtered = pca.inverse_transform(components)
+plot_digits(filtered)</code></pre>
+    </div>
+
+    <p>Bu sinyal koruma/gürültü filtreleme özelliği PCA'yı güçlü bir öznitelik seçimi rutini yapar.</p>
+
+    <h2 id="ornek-eigenfaces">Örnek: Öz Yüzler (Eigenfaces)</h2>
+
+    <div class="code-block" data-lang="python" data-filename="fetch_lfw_pca.py">
+      <pre><code>from sklearn.datasets import fetch_lfw_people
+faces = fetch_lfw_people(min_faces_per_person=60)
+print(faces.target_names)
+print(faces.images.shape)</code></pre>
+    </div>
+
+    <p>Daha önce yüz tanımada PCA projeksiyonunu öznitelik seçici olarak <a href="07-support-vector-machines.html">5.7 SVM</a> ile kullandık. LFW veri kümesine tekrar bakalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="pca_eigenfaces.py">
+      <pre><code>pca = PCA(150, svd_solver=&#x27;randomized&#x27;, random_state=42)
+pca.fit(faces.data)</code></pre>
+    </div>
+
+    <p>İlk 150 bileşenle ilişkili görüntüler <em>öz yüzler</em> (eigenfaces) olarak bilinir (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="plot_eigenfaces.py">
+      <pre><code>fig, axes = plt.subplots(3, 8, figsize=(9, 4),
+                         subplot_kw={&#x27;xticks&#x27;:[], &#x27;yticks&#x27;:[]},
+                         gridspec_kw=dict(hspace=0.1, wspace=0.1))
+for i, ax in enumerate(axes.flat):
+    ax.imshow(pca.components_[i].reshape(62, 47), cmap=&#x27;bone&#x27;)</code></pre>
+    </div>
+
+    <p>İlk birkaç öz yüz aydınlatma açısıyla, sonrakiler göz, burun, dudak gibi özellikleri seçer gibi görünür.</p>
+
+    <div class="code-block" data-lang="python" data-filename="pca_variance_cumsum.py">
+      <pre><code>plt.plot(np.cumsum(pca.explained_variance_ratio_))
+plt.xlabel(&#x27;number of components&#x27;)
+plt.ylabel(&#x27;cumulative explained variance&#x27;);</code></pre>
+    </div>
+
+    <p>150 bileşen varyansın biraz üzerinde %90'ını açıklar. Girdi ile 150 bileşenden yeniden oluşturulan görüntüleri karşılaştırabiliriz (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="pca_reconstruct_faces.py">
+      <pre><code># Compute the components and projected faces
+pca = pca.fit(faces.data)
+components = pca.transform(faces.data)
+projected = pca.inverse_transform(components)</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="plot_reconstructed_faces.py">
+      <pre><code># Plot the results
+fig, ax = plt.subplots(2, 10, figsize=(10, 2.5),
+                       subplot_kw={&#x27;xticks&#x27;:[], &#x27;yticks&#x27;:[]},
+                       gridspec_kw=dict(hspace=0.1, wspace=0.1))
+for i in range(10):
+    ax[0, i].imshow(faces.data[i].reshape(62, 47), cmap=&#x27;binary_r&#x27;)
+    ax[1, i].imshow(projected[i].reshape(62, 47), cmap=&#x27;binary_r&#x27;)
+    
+ax[0, 0].set_ylabel(&#x27;full-dim\ninput&#x27;)
+ax[1, 0].set_ylabel(&#x27;150-dim\nreconstruction&#x27;);</code></pre>
+    </div>
+
+    <p>Üst sıra girdi, alt sıra ~3.000 öznitelikten yalnızca 150 ile yeniden oluşturma. Boyutluluğu yaklaşık 20 kat azaltırken bireyler gözle tanınabilir kalır — <a href="07-support-vector-machines.html">5.7 SVM</a> örneğindeki PCA seçiminin neden başarılı olduğu anlaşılır.</p>
+
+    <h2 id="ozet">Özet</h2>
+    <p>Bu bölümde PCA'yı boyut indirgeme, görselleştirme, gürültü filtreleme ve öznitelik seçimi için kullandık.</p>
+    <p>PCA'nın ana zayıflığı aykırı değerlere karşı hassasiyettir; Scikit-Learn <code>sklearn.decomposition</code> alt modülünde <code>SparsePCA</code> gibi varyantlar vardır.</p>
+    <p>Sonraki bölümlerde PCA fikirlerini genişleten denetimsiz yöntemlere bakacağız.</p>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="10-manifold-learning.html">5.10 Manifold Öğrenme →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas + Matplotlib + scikit-learn yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

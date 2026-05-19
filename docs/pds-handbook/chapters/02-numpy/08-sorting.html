@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2.8 Dizi Sıralama — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="02-numpy" data-section="08-sorting" data-preload-numpy="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.08-sorting.html" target="_blank" rel="noopener">08 Sorting Arrays</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+    
+<h1>2.8 Dizi Sıralama</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.08-sorting.html" target="_blank" rel="noopener">08 Sorting Arrays</a></em></p>
+
+    <p>NumPy dizilerindeki değerleri sıralamayla ilgili algoritmalar. Bilgisayar biliminde insertion sort, selection sort, merge sort, quick sort, bubble sort… Hepsi benzer görevi yapar: liste veya dizideki değerleri sıralamak.</p>
+
+    <p>Python'da listeler için yerleşik sıralama vardır. <code>sorted</code> sıralı kopya döndürür:</p>
+    <div class="code-block" data-lang="python" data-filename="python_sorted.py">
+      <pre><code>L = [3, 1, 4, 1, 5, 9, 2, 6]
+sorted(L)  # sıralı kopya</code></pre>
+    </div>
+    <p>Liste metodu <code>sort</code> yerinde sıralar:</p>
+    <div class="code-block" data-lang="python" data-filename="python_sort_inplace.py">
+      <pre><code>L.sort()  # yerinde; None döner
+print(L)</code></pre>
+    </div>
+    <p>Python sıralaması her türlü yinelemeli nesnede çalışır — örneğin string:</p>
+    <div class="code-block" data-lang="python" data-filename="sorted_string.py">
+      <pre><code>sorted('python')</code></pre>
+    </div>
+    <p>Python değerlerinin dinamizmi, uniform sayı dizileri için tasarlanmış NumPy rutinlerinden daha yavaştır — bu yüzden NumPy sıralama rutinleri devreye girer.</p>
+
+    <p>Basit <strong>selection sort</strong> (seçmeli sıralama) listeden tekrar tekrar minimum değeri bulur ve yer değiştirir:</p>
+    <div class="code-block" data-lang="python" data-filename="selection_sort_fn.py">
+      <pre><code>import numpy as np
+
+def selection_sort(x):
+    for i in range(len(x)):
+        swap = i + np.argmin(x[i:])
+        (x[i], x[swap]) = (x[swap], x[i])
+    return x</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="selection_sort_demo.py">
+      <pre><code>x = np.array([2, 1, 4, 3, 5])
+selection_sort(x)</code></pre>
+    </div>
+
+    <p>Selection sort basitliği için faydalıdır ama büyük diziler için çok yavaştır. $N$ değer için $N$ döngü, her biri $\sim N$ karşılaştırma — ortalama <strong>$\mathcal{O}[N^2]$</strong> (<a href="#big-o">Big-O Notasyonu</a>). Eleman sayısını iki katına çıkarırsanız süre yaklaşık dört kat artar.</p>
+
+    <p>Selection sort bile favori algoritmam <strong>bogosort</strong>'tan çok daha iyidir:</p>
+    <div class="code-block" data-lang="python" data-filename="bogosort_fn.py">
+      <pre><code>def bogosort(x):
+    while np.any(x[:-1] > x[1:]):
+        np.random.shuffle(x)
+    return x</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="bogosort_demo.py">
+      <pre><code>x = np.array([2, 1, 4, 3, 5])
+bogosort(x)</code></pre>
+    </div>
+
+    <p>Bu algoritma saf şansa dayanır: diziyi rastgele karıştırıp sıralı olana kadar tekrarlar. Ortalama $\mathcal{O}[N 	imes N!]$ — gerçek hesaplamada asla kullanılmamalıdır.</p>
+
+    <p>Neyse ki Python ve NumPy'da çok daha verimli yerleşik sıralama vardır.</p>
+
+    <h2 id="numpy-sort">NumPy'da Hızlı Sıralama: np.sort ve np.argsort</h2>
+
+    <p>Python'un <code>sort</code> ve <code>sorted</code> fonksiyonları listeler içindir; NumPy'nin <code>np.sort</code>'u uniform sayı dizileri için çok daha verimlidir. Varsayılan $\mathcal{O}[N\log N]$ quicksort; mergesort ve heapsort da mevcuttur.</p>
+    <div class="code-block" data-lang="python" data-filename="np_sort.py">
+      <pre><code>x = np.array([2, 1, 4, 3, 5])
+np.sort(x)</code></pre>
+    </div>
+
+    <p>Yerinde sıralama — dizi metodu <code>sort</code>:</p>
+    <div class="code-block" data-lang="python" data-filename="sort_inplace.py">
+      <pre><code>x.sort()
+print(x)</code></pre>
+    </div>
+
+    <p>İlgili fonksiyon <code>argsort</code> — sıralı <em>elemanların indekslerini</em> döndürür:</p>
+    <div class="code-block" data-lang="python" data-filename="argsort.py">
+      <pre><code>x = np.array([2, 1, 4, 3, 5])
+i = np.argsort(x)
+print(i)</code></pre>
+    </div>
+
+    <p>İlk eleman en küçüğün indeksi, ikinci ikinci en küçüğün… Fancy indexing ile sıralı dizi:</p>
+    <div class="code-block" data-lang="python" data-filename="argsort_fancy.py">
+      <pre><code>x[i]</code></pre>
+    </div>
+
+    <p>Bu bölümün ilerleyen kısmında <code>argsort</code> uygulaması göreceksiniz.</p>
+
+    <h3 id="axis-sort">Satır veya Sütun Boyunca Sıralama</h3>
+    <div class="code-block" data-lang="python" data-filename="sort_X.py">
+      <pre><code>rng = np.random.default_rng(seed=42)
+X = rng.integers(0, 10, (4, 6))
+print(X)</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="sort_axis0.py">
+      <pre><code># X'in her sütununu sırala
+np.sort(X, axis=0)</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="sort_axis1.py">
+      <pre><code># X'in her satırını sırala
+np.sort(X, axis=1)</code></pre>
+    </div>
+
+    <p>Her satır veya sütun bağımsız dizi gibi ele alınır — satır/sütun değerleri arasındaki ilişki kaybolur!</p>
+
+    <h2 id="partition">Kısmi Sıralama: Partitioning</h2>
+
+    <p>Bazen tüm diziyi sıralamak değil, <em>k</em> en küçük değeri bulmak yeter. <code>np.partition</code> diziyi alır ve $K$ verir; sonuçta en küçük $K$ değer solda, geri kalan sağda (iç sıralama keyfi):</p>
+    <div class="code-block" data-lang="python" data-filename="partition.py">
+      <pre><code>x = np.array([7, 2, 3, 1, 6, 5, 4])
+np.partition(x, 3)</code></pre>
+    </div>
+
+    <p>Çok boyutlu dizide herhangi bir eksen boyunca:</p>
+    <div class="code-block" data-lang="python" data-filename="partition_axis.py">
+      <pre><code>np.partition(X, 2, axis=1)</code></pre>
+    </div>
+
+    <p><code>np.argsort</code> gibi <code>np.argpartition</code> da partition indekslerini verir.</p>
+
+    <h2 id="knn">Örnek: k-En Yakın Komşular</h2>
+
+    <p><code>argsort</code>'u çok eksenli kullanarak her noktanın en yakın komşularını bulalım. 10 rastgele 2B nokta ($10 	imes 2$):</p>
+    <div class="code-block" data-lang="python" data-filename="knn_X.py">
+      <pre><code>X = rng.random((10, 2))</code></pre>
+    </div>
+
+    <p>Her nokta çifti arasındaki kare mesafe. İki nokta arası kare mesafe boyutlar boyunca kare farkların toplamı; <a href="05-broadcasting.html">broadcasting</a> ve <a href="04-aggregates.html">agregasyon</a> ile tek satırda:</p>
+    <div class="code-block" data-lang="python" data-filename="knn_dist.py">
+      <pre><code>dist_sq = np.sum((X[:, np.newaxis, :] - X[np.newaxis, :, :]) ** 2, axis=-1)</code></pre>
+    </div>
+
+    <p>Karmaşık görünüyorsa adım adım:</p>
+    <div class="code-block" data-lang="python" data-filename="knn_step1.py">
+      <pre><code>differences = X[:, np.newaxis, :] - X[np.newaxis, :]
+print("differences.shape:", differences.shape)</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="knn_step2.py">
+      <pre><code>sq_differences = differences ** 2
+print("sq_differences.shape:", sq_differences.shape)</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="knn_step3.py">
+      <pre><code>dist_sq = sq_differences.sum(-1)
+print("dist_sq.shape:", dist_sq.shape)</code></pre>
+    </div>
+
+    <p>Köşegen (her noktanın kendine mesafesi) sıfır olmalı:</p>
+    <div class="code-block" data-lang="python" data-filename="knn_diag.py">
+      <pre><code>dist_sq.diagonal()</code></pre>
+    </div>
+
+    <p>Her satır boyunca <code>argsort</code> — sol sütunlar en yakın komşu indeksleri:</p>
+    <div class="code-block" data-lang="python" data-filename="knn_nearest.py">
+      <pre><code>nearest = np.argsort(dist_sq, axis=1)
+print(nearest)</code></pre>
+    </div>
+
+    <p>İlk sütun 0–9 sırası: her noktanın en yakın komşusu kendisi.</p>
+
+    <p>Sadece en yakın $k$ komşu gerekiyorsa tam sıralama fazla — <code>np.argpartition</code>:</p>
+    <div class="code-block" data-lang="python" data-filename="knn_partition.py">
+      <pre><code>K = 2
+nearest_partition = np.argpartition(dist_sq, K + 1, axis=1)</code></pre>
+    </div>
+
+    <p>Her noktadan iki en yakın komşuya çizgi çizilebilir (Matplotlib). Bazı noktalardan iki satırdan fazla çizgi çıkabilir: A, B'nin en yakın komşusu olsa B, A'nın en yakın komşusu olmak zorunda değildir.</p>
+
+    <p>Döngü yazmak cazip gelebilir ama vektörize sürüm çok daha verimlidir; girdi boyutundan bağımsız aynı kod 100 veya 1.000.000 noktada çalışır. Çok büyük aramalarda KD-Tree gibi $\mathcal{O}[N\log N]$ algoritmalar vardır — <a href="http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KDTree.html" target="_blank" rel="noopener">Scikit-Learn KDTree</a>.</p>
+
+    <h2 id="big-o">Ayrıntı: Big-O Notasyonu</h2>
+
+    <p>Big-O notasyonu bir algoritmanın girdi büyüdükçe işlem sayısının nasıl ölçeklendiğini tanımlar. Teoride small-o, big-$	heta$, big-$\Omega$ ayrımları vardır; pratikte veri biliminde genelde daha gevşek yorum kullanılır: algoritmanın ölçeklenmesinin genel tanımı.</p>
+
+    <p>$\mathcal{O}[N]$ algoritma $N=1000$ için 1 saniye sürüyorsa $N=5000$ için kabaca 5 saniye beklenir. $\mathcal{O}[N^2]$ algoritma $N=1000$ için 1 saniye ise $N=5000$ için yaklaşık 25 saniye.</p>
+
+    <p>Big-O tek başına duvar saati süresini söylemez — yalnızca $N$ değişince ölçeklenmeyi. Küçük veride $\mathcal{O}[N^2]$ algoritma 0,01 s, $\mathcal{O}[N]$ algoritma 1 s sürebilir; $N$ 1000 kat artınca $\mathcal{O}[N]$ kazanır.</p>
+
+    <p>Milyarlarca örnekte $\mathcal{O}[N]$ ile $\mathcal{O}[N^2]$ farkı kritiktir. Kitap boyunca algoritma karşılaştırmalarında bu notasyonu kullanacağız.</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p><code>np.argpartition</code> ile dizideki 3 en küçük elemanın indekslerini bulun.</p>
+    <div class="code-block" data-lang="python" data-filename="deneme_argpartition.py">
+      <pre><code>import numpy as np
+x = np.array([7, 2, 9, 1, 5, 3])
+i = np.argpartition(x, 3)[:3]
+print("3 en küçük:", x[i], "  indeksler:", i)</code></pre>
+    </div>
+
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="09-structured-arrays.html">2.9 Yapılandırılmış Diziler →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

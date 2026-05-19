@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seaborn ile Görselleştirme — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="04-matplotlib" data-section="14-visualization-with-seaborn" data-preload-numpy="true" data-preload-pandas="true" data-preload-matplotlib="true" data-preload-seaborn="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/04.14-visualization-with-seaborn.html" target="_blank" rel="noopener">04.14 Visualization With Seaborn</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+
+<h1>4.14 Seaborn ile Görselleştirme</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/04.14-visualization-with-seaborn.html" target="_blank" rel="noopener">Visualization with Seaborn</a></em></p>
+
+    <p>Matplotlib on yıllardır Python'da bilimsel görselleştirmenin merkezinde olsa da en sadık kullanıcıları bile çoğu zaman yetersiz bıraktığını kabul eder. Matplotlib hakkında sık öne çıkan birkaç eleştiri vardır:</p>
+    <ul>
+      <li>Yaygın erken dönem eleştiri (artık güncelliğini yitirmiş): 2.0 sürümünden önce Matplotlib'ın renk ve stil varsayılanları zaman zaman zayıf ve eski moda görünüyordu.</li>
+      <li>Matplotlib API'si nispeten düşük seviyededir. Gelişmiş istatistiksel görselleştirme mümkündür, ancak genelde <em>çok</em> fazla hazır kod gerektirir.</li>
+      <li>Matplotlib, Pandas'tan on yıldan fazla önce vardı; bu nedenle Pandas <code>DataFrame</code> nesneleriyle kullanılmak üzere tasarlanmamıştır. <code>DataFrame</code>'den veri görselleştirmek için her <code>Series</code>'i ayıklayıp sık sık doğru biçime birleştirmeniz gerekir. <code>DataFrame</code> etiketlerini grafikte akıllıca kullanan bir çizim kütüphanesi daha hoş olurdu.</li>
+    </ul>
+
+    <p>Bu sorunlara bir yanıt <a href="http://seaborn.pydata.org/" target="_blank" rel="noopener">Seaborn</a>'dur. Seaborn, Matplotlib üzerinde grafik stili ve renk varsayılanları için mantıklı seçenekler sunan, yaygın istatistiksel grafik türleri için basit üst düzey fonksiyonlar tanımlayan ve Pandas'ın sağladığı işlevsellikle bütünleşen bir API sağlar.</p>
+
+    <p>Adaletli olmak gerekirse Matplotlib ekibi de değişen ortama uyum sağladı: <a href="11-settings-and-stylesheets.html">4.11 Matplotlib Özelleştirme: Yapılandırma ve Stil Sayfaları</a> bölümünde ele alınan <code>plt.style</code> araçlarını ekledi ve Pandas verisini giderek daha sorunsuz işlemeye başlıyor. Ancak az önce sayılan nedenlerle Seaborn yararlı bir eklenti olmaya devam ediyor.</p>
+
+    <p>Gelenek gereği Seaborn genelde <code>sns</code> olarak içe aktarılır. Aşağıdaki hücrede Matplotlib ile birlikte <strong>NumPy, Pandas ve Seaborn</strong> içe aktarılır; bu bölüm Pyodide'da Pandas + Matplotlib + Seaborn ön yüklemesi kullanır:</p>
+    <div class="code-block" data-lang="text" data-filename="import_sns.py" data-readonly="true">
+      <pre><code>%matplotlib inline
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import pandas as pd
+
+sns.set()  # seaborn's method to set its chart style</code></pre>
+    </div>
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Seaborn API katmanları</div>
+      <p>Seaborn'u üç katmanda düşünün:</p><ul><li><strong>Matplotlib katmanı:</strong> Her Seaborn grafiği altta Matplotlib <code>Axes</code> veya <code>Figure</code> oluşturur; <code>plt.xlabel</code>, <code>ax.set_title</code> gibi düşük seviye ayarlar hâlâ uygulanabilir.</li><li><strong>Eksen düzeyi (axes-level):</strong> <code>sns.histplot</code>, <code>sns.scatterplot</code>, <code>sns.kdeplot</code>, <code>sns.violinplot</code> — mevcut veya yeni bir eksene çizer; <code>data=</code>, <code>x=</code>, <code>y=</code>, <code>hue=</code> ile sütun adlarına dayanır.</li><li><strong>Şekil düzeyi (figure-level):</strong> <code>sns.relplot</code>, <code>sns.catplot</code>, <code>sns.pairplot</code>, <code>sns.jointplot</code>, <code>sns.lmplot</code>, <code>sns.displot</code> — çoğu alt grafik, lejant ve düzeni otomatik kurar; sonuç genelde <code>FacetGrid</code> veya <code>JointGrid</code> nesnesidir (<code>.map</code>, <code>.set_axis_labels</code> ile özelleştirilir).</li></ul><p>Kural: hızlı keşif için axes-level; kategorilere/alt grafiklere bölme için figure-level tercih edin.</p>
+    </div>
+
+    <h2 id="seaborn-grafikleri">Seaborn Grafiklerini Keşfetme</h2>
+
+    <p>Seaborn'un ana fikri, istatistiksel veri keşfi için yararlı çeşitli grafik türlerini oluşturmaya yönelik üst düzey komutlar — hatta bazı istatistiksel model uydurmaları — sağlamasıdır.</p>
+
+    <p>Seaborn'da kullanılabilir birkaç veri kümesine ve grafik türüne bakalım. Aşağıdakilerin <em>hepsi</em> ham Matplotlib komutlarıyla yapılabilir (Seaborn aslında altta bunu yapar); ancak Seaborn API'si çok daha uygundur.</p>
+
+    <h3 id="histogram-kde">Histogramlar, KDE ve Yoğunluklar</h3>
+
+    <p>İstatistiksel veri görselleştirmede çoğu zaman yalnızca histogram ve değişkenlerin birleşik dağılımlarını çizmek istersiniz. Matplotlib'da bunun nispeten doğrudan yapılabildiğini gördük (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="matplotlib_hist.py">
+      <pre><code>data = np.random.multivariate_normal([0, 0], [[5, 2], [2, 2]], size=2000)
+data = pd.DataFrame(data, columns=['x', 'y'])
+
+for col in 'xy':
+    plt.hist(data[col], density=True, alpha=0.5)</code></pre>
+    </div>
+
+    <p>Görsel çıktı olarak yalnızca histogram yerine, çekirdek yoğunluk tahmini (KDE) ile dağılımın pürüzsüz bir tahminini alabiliriz (<a href="04-density-and-contour-plots.html">4.4 Yoğunluk ve Kontur Grafikleri</a> bölümünde tanıtıldı); Seaborn bunu <code>sns.kdeplot</code> ile yapar (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="kdeplot_1d.py">
+      <pre><code>sns.kdeplot(data=data, shade=True);</code></pre>
+    </div>
+
+    <p><code>kdeplot</code>'a <code>x</code> ve <code>y</code> sütunları geçirirsek bunun yerine birleşik yoğunluğun iki boyutlu görselleştirmesini elde ederiz (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="kdeplot_2d.py">
+      <pre><code>sns.kdeplot(data=data, x='x', y='y');</code></pre>
+    </div>
+
+    <p>Birleşik dağılımı ve kenar dağılımlarını birlikte görmek için bu bölümün ilerisinde daha ayrıntılı inceleyeceğimiz <code>sns.jointplot</code> kullanılabilir.</p>
+
+    <h3 id="pair-plots">Çift Grafikler (Pair Plots)</h3>
+
+    <p>Birleşik grafikleri daha büyük boyutlu veri kümelerine genellediğinizde <em>pair plot</em>'lara (çift grafiklere) ulaşırsınız. Çok boyutlu veride korelasyonları keşfetmek için — tüm değer çiftlerini birbirine karşı çizmek istediğinizde — çok yararlıdırlar.</p>
+
+    <p>Bunu iyi bilinen Iris veri kümesiyle göstereceğiz; üç Iris türünün taç yaprak ve çanak yaprak ölçümlerini listeler:</p>
+    <div class="code-block" data-lang="python" data-filename="iris_load.py">
+      <pre><code>iris = sns.load_dataset("iris")
+iris.head()</code></pre>
+    </div>
+
+    <p>Örnekler arasındaki çok boyutlu ilişkileri görselleştirmek <code>sns.pairplot</code> çağırmak kadar kolaydır (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="pairplot_iris.py">
+      <pre><code>sns.pairplot(iris, hue='species', height=2.5);</code></pre>
+    </div>
+
+    <h3 id="faceted-histograms">Yüzeyle ayrılmış histogramlar</h3>
+
+    <p>Bazen veriyi alt kümelerin histogramlarıyla görmek en iyisidir (aşağıdaki şekil). Seaborn'un <code>FacetGrid</code>'i bunu basitleştirir. Çeşitli gösterge verilerine göre restoran personelinin aldığı bahşiş miktarına bakan bir veri kümesine bakacağız:<sup id="fnref1"><a href="#fn1">1</a></sup></p>
+
+    <p><small id="fn1"><sup>1</sup> Bu bölümde kullanılan restoran personeli verisi çalışanları iki cinsiyete ayırır: kadın ve erkek. Biyolojik cinsiyet ikili değildir; ancak aşağıdaki tartışma ve görselleştirmeler bu veriyle sınırlıdır.</small></p>
+    <div class="code-block" data-lang="python" data-filename="tips_load.py">
+      <pre><code>tips = sns.load_dataset('tips')
+tips.head()</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="facetgrid_hist.py">
+      <pre><code>tips['tip_pct'] = 100 * tips['tip'] / tips['total_bill']
+
+grid = sns.FacetGrid(tips, row="sex", col="time", margin_titles=True)
+grid.map(plt.hist, "tip_pct", bins=np.linspace(0, 40, 15));</code></pre>
+    </div>
+
+    <p>Yüzeyle ayrılmış grafik veri kümesine hızlı içgörüler verir: örneğin akşam yemeği saatinde erkek garsonlara ait verinin diğer kategorilere göre çok daha fazla olduğunu ve tipik bahşiş yüzdelerinin yaklaşık %10–20 aralığında olduğunu, her iki uçta aykırı değerler olduğunu görürüz.</p>
+
+    <h3 id="categorical-plots">Kategorik Grafikler</h3>
+
+    <p>Kategorik grafikler bu tür görselleştirme için de yararlı olabilir. Başka bir parametreyle tanımlanan kutular içinde bir parametrenin dağılımını görmenize olanak tanır (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="catplot_box.py">
+      <pre><code>with sns.axes_style(style='ticks'):
+    g = sns.catplot(x="day", y="total_bill", hue="sex", data=tips, kind="box")
+    g.set_axis_labels("Day", "Total Bill");</code></pre>
+    </div>
+
+    <h3 id="joint-distributions">Birleşik Dağılımlar</h3>
+
+    <p>Daha önce gördüğümüz pair plot'a benzer şekilde farklı veri kümeleri arasındaki birleşik dağılımı ve ilişkili kenar dağılımlarını göstermek için <code>sns.jointplot</code> kullanılabilir (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="jointplot_hex.py">
+      <pre><code>with sns.axes_style('white'):
+    sns.jointplot(x="total_bill", y="tip", data=tips, kind='hex')</code></pre>
+    </div>
+
+    <p>Birleşik grafik otomatik çekirdek yoğunluk tahmini ve regresyon da yapabilir (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="jointplot_reg.py">
+      <pre><code>sns.jointplot(x="total_bill", y="tip", data=tips, kind='reg');</code></pre>
+    </div>
+
+    <h3 id="bar-plots">Çubuk Grafikleri</h3>
+
+    <p>Zaman serileri <code>sns.factorplot</code> ile çizilebilir. Aşağıdaki örnekte <a href="../03-pandas/08-aggregation-and-grouping.html">3.8 Agregasyon ve Gruplama</a> bölümünde ilk gördüğümüz Gezegenler veri kümesini kullanacağız; sonuç aşağıdaki şekildedir:</p>
+    <div class="code-block" data-lang="python" data-filename="planets_load.py">
+      <pre><code>planets = sns.load_dataset('planets')
+planets.head()</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="catplot_count_year.py">
+      <pre><code>with sns.axes_style('white'):
+    g = sns.catplot(x="year", data=planets, aspect=2,
+                    kind="count", color='steelblue')
+    g.set_xticklabels(step=5)</code></pre>
+    </div>
+
+    <p>Bu gezegenlerin keşif <em>yöntemine</em> bakarak daha fazla bilgi edinebiliriz (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="catplot_count_method.py">
+      <pre><code>with sns.axes_style('white'):
+    g = sns.catplot(x="year", data=planets, aspect=4.0, kind='count',
+                    hue='method', order=range(2001, 2015))
+    g.set_ylabels('Number of Planets Discovered')</code></pre>
+    </div>
+
+    <p>Seaborn ile çizim hakkında daha fazla bilgi için <a href="http://seaborn.pydata.org/" target="_blank" rel="noopener">Seaborn dokümantasyonuna</a> ve özellikle <a href="https://seaborn.pydata.org/examples/index.html" target="_blank" rel="noopener">örnek galerisine</a> bakın.</p>
+
+    <h2 id="marathon-ornegi">Örnek: Maraton Bitiş Sürelerini Keşfetme</h2>
+
+    <p>Burada Seaborn'u bir maratonun bitiş sonuçlarını görselleştirmeye ve anlamaya yardımcı olmak için kullanacağız. Veriyi web kaynaklarından kazıdım, birleştirdim ve tanımlayıcı bilgileri kaldırdım; GitHub'a koydum, oradan indirilebilir (Python ile web kazıma ilgileniyorsanız O'Reilly'den Ryan Mitchell'in <a href="http://shop.oreilly.com/product/0636920034391.do" target="_blank" rel="noopener"><em>Web Scraping with Python</em></a> kitabını öneririm). Veriyi indirip Pandas'a yükleyerek başlayacağız:<sup id="fnref2"><a href="#fn2">2</a></sup></p>
+
+    <p><small id="fn2"><sup>2</sup> Bu bölümde kullanılan maraton verisi koşucuları iki cinsiyete ayırır: erkek ve kadın. Cinsiyet bir spektrum olsa da aşağıdaki tartışma ve görselleştirmeler veriye bağlı oldukları için bu ikili ayrımı kullanır.</small></p>
+    <div class="code-block" data-lang="python" data-filename="download_marathon.py">
+      <pre><code># url = ('https://raw.githubusercontent.com/jakevdp/'
+#        'marathon-data/master/marathon-data.csv')
+# !cd data &amp;&amp; curl -O {url}</code></pre>
+    </div>
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Maraton veri dosyası</div>
+      <p><code>data/marathon-data.csv</code> dosyası orijinal notebook ortamında olmalıdır. Tarayıcıdaki Pyodide ortamında dosya yoksa indirme hücresini okuyun veya veriyi yerel Jupyter'de indirin; mantığı anlamak için kodu salt okunur incelemek de yeterlidir.</p>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="read_marathon.py">
+      <pre><code>data = pd.read_csv('data/marathon-data.csv')
+data.head()</code></pre>
+    </div>
+
+    <p>Pandas'ın zaman sütunlarını Python dizileri (<code>object</code> tipi) olarak yüklediğine dikkat edin; bunu <code>DataFrame</code>'in <code>dtypes</code> özniteliğine bakarak görebiliriz:</p>
+    <div class="code-block" data-lang="python" data-filename="dtypes_before.py">
+      <pre><code>data.dtypes</code></pre>
+    </div>
+
+    <p>Zamanlar için bir dönüştürücü sağlayarak bunu düzeltelim:</p>
+    <div class="code-block" data-lang="python" data-filename="convert_time.py">
+      <pre><code>import datetime
+
+def convert_time(s):
+    h, m, s = map(int, s.split(':'))
+    return datetime.timedelta(hours=h, minutes=m, seconds=s)
+
+data = pd.read_csv('data/marathon-data.csv',
+                   converters={'split':convert_time, 'final':convert_time})
+data.head()</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="dtypes_after.py">
+      <pre><code>data.dtypes</code></pre>
+    </div>
+
+    <p>Bu, zaman verisini işlemeyi kolaylaştırır. Seaborn çizim yardımcılarımız için ardından süreleri saniye cinsinden veren sütunlar ekleyelim:</p>
+    <div class="code-block" data-lang="python" data-filename="split_final_sec.py">
+      <pre><code>data['split_sec'] = data['split'].view(int) / 1E9
+data['final_sec'] = data['final'].view(int) / 1E9
+data.head()</code></pre>
+    </div>
+
+    <p>Verinin nasıl göründüğüne dair fikir edinmek için veri üzerinde bir <code>jointplot</code> çizebiliriz; aşağıdaki şekil sonucu gösterir:</p>
+    <div class="code-block" data-lang="python" data-filename="jointplot_marathon.py">
+      <pre><code>with sns.axes_style('white'):
+    g = sns.jointplot(x='split_sec', y='final_sec', data=data, kind='hex')
+    g.ax_joint.plot(np.linspace(4000, 16000),
+                    np.linspace(8000, 32000), ':k')</code></pre>
+    </div>
+
+    <p>Kesikli çizgi, birinin maratonu tamamen sabit tempoda koşsaydı süresinin nerede olacağını gösterir. Dağılımın bunun üstünde olması (beklediğiniz gibi) çoğu insanın maraton boyunca yavaşladığını gösterir. Rekabet koşmuşsanız ikinci yarıda hızlananların — yani yarışı "negatif bölmüş" olanların — sözlükte adının geçtiğini bilirsiniz.</p>
+
+    <p>Veride başka bir sütun oluşturalım: bölünme oranı (<code>split_frac</code>), her koşucunun yarışı ne ölçüde negatif veya pozitif böldüğünü ölçer:</p>
+    <div class="code-block" data-lang="python" data-filename="split_frac.py">
+      <pre><code>data['split_frac'] = 1 - 2 * data['split_sec'] / data['final_sec']
+data.head()</code></pre>
+    </div>
+
+    <p>Bu bölünme farkı sıfırın altındaysa kişi yarışı o oranda negatif bölmüştür. Bu bölünme oranının dağılım grafiğini çizelim (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="displot_split_frac.py">
+      <pre><code>sns.displot(data['split_frac'], kde=False)
+plt.axvline(0, color="k", linestyle="--");</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="count_negative_split.py">
+      <pre><code>sum(data.split_frac &lt; 0)</code></pre>
+    </div>
+
+    <p>Yaklaşık 40.000 katılımcıdan yalnızca 250 kişi maratonunu negatif bölmüştür.</p>
+
+    <p>Bu bölünme oranı ile diğer değişkenler arasında korelasyon olup olmadığına bakalım. Bunu tüm bu korelasyonların grafiklerini çizen bir <code>PairGrid</code> ile yapacağız (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="pairgrid_marathon.py">
+      <pre><code>g = sns.PairGrid(data, vars=['age', 'split_sec', 'final_sec', 'split_frac'],
+                 hue='gender', palette='RdBu_r')
+g.map(plt.scatter, alpha=0.8)
+g.add_legend();</code></pre>
+    </div>
+
+    <p>Bölünme oranı yaşla özellikle korelasyon göstermiyor gibi görünüyor; ancak bitiş süresiyle korelasyon gösteriyor: daha hızlı koşucular maraton sürelerini daha dengeli bölmeye eğilimli. Cinsiyete göre ayrılmış bölünme oranı histogramlarına yakınlaşalım (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="kdeplot_gender.py">
+      <pre><code>sns.kdeplot(data.split_frac[data.gender=='M'], label='men', shade=True)
+sns.kdeplot(data.split_frac[data.gender=='W'], label='women', shade=True)
+plt.xlabel('split_frac');</code></pre>
+    </div>
+
+    <p>İlginç olan, erkekler arasında neredeyse eşit bölmeye yakın koşan çok daha fazla kişi var! Erkekler ve kadınlar arasında neredeyse çift modlu bir dağılım görünüyor. Dağılımları yaş fonksiyonu olarak inceleyerek neler olup bittiğini anlamaya çalışalım.</p>
+
+    <p>Dağılımları karşılaştırmanın güzel bir yolu <em>keman grafiği</em> (violin plot) kullanmaktır (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="violinplot_gender.py">
+      <pre><code>sns.violinplot(x="gender", y="split_frac", data=data,
+               palette=["lightblue", "lightpink"]);</code></pre>
+    </div>
+
+    <p>Biraz daha derine inelim ve bu keman grafiklerini yaşa göre karşılaştıralım (aşağıdaki şekil). Her kişinin on yıllık yaş aralığında olduğunu belirten yeni bir sütun oluşturarak başlayacağız:</p>
+    <div class="code-block" data-lang="python" data-filename="age_dec.py">
+      <pre><code>data['age_dec'] = data.age.map(lambda age: 10 * (age // 10))
+data.head()</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="violinplot_age_dec.py">
+      <pre><code>men = (data.gender == 'M')
+women = (data.gender == 'W')
+
+with sns.axes_style(style=None):
+    sns.violinplot(x="age_dec", y="split_frac", hue="gender", data=data,
+                   split=True, inner="quartile",
+                   palette=["lightblue", "lightpink"]);</code></pre>
+    </div>
+
+    <p>Erkek ve kadın dağılımlarının nerede farklılaştığını görebiliriz: 20'li–50'li yaşlardaki erkeklerin bölünme dağılımları, aynı yaş grubundaki (veya herhangi bir yaştaki) kadınlara kıyasla düşük bölünmeye doğru belirgin bir aşırı yoğunluk gösteriyor.</p>
+
+    <p>Ayrıca şaşırtıcı biçimde 80 yaşındaki kadınlar bölünme sürelerinde <em>herkesi</em> geride bırakıyor gibi görünüyor; ancak bu muhtemelen az sayıda etkisidir, çünkü bu aralıkta yalnızca bir avuç koşucu var:</p>
+    <div class="code-block" data-lang="python" data-filename="count_age_80.py">
+      <pre><code>(data.age &gt; 80).sum()</code></pre>
+    </div>
+
+    <p>Negatif bölen erkeklere dönelim: bunlar kim? Bölünme oranı hızlı bitişle korelasyon gösteriyor mu? Bunu çok kolay çizebiliriz. <code>regplot</code> kullanacağız; veriye otomatik doğrusal regresyon modeli uydurur (aşağıdaki şekil):</p>
+    <div class="code-block" data-lang="python" data-filename="lmplot_marathon.py">
+      <pre><code>g = sns.lmplot(x='final_sec', y='split_frac', col='gender', data=data,
+               markers=".", scatter_kws=dict(color='c'))
+g.map(plt.axhline, y=0.0, color="k", ls=":");</code></pre>
+    </div>
+
+    <p>Görünüşe göre hem erkekler hem kadınlar arasında hızlı bölenler, yaklaşık 15.000 saniye (yaklaşık 4 saat) içinde bitiren daha hızlı koşuculardır. Bundan yavaş olanların ikinci yarıyı hızlı koşma olasılığı çok daha düşüktür.</p>
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Seaborn + Pandas</div>
+      <p>Küçük bir DataFrame ile <code>sns.scatterplot</code> deneyin — sütun adlarını doğrudan kullanın:</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_sns_scatter.py">
+      <pre><code>import seaborn as sns
+import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.DataFrame({'x': [1, 2, 3, 4], 'y': [1, 4, 2, 3], 'grup': ['A', 'A', 'B', 'B']})
+sns.scatterplot(data=df, x='x', y='y', hue='grup')
+plt.title('Seaborn scatterplot')
+plt.show()</code></pre>
+    </div>
+
+    </div>
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="15-further-resources.html">4.15 Daha Fazla Matplotlib Kaynağı →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas + Matplotlib + Seaborn yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

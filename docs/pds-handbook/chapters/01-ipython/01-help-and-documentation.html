@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1.1 Yardım ve Dokümantasyon — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="01-ipython" data-section="01-help-and-documentation">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/01.01-help-and-documentation.html" target="_blank" rel="noopener">Help and Documentation in IPython</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+    <h1>1.1 Yardım ve Dokümantasyon</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/01.01-help-and-documentation.html" target="_blank" rel="noopener">Getting Started in IPython and Jupyter</a></em></p>
+
+    <p>Veri bilimi için Python kodu yazarken genelde üç çalışma modu arasında gidip gelirim: kısa komut dizilerini denemek için IPython kabuğu, daha uzun etkileşimli analiz ve başkalarıyla paylaşım için Jupyter Notebook, yeniden kullanılabilir Python paketleri oluşturmak için Emacs veya VSCode gibi etkileşimli geliştirme ortamları (IDE). Bu bölüm ilk iki moda odaklanır: IPython kabuğu ve Jupyter Notebook. Yazılım geliştirmede IDE kullanımı veri bilimcisinin araç setinde önemli üçüncü bir araçtır; burada doğrudan ele almayacağız.</p>
+
+    <h2 id="ipython-kabugunu-baslatma">IPython Kabuğunu Başlatma</h2>
+
+    <p>Bu bölümdeki metin, kitabın çoğu gibi, pasif okunacak şekilde tasarlanmamıştır. Okurken yanınızda denemenizi öneririm: bu kas hafızası, yalnızca okumaktan çok daha işe yarar. Komut satırında <strong><code>ipython</code></strong> yazarak IPython yorumlayıcısını başlatın; Anaconda veya EPD gibi bir dağıtım kurduysanız sisteminize özel bir başlatıcı da olabilir (<a href="01-help-and-documentation.html">IPython'da Yardım ve Dokümantasyon</a> bölümünde daha ayrıntılı konuşacağız).</p>
+
+    <p>Bunu yaptığınızda aşağıdakine benzer bir istem görmelisiniz:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="ipython-prompt.txt">
+      <pre><code>Python 3.9.2 (v3.9.2:1a79785e3e, Feb 19 2021, 09:06:10)
+Type 'copyright', 'credits' or 'license' for more information
+IPython 7.21.0 -- An enhanced Interactive Python. Type '?' for help.
+
+In [1]:</code></pre>
+    </div>
+
+    <p>Bununla birlikte takip etmeye hazırsınız.</p>
+
+    <h2 id="jupyter-notebook-baslatma">Jupyter Notebook'u Başlatma</h2>
+
+    <p>Jupyter Notebook, IPython kabuğuna tarayıcı tabanlı grafik bir arayüzdür ve zengin dinamik görüntüleme yetenekleri ekler. Python/IPython ifadelerini çalıştırmanın yanı sıra biçimlendirilmiş metin, statik ve dinamik görselleştirmeler, matematik denklemleri, JavaScript bileşenleri ve çok daha fazlasını eklemenize izin verir. Ayrıca bu belgeler, başkalarının kendi sistemlerinde kodu açıp çalıştırabileceği şekilde kaydedilebilir.</p>
+
+    <p>Defterleri web tarayıcısından görüp düzenleseniz de, kod çalıştırmak için çalışan bir Python sürecine bağlanmaları gerekir. Bu süreci («kernel») sistem kabuğunda şu komutla başlatabilirsiniz:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="jupyter-lab.sh">
+      <pre><code>$ jupyter lab</code></pre>
+    </div>
+
+    <p>Bu komut, tarayıcınızda görünen yerel bir web sunucusu başlatır ve hemen ne yaptığını gösteren bir günlük (log) üretir; örneğin şöyle görünebilir:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="jupyter-log.txt">
+      <pre><code>$ jupyter lab
+[ServerApp] Serving notebooks from local directory: /Users/jakevdp/PythonDataScienceHandbook
+[ServerApp] Jupyter Server 1.4.1 is running at:
+[ServerApp] http://localhost:8888/lab?token=dd852649
+[ServerApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).</code></pre>
+    </div>
+
+    <p>Komutu verdikten sonra varsayılan tarayıcınız otomatik açılıp listelenen yerel URL'ye gitmelidir; tam adres sisteminize bağlıdır. Tarayıcı otomatik açılmazsa pencere açıp bu adresi elle girebilirsiniz (örnekte <em>http://localhost:8888/lab/</em>).</p>
+
+    <h2 id="ipythonda-yardim-ve-dokumantasyon">IPython'da Yardım ve Dokümantasyon</h2>
+
+    <p>Bu bölümde başka hiçbir bölümü okumasanız bile bunu okuyun: burada anlatılan araçlar IPython'un günlük iş akışıma en dönüştürücü katkılarıdır.</p>
+
+    <p>Teknoloji meraklısı biri arkadaşına, ailesine veya iş arkadaşına bilgisayar sorununda yardım ettiğinde çoğu zaman cevabı bilmekten çok, bilmediği cevabı hızla bulmayı bilmek önemlidir. Veri biliminde de öyledir: çevrimiçi dokümantasyon, posta listesi konuları ve Stack Overflow yanıtları zengin bilgi içerir — özellikle daha önce de aradığınız konularda. Etkili veri bilimci olmak, her durum için hangi aracı ezberlemekten çok, bilmediğiniz bilgiyi (arama motoru veya başka yollarla) etkili bulmayı öğrenmektir.</p>
+
+    <p>IPython/Jupyter'ın en yararlı işlevlerinden biri, kullanıcı ile işini verimli yapmasına yardımcı olacak dokümantasyon ve arama arasındaki mesafeyi kısaltmaktır. Karmaşık sorularda web araması hâlâ rol oynar; şaşırtıcı miktarda bilgi yalnızca IPython ile bulunabilir. IPython'un birkaç tuş vuruşuyla yanıtlayabildiği soru örnekleri:</p>
+
+    <ul>
+      <li>Bu fonksiyonu nasıl çağırırım? Hangi argümanlar ve seçenekler var?</li>
+      <li>Bu Python nesnesinin kaynak kodu nasıl görünüyor?</li>
+      <li>İçe aktardığım pakette neler var?</li>
+      <li>Bu nesnenin hangi öznitelikleri veya yöntemleri var?</li>
+    </ul>
+
+    <p>Burada IPython kabuğu ve Jupyter Notebook'un bu bilgiye hızlı erişim için sağladığı araçları ele alacağız: dokümantasyonu keşfetmek için <code>?</code>, kaynak kodu için <code>??</code> ve otomatik tamamlama için Tab tuşu.</p>
+
+    <h3 id="dokumantasyona-erisim">Dokümantasyona <code>?</code> ile Erişim</h3>
+
+    <p>Python dili ve veri bilimi ekosistemi kullanıcı düşünülerek kurulmuştur; bunun büyük parçası dokümantasyona erişimdir. Her Python nesnesi, çoğu zaman nesnenin özünü ve kullanımını özetleyen bir <em>docstring</em> (belge dizisi) içeren bir string referansı taşır. Python'un yerleşik <code>help</code> fonksiyonu bu bilgiye erişir ve yazdırır. Örneğin yerleşik <code>len</code> fonksiyonunun dokümantasyonu:</p>
+
+    <div class="code-block" data-lang="python" data-filename="help_len.py">
+      <pre><code>help(len)</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="help_len_cikti.txt">
+      <pre><code>Help on built-in function len in module builtins:
+
+len(obj, /)
+    Return the number of items in a container.</code></pre>
+    </div>
+
+    <p>Yorumlayıcınıza bağlı olarak bu bilgi satır içi metin veya ayrı bir pencerede görünebilir.</p>
+
+    <p>Bir nesne hakkında yardım bulmak çok yaygın ve yararlı olduğundan IPython ve Jupyter, bu dokümantasyona ve ilgili bilgilere kısayol olarak <code>?</code> karakterini sunar:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="len_soru.txt">
+      <pre><code>In [2]: len?
+Signature: len(obj, /)
+Docstring: Return the number of items in a container.
+Type:      builtin_function_or_method</code></pre>
+    </div>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Pyodide'da <code>?</code></div>
+      <p><code>len?</code> gibi sözdizimi yalnızca IPython/Jupyter'da çalışır. Bu handbook'ta aynı bilgi için <code>help(len)</code> kullanın veya yukarıdaki salt okunur IPython çıktısına bakın.</p>
+    </div>
+
+    <p>Bu gösterim hemen hemen her şey için geçerlidir; nesne yöntemleri dahil:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="L_insert.txt">
+      <pre><code>In [3]: L = [1, 2, 3]
+In [4]: L.insert?
+Signature: L.insert(index, object, /)
+Docstring: Insert object before index.
+Type:      builtin_function_or_method</code></pre>
+    </div>
+
+    <p>hatta nesnelerin kendisi için, türlerinden gelen dokümantasyonla:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="L_soru.txt">
+      <pre><code>In [5]: L?
+Type:        list
+String form: [1, 2, 3]
+Length:      3
+Docstring:
+Built-in mutable sequence.
+
+If no argument is given, the constructor creates a new empty list.
+The argument must be an iterable if specified.</code></pre>
+    </div>
+
+    <p>Önemlisi, kendi oluşturduğunuz fonksiyonlar ve nesneler için de çalışır! Docstring'li küçük bir fonksiyon tanımlayalım:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="square_tanim_ipython.txt">
+      <pre><code>In [6]: def square(a):
+  ....:     """Return the square of a."""
+  ....:     return a ** 2
+  ....:</code></pre>
+    </div>
+
+    <p>Pyodide'da aynı tanım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="square_tanim.py">
+      <pre><code>def square(a):
+    """Return the square of a."""
+    return a ** 2</code></pre>
+    </div>
+
+    <p>Docstring oluşturmak için fonksiyonun ilk satırına bir string literal koyduk. Docstring'ler genelde çok satırlı olduğundan, gelenek olarak Python'un çok satırlı string (üç tırnak) gösterimini kullandık.</p>
+
+    <p>Şimdi docstring'i bulmak için <code>?</code> kullanalım:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="square_soru.txt">
+      <pre><code>In [7]: square?
+Signature: square(a)
+Docstring: Return the square of a.
+File:      &lt;ipython-input-6&gt;
+Type:      function</code></pre>
+    </div>
+
+    <p>Docstring'ler üzerinden bu hızlı dokümantasyon erişimi, yazdığınız koda her zaman satır içi belge eklemeniz için güçlü bir nedendir!</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin — help ve docstring</div>
+      <p><code>help(square)</code> ve <code>print(square.__doc__)</code> çalıştırın; IPython'daki <code>square?</code> çıktısıyla karşılaştırın.</p>
+      <div class="code-block" data-lang="python" data-filename="help_square.py">
+        <pre><code>def square(a):
+    """Return the square of a."""
+    return a ** 2
+
+help(square)
+print(square.__doc__)</code></pre>
+      </div>
+    </div>
+
+    <h3 id="kaynak-koduna-erisim">Kaynak Koduna <code>??</code> ile Erişim</h3>
+
+    <p>Python okunması kolay bir dil olduğundan, merak ettiğiniz nesnenin kaynak kodunu okuyarak genelde bir katman daha derin içgörü kazanırsınız. IPython ve Jupyter, çift soru işareti (<code>??</code>) ile kaynak koda kısayol sağlar:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="square_cift_soru.txt">
+      <pre><code>In [8]: square??
+Signature: square(a)
+Source:
+def square(a):
+    """Return the square of a."""
+    return a ** 2
+File:      &lt;ipython-input-6&gt;
+Type:      function</code></pre>
+    </div>
+
+    <p>Bu kadar basit fonksiyonlarda <code>??</code> arka plandaki ayrıntıları hızla gösterir.</p>
+
+    <p>Bunu çok denerseniz bazen <code>??</code> kaynak göstermez: nesne Python'da değil C veya başka derlenmiş bir dilde uygulanmıştır. O zaman <code>??</code> çıktısı <code>?</code> ile aynı olur. Özellikle birçok yerleşik nesne ve tipte (daha önceki <code>len</code> gibi) görürsünüz:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="len_cift_soru.txt">
+      <pre><code>In [9]: len??
+Signature: len(obj, /)
+Docstring: Return the number of items in a container.
+Type:      builtin_function_or_method</code></pre>
+    </div>
+
+    <p><code>?</code> ve/veya <code>??</code> kullanmak, herhangi bir Python fonksiyonu veya modülün ne yaptığı hakkında bilgi bulmanın güçlü ve hızlı yoludur.</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin — Kaynak kodu inceleme</div>
+      <p>Pyodide'da <code>import inspect; print(inspect.getsource(square))</code> ile IPython'daki <code>square??</code> benzeri çıktı alın.</p>
+      <div class="code-block" data-lang="python" data-filename="inspect_source.py">
+        <pre><code>import inspect
+print(inspect.getsource(square))</code></pre>
+      </div>
+    </div>
+
+    <h3 id="modulleri-kesfetme">Modülleri Tab Tamamlama ile Keşfetme</h3>
+
+    <p>Bir diğer yararlı arayüz, otomatik tamamlama ve nesne, modül ve ad alanı içeriklerini keşfetmek için <strong>Tab</strong> tuşudur. Aşağıdaki örneklerde Tab'a basılması gerektiğinde <code>&lt;TAB&gt;</code> yazacağız.</p>
+
+    <h4 id="nesne-icerigi-tab">Nesne içeriğinde tab tamamlama</h4>
+
+    <p>Her Python nesnesinin çeşitli öznitelik ve yöntemleri vardır. Daha önceki <code>help</code> gibi, Python'un bunları listeleyen yerleşik <code>dir</code> fonksiyonu vardır; pratikte tab tamamlama arayüzü çok daha kolaydır. Bir nesnenin tüm özniteliklerini görmek için nesne adından sonra nokta (<code>.</code>) ve Tab:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="L_tab.txt">
+      <pre><code>In [10]: L.&lt;TAB&gt;
+            append() count    insert   reverse
+            clear    extend   pop      sort
+            copy     index    remove</code></pre>
+    </div>
+
+    <p>Listeyi daraltmak için adın ilk bir veya birkaç karakterini yazıp Tab'a basın:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="L_c_tab.txt">
+      <pre><code>In [10]: L.c&lt;TAB&gt;
+             clear() count()
+             copy()
+
+In [10]: L.co&lt;TAB&gt;
+              copy()  count()</code></pre>
+    </div>
+
+    <p>Tek seçenek varsa Tab satırı tamamlar; örneğin <code>L.cou&lt;TAB&gt;</code> anında <code>L.count</code> olur.</p>
+
+    <p>Python'da kamusal/dış ve özel/iç öznitelik ayrımı katı değildir; gelenek olarak baştaki alt çizgi sonrakini gösterir. Netlik için özel yöntemler varsayılan listede yoktur; alt çizgiyi yazarak listeleyebilirsiniz:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="L_underscore_tab.txt">
+      <pre><code>In [10]: L._&lt;TAB&gt;
+           __add__             __delattr__     __eq__
+           __class__           __delitem__     __format__()
+           __class_getitem__() __dir__()       __ge__
+           __contains__        __doc__         __getattribute__
+           ...</code></pre>
+    </div>
+
+    <p>Kısalık için yalnızca ilk sütunlar gösterildi. Bunların çoğu Python'un özel çift alt çizgili («dunder») yöntemleridir.</p>
+
+    <h4 id="import-tab">İçe aktarırken tab tamamlama</h4>
+
+    <p>Tab tamamlama paketlerden nesne içe aktarırken de yararlıdır. <code>itertools</code> paketinde <code>co</code> ile başlayan tüm olası içe aktarmalar:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="itertools_co_tab.txt">
+      <pre><code>In [10]: from itertools import co&lt;TAB&gt;
+         combinations()                  compress()
+         combinations_with_replacement() count()</code></pre>
+    </div>
+
+    <p>Benzer şekilde sistemde hangi içe aktarmaların göründüğünü görmek için (Python oturumunuza bağlı olarak değişir):</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="import_tab.txt">
+      <pre><code>In [10]: import &lt;TAB&gt;
+            abc                 anyio
+            activate_this       appdirs
+            aifc                appnope
+            antigravity         argon2
+            ...
+
+In [10]: import h&lt;TAB&gt;
+            hashlib html
+            heapq   http
+            hmac</code></pre>
+    </div>
+
+    <h4 id="joker-eslestirme">Tab ötesi: Joker eşleştirme</h4>
+
+    <p>Tab tamamlama, aradığınız adın ilk birkaç karakterini biliyorsanız iyidir; ortada veya sonda eşleştirmek için az yardımcıdır. Bunun için IPython ve Jupyter, <code>*</code> ile joker eşleştirme sunar.</p>
+
+    <p>Örneğin adı <code>Warning</code> ile biten her nesneyi listelemek:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="warning_joker.txt">
+      <pre><code>In [10]: *Warning?
+BytesWarning                  RuntimeWarning
+DeprecationWarning            SyntaxWarning
+FutureWarning                 UnicodeWarning
+ImportWarning                 UserWarning
+PendingDeprecationWarning     Warning
+ResourceWarning</code></pre>
+    </div>
+
+    <p><code>*</code> boş string dahil herhangi bir string ile eşleşir.</p>
+
+    <p>Adında bir yerde <code>find</code> geçen string yöntemini arıyorsak:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="str_find_joker.txt">
+      <pre><code>In [11]: str.*find*?
+str.find
+str.rfind</code></pre>
+    </div>
+
+    <p>Bu esnek joker arama, yeni bir paketi öğrenirken veya tanıdık bir pakete yeniden alışırken belirli bir komutu bulmak için çok işime yarar.</p>
+
+    <div class="alert alert-warning handbook-addon">
+      <div class="alert-title">💡 Ders notu — Joker arama bu sayfada yok</div>
+      <p><code>*Warning?</code> ve <code>str.*find*?</code> yalnızca IPython'da çalışır. Pyodide'da <code>dir()</code>, <code>help()</code> ve <code>import itertools; dir(itertools)</code> ile benzer keşif yapın.</p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

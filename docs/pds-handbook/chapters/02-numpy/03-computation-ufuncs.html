@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2.3 Dizilerde Hesaplama: Evrensel Fonksiyonlar — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="02-numpy" data-section="03-computation-ufuncs" data-preload-numpy="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.03-computation-on-arrays-ufuncs.html" target="_blank" rel="noopener">03 Computation On Arrays Ufuncs</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>2.3 Dizilerde Hesaplama: Evrensel Fonksiyonlar</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.03-computation-on-arrays-ufuncs.html" target="_blank" rel="noopener">Computation on NumPy Arrays: Universal Functions</a></em></p>
+
+    <p>Şimdiye kadar NumPy'nin temel yapı taşlarını konuştuk. Önümüzdeki birkaç bölümde NumPy'nin Python veri bilimi dünyasında neden bu kadar önemli olduğunu ele alacağız: diziler üzerinde hesaplamayı kolay ve esnek biçimde optimize eden arayüz sunması.</p>
+
+    <p>NumPy dizilerinde hesaplama çok hızlı veya çok yavaş olabilir. Hızlı yapmanın anahtarı, genelde NumPy'nin <em>evrensel fonksiyonları</em> (ufunc) aracılığıyla uygulanan vektörize işlemler kullanmaktır. Bu bölüm NumPy ufunc'larına duyulan ihtiyacı açıklar; dizi elemanları üzerinde tekrarlanan hesaplamaları çok daha verimli kılarlar. Ardından NumPy paketindeki en yaygın ve yararlı aritmetik ufunc'lardan birçoğunu tanıtır.</p>
+
+    <h2 id="dongulerin-yavasligi">Döngülerin yavaşlığı</h2>
+
+    <p>Python'un varsayılan uygulaması (CPython) bazı işlemleri çok yavaş yapar. Bunun bir nedeni dilin dinamik ve yorumlanmış doğasıdır; tipler esnektir, bu yüzden işlem dizileri C ve Fortran gibi dillerde olduğu gibi verimli makine koduna derlenemez. Son yıllarda bu zayıflığı gidermeye yönelik çeşitli girişimler oldu: [PyPy](http://pypy.org/) (JIT derlemeli Python), [Cython](http://cython.org) (Python'u derlenebilir C'ye dönüştürür) ve [Numba](http://numba.pydata.org/) (Python kod parçalarını hızlı LLVM bayt koduna çevirir). Her birinin güçlü ve zayıf yönleri vardır; ancak üçünün de standart CPython motorunun erişimini ve popülaritesini geçtiği söylenebilir.</p>
+
+    <p>Python'un göreli yavaşlığı genelde birçok küçük işlemin tekrarlandığı durumlarda ortaya çıkar; örneğin her eleman üzerinde işlem yapmak için dizi üzerinde döngü kurmak. Değerlerden oluşan bir dizimiz olduğunu ve her birinin tersini hesaplamak istediğimizi düşünelim. Doğrudan bir yaklaşım şöyle görünebilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="ters_dongu.py">
+      <pre><code>import numpy as np
+rng = np.random.default_rng(seed=1701)
+
+def compute_reciprocals(values):
+    output = np.empty(len(values))
+    for i in range(len(values)):
+        output[i] = 1.0 / values[i]
+    return output
+
+values = rng.integers(1, 10, size=5)
+print(compute_reciprocals(values))</code></pre>
+    </div>
+
+    <p>Bu uygulama C veya Java geçmişi olan birine doğal gelebilir. Ancak büyük girdi için çalışma süresini ölçersek bu işlemin çok yavaş olduğunu — belki de şaşırtıcı derecede — görürüz. IPython'un <code>%timeit</code> sihirli komutuyla (<a href="../01-ipython/07-timing-and-profiling.html">1.7 Profil ve Kod Zamanlama</a>) kıyaslayacağız:</p>
+
+    <div class="code-block" data-lang="python" data-filename="timeit_dongu.py">
+      <pre><code>big_array = rng.integers(1, 100, size=1000000)
+# IPython'da: %timeit compute_reciprocals(big_array)
+# Beklenen çıktı (kitap): ~2.6 s ± 192 ms</code></pre>
+    </div>
+
+    <p>Bu milyon işlemi hesaplayıp sonucu saklamak birkaç saniye sürer! Darboğaz işlemlerin kendisi değil; CPython'un döngünün her turunda yaptığı tip denetimi ve fonksiyon yönlendirmesidir. Her ters alma işleminde Python önce nesnenin tipine bakar ve o tip için doğru fonksiyonu dinamik olarak arar. Derlenmiş kodda tip önceden bilinirdi ve sonuç çok daha verimli hesaplanırdı.</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Pyodide'da zamanlama</div>
+      <p>Bu sayfada <code>time.perf_counter()</code> ile kıyaslama yapabilirsiniz. <code>%timeit</code> yalnızca IPython/Jupyter'da çalışır; tarayıcıda Pyodide kullanıyorsanız aşağıdaki vektörize karşılaştırmayı doğrudan çalıştırın.</p>
+    </div>
+
+    <h2 id="ufunc-tanitim">Ufunc'lara giriş</h2>
+
+    <p>Birçok işlem türü için NumPy, tam da bu tür statik tipli, derlenmiş rutinlere uygun bir arayüz sunar. Buna <em>vektörize</em> işlem denir. Buradaki eleman bazlı bölme gibi basit işlemlerde vektörizasyon, Python aritmetik operatörlerini doğrudan dizi üzerinde kullanmak kadar kolaydır. Döngü NumPy'nin altındaki derlenmiş katmana itilir; yürütme çok hızlanır.</p>
+
+    <p>İki yaklaşımın sonuçlarını karşılaştıralım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="vektor_karsilastirma.py">
+      <pre><code>print(compute_reciprocals(values))
+print(1.0 / values)</code></pre>
+    </div>
+
+    <p>Büyük dizi için yürütme süresine bakarsak Python döngüsünden birkaç büyüklük mertebesi daha hızlı bittiğini görürüz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="timeit_vektor.py">
+      <pre><code># IPython'da: %timeit (1.0 / big_array)
+# Beklenen çıktı (kitap): ~2.54 ms ± 383 µs</code></pre>
+    </div>
+
+    <p>NumPy'deki vektörize işlemler ufunc'lar aracılığıyla uygulanır; asıl amaçları NumPy dizilerindeki değerler üzerinde tekrarlanan işlemleri hızlı yürütmektir. Ufunc'lar son derece esnektir — skaler ile dizi arasında işlem gördük; iki dizi arasında da işlem yapabilirler:</p>
+
+    <div class="code-block" data-lang="python" data-filename="ufunc_iki_dizi.py">
+      <pre><code>print(np.arange(5) / np.arange(1, 6))</code></pre>
+    </div>
+
+    <p>Ufunc işlemleri tek boyutla sınırlı değildir; çok boyutlu dizilerde de çalışırlar:</p>
+
+    <div class="code-block" data-lang="python" data-filename="ufunc_cok_boyut.py">
+      <pre><code>x = np.arange(9).reshape((3, 3))
+print(2 ** x)</code></pre>
+    </div>
+
+    <p>Ufunc ile vektörize hesaplamalar, Python döngüsüyle yazılan eşdeğerlerden neredeyse her zaman daha verimlidir — özellikle diziler büyüdükçe. NumPy betiğinde böyle bir döngü gördüğünüzde vektörize ifadeyle değiştirilip değiştirilemeyeceğini düşünün.</p>
+
+    <h2 id="numpy-ufunc-kesfi">NumPy ufunc'larını keşfetme</h2>
+
+    <p>Ufunc'lar iki türde gelir: tek girdi üzerinde çalışan <em>unary ufunc</em>'lar ve iki girdi üzerinde çalışan <em>binary ufunc</em>'lar. Her iki türün örneklerini göreceğiz.</p>
+
+    <h3 id="dizi-aritmetigi">Dizi aritmetiği</h3>
+
+    <p>NumPy ufunc'ları Python'un yerleşik aritmetik operatörlerini kullandıkları için doğal hissettirir. Standart toplama, çıkarma, çarpma ve bölme kullanılabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="aritmetik_temel.py">
+      <pre><code>x = np.arange(4)
+print("x      =", x)
+print("x + 5  =", x + 5)
+print("x - 5  =", x - 5)
+print("x * 2  =", x * 2)
+print("x / 2  =", x / 2)
+print("x // 2 =", x // 2)  # taban bölme</code></pre>
+    </div>
+
+    <p>Negasyon için unary ufunc, üs alma için <code>**</code>, mod için <code>%</code> operatörü de vardır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="aritmetik_ek.py">
+      <pre><code>print("-x     = ", -x)
+print("x ** 2 = ", x ** 2)
+print("x % 2  = ", x % 2)</code></pre>
+    </div>
+
+    <p>Bunlar istediğiniz gibi zincirlenebilir; standart işlem önceliği korunur:</p>
+
+    <div class="code-block" data-lang="python" data-filename="aritmetik_zincir.py">
+      <pre><code>print(-(0.5*x + 1) ** 2)</code></pre>
+    </div>
+
+    <p>Tüm bu aritmetik işlemler NumPy'ye gömülü belirli ufunc'ların kolay sarmalayıcılarıdır. Örneğin <code>+</code> operatörü <code>add</code> ufunc'ının sarmalayıcısıdır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="np_add.py">
+      <pre><code>print(np.add(x, 2))</code></pre>
+    </div>
+
+    <p>NumPy'de uygulanan aritmetik operatörlerin tablosu:</p>
+
+    <div class="table-wrapper">
+      <table class="vocab-table">
+        <thead><tr><th>Operatör</th><th>Eşdeğer ufunc</th><th>Açıklama</th></tr></thead>
+        <tbody>
+          <tr><td><code>+</code></td><td><code>np.add</code></td><td>Toplama (örn. <code>1 + 1 = 2</code>)</td></tr>
+          <tr><td><code>-</code></td><td><code>np.subtract</code></td><td>Çıkarma (örn. <code>3 - 2 = 1</code>)</td></tr>
+          <tr><td><code>-</code></td><td><code>np.negative</code></td><td>Unary negasyon (örn. <code>-2</code>)</td></tr>
+          <tr><td><code>*</code></td><td><code>np.multiply</code></td><td>Çarpma (örn. <code>2 * 3 = 6</code>)</td></tr>
+          <tr><td><code>/</code></td><td><code>np.divide</code></td><td>Bölme (örn. <code>3 / 2 = 1.5</code>)</td></tr>
+          <tr><td><code>//</code></td><td><code>np.floor_divide</code></td><td>Taban bölme (örn. <code>3 // 2 = 1</code>)</td></tr>
+          <tr><td><code>**</code></td><td><code>np.power</code></td><td>Üs alma (örn. <code>2 ** 3 = 8</code>)</td></tr>
+          <tr><td><code>%</code></td><td><code>np.mod</code></td><td>Mod/kalan (örn. <code>9 % 4 = 1</code>)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Ayrıca Boolean/bitwise operatörler vardır; bunları <a href="06-boolean-masks.html">2.6 Karşılaştırmalar, Maskeler ve Boolean Mantığı</a> bölümünde ele alacağız.</p>
+
+    <h3 id="mutlak-deger">Mutlak değer</h3>
+
+    <p>NumPy Python'un yerleşik aritmetik operatörlerini anladığı gibi yerleşik mutlak değer fonksiyonunu da anlar:</p>
+
+    <div class="code-block" data-lang="python" data-filename="abs_builtin.py">
+      <pre><code>x = np.array([-2, -1, 0, 1, 2])
+print(abs(x))</code></pre>
+    </div>
+
+    <p>Karşılık gelen NumPy ufunc'ı <code>np.absolute</code>'dır; <code>np.abs</code> takma adı da kullanılır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="np_abs.py">
+      <pre><code>print(np.absolute(x))
+print(np.abs(x))</code></pre>
+    </div>
+
+    <p>Bu ufunc karmaşık sayıları da işler; bu durumda büyüklük (magnitude) döner:</p>
+
+    <div class="code-block" data-lang="python" data-filename="abs_karmasik.py">
+      <pre><code>x = np.array([3 - 4j, 4 - 3j, 2 + 0j, 0 + 1j])
+print(np.abs(x))</code></pre>
+    </div>
+
+    <h3 id="trigonometrik">Trigonometrik fonksiyonlar</h3>
+
+    <p>NumPy birçok yararlı ufunc sunar; veri bilimcisi için en kullanışlılarından biri trigonometrik fonksiyonlardır. Açılardan oluşan bir dizi tanımlayarak başlayalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="trig_tanim.py">
+      <pre><code>theta = np.linspace(0, np.pi, 3)</code></pre>
+    </div>
+
+    <p>Bu değerler üzerinde trigonometrik fonksiyonları hesaplayabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="trig_hesap.py">
+      <pre><code>print("theta      = ", theta)
+print("sin(theta) = ", np.sin(theta))
+print("cos(theta) = ", np.cos(theta))
+print("tan(theta) = ", np.tan(theta))</code></pre>
+    </div>
+
+    <p>Değerler makine hassasiyetiyle hesaplanır; bu yüzden sıfır olması gereken değerler her zaman tam sıfır olmayabilir. Ters trigonometrik fonksiyonlar da mevcuttur:</p>
+
+    <div class="code-block" data-lang="python" data-filename="trig_ters.py">
+      <pre><code>x = [-1, 0, 1]
+print("x         = ", x)
+print("arcsin(x) = ", np.arcsin(x))
+print("arccos(x) = ", np.arccos(x))
+print("arctan(x) = ", np.arctan(x))</code></pre>
+    </div>
+
+    <h3 id="us-logaritma">Üsler ve logaritmalar</h3>
+
+    <p>NumPy ufunc'larında yaygın diğer işlemler üstel fonksiyonlardır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="exp_ornek.py">
+      <pre><code>x = [1, 2, 3]
+print("x   =", x)
+print("e^x =", np.exp(x))
+print("2^x =", np.exp2(x))
+print("3^x =", np.power(3., x))</code></pre>
+    </div>
+
+    <p>Üstellerin tersi olan logaritmalar da mevcuttur. Temel <code>np.log</code> doğal logaritmayı verir; 2 tabanlı veya 10 tabanlı logaritma için <code>np.log2</code> ve <code>np.log10</code> kullanılır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="log_ornek.py">
+      <pre><code>x = [1, 2, 4, 10]
+print("x        =", x)
+print("ln(x)    =", np.log(x))
+print("log2(x)  =", np.log2(x))
+print("log10(x) =", np.log10(x))</code></pre>
+    </div>
+
+    <p>Çok küçük girdilerde hassasiyeti korumak için özelleşmiş sürümler de vardır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="log_hassas.py">
+      <pre><code>x = [0, 0.001, 0.01, 0.1]
+print("exp(x) - 1 =", np.expm1(x))
+print("log(1 + x) =", np.log1p(x))</code></pre>
+    </div>
+
+    <p><code>x</code> çok küçükken bu fonksiyonlar ham <code>np.log</code> veya <code>np.exp</code> kullanıldığında elde edilenden daha hassas değerler verir.</p>
+
+    <h3 id="ozel-ufunc">Özelleşmiş ufunc'lar</h3>
+
+    <p>NumPy'de hiperbolik trigonometri, bitwise aritmetik, karşılaştırma, radyan-derece dönüşümü, yuvarlama ve daha fazlası için birçok ufunc vardır. NumPy dokümantasyonuna bakmak ilginç işlevler ortaya çıkarır.</p>
+
+    <p>Daha özelleşmiş ufunc'lar için iyi bir kaynak <code>scipy.special</code> alt modülüdür. Veriniz üzerinde az bilinen bir matematiksel fonksiyon hesaplamak istiyorsanız büyük olasılıkla <code>scipy.special</code>'da vardır. İstatistik bağlamında karşınıza çıkabilecek birkaç örnek:</p>
+
+    <div class="code-block" data-lang="python" data-filename="scipy_special.py">
+      <pre><code>from scipy import special
+
+# Gamma fonksiyonları (genelleştirilmiş faktöriyel) ve ilgili fonksiyonlar
+x = [1, 5, 10]
+print("gamma(x)     =", special.gamma(x))
+print("ln|gamma(x)| =", special.gammaln(x))
+print("beta(x, 2)   =", special.beta(x, 2))
+
+# Hata fonksiyonu (Gauss integrali), tamamlayıcısı ve tersi
+x = np.array([0, 0.3, 0.7, 1.0])
+print("erf(x)  =", special.erf(x))
+print("erfc(x) =", special.erfc(x))
+print("erfinv(x) =", special.erfinv(x))</code></pre>
+    </div>
+
+    <div class="alert alert-warning handbook-addon">
+      <div class="alert-title">⚠️ Ders notu — SciPy ve Pyodide</div>
+      <p><code>scipy.special</code> tam SciPy kurulumu gerektirir. Pyodide ortamında SciPy yüklenmemişse bu hücre hata verebilir; kavram olarak NumPy'nin ötesinde daha ileri matematiksel ufunc'ların SciPy'de bulunduğunu bilin.</p>
+    </div>
+
+    <p>NumPy ve <code>scipy.special</code>'da çok daha fazla ufunc vardır. Paket dokümantasyonu çevrimiçi olduğundan "gamma function python" gibi bir arama genelde ilgili bilgiyi bulur.</p>
+
+    <h2 id="gelismis-ufunc">Gelişmiş ufunc özellikleri</h2>
+
+    <p>Birçok NumPy kullanıcısı ufunc'ların tam özellik setini öğrenmeden kullanır. Burada birkaç özelleşmiş özelliği özetleyeceğim.</p>
+
+    <h3 id="cikti-belirtme">Çıktı belirtme</h3>
+
+    <p>Büyük hesaplamalarda sonucun yazılacağı diziyi belirtmek bazen yararlıdır. Tüm ufunc'larda bunu fonksiyonun <code>out</code> argümanıyla yapabilirsiniz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="ufunc_out.py">
+      <pre><code>x = np.arange(5)
+y = np.empty(5)
+np.multiply(x, 10, out=y)
+print(y)</code></pre>
+    </div>
+
+    <p>Bu dizi görünümleriyle de kullanılabilir. Örneğin hesap sonucunu belirli bir dizinin her ikinci elemanına yazabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="ufunc_out_view.py">
+      <pre><code>y = np.zeros(10)
+np.power(2, x, out=y[::2])
+print(y)</code></pre>
+    </div>
+
+    <p><code>y[::2] = 2 ** x</code> yazsaydık önce <code>2 ** x</code> sonucunu tutan geçici bir dizi oluşur, ardından değerler <code>y</code>'ye kopyalanırdı. Küçük hesaplamada fark azdır; çok büyük dizilerde <code>out</code> argümanını dikkatli kullanmak bellek tasarrufu sağlar.</p>
+
+    <h3 id="ufunc-aggregations">Toplama (aggregation) işlemleri</h3>
+
+    <p>İkili ufunc'lar için toplama işlemleri doğrudan nesne üzerinden hesaplanabilir. Örneğin bir diziyi belirli bir işlemle <em>indirgemek</em> (reduce) istiyorsak herhangi bir ufunc'ın <code>reduce</code> yöntemini kullanabiliriz. <code>reduce</code>, verilen işlemi dizi elemanlarına tekrar tekrar uygulayıncaya kadar tek sonuç kalana indirger.</p>
+
+    <p>Örneğin <code>add</code> ufunc'ında <code>reduce</code> çağrısı dizideki tüm elemanların toplamını verir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="reduce_add.py">
+      <pre><code>x = np.arange(1, 6)
+print(np.add.reduce(x))</code></pre>
+    </div>
+
+    <p>Benzer şekilde <code>multiply</code> ufunc'ında <code>reduce</code> tüm elemanların çarpımını verir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="reduce_multiply.py">
+      <pre><code>print(np.multiply.reduce(x))</code></pre>
+    </div>
+
+    <p>Hesaplamanın tüm ara sonuçlarını saklamak istiyorsak <code>accumulate</code> kullanılabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="accumulate_ornek.py">
+      <pre><code>print(np.add.accumulate(x))
+print(np.multiply.accumulate(x))</code></pre>
+    </div>
+
+    <p>Bu özel durumlar için sonuçları hesaplayan ayrı NumPy fonksiyonları vardır (<code>np.sum</code>, <code>np.prod</code>, <code>np.cumsum</code>, <code>np.cumprod</code>); bunları <a href="04-aggregates.html">2.4 Toplama İşlemleri</a> bölümünde ele alacağız.</p>
+
+    <h3 id="dis-carpim">Dış çarpım (outer product)</h3>
+
+    <p>Son olarak herhangi bir ufunc, <code>outer</code> yöntemiyle iki farklı girdinin tüm çiftleri için çıktıyı hesaplayabilir. Tek satırda çarpım tablosu oluşturmak gibi işlemler yapmanızı sağlar:</p>
+
+    <div class="code-block" data-lang="python" data-filename="outer_ornek.py">
+      <pre><code>x = np.arange(1, 6)
+print(np.multiply.outer(x, x))</code></pre>
+    </div>
+
+    <p><code>ufunc.at</code> ve <code>ufunc.reduceat</code> yöntemleri de yararlıdır; bunları <a href="07-fancy-indexing.html">2.7 Gelişmiş İndeksleme</a> bölümünde ele alacağız.</p>
+
+    <p>Ufunc'ların farklı şekil ve boyuttaki diziler arasında çalışabilmesi — <em>broadcasting</em> — o kadar önemlidir ki buna ayrı bir bölüm ayırıyoruz (<a href="05-broadcasting.html">2.5 Dizilerde Hesaplama: Broadcasting</a>).</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>Döngü yerine vektörize bölme kullanın; <code>np.add.reduce</code> ve <code>np.multiply.outer</code> deneyin:</p>
+      <div class="code-block" data-lang="python" data-filename="deneme_ufunc.py">
+        <pre><code>import numpy as np
+a = np.array([1, 2, 4, 8])
+print(1.0 / a)
+print("toplam:", np.add.reduce(a))
+print("çarpım tablosu:\n", np.multiply.outer(a[:4], a[:4]))</code></pre>
+      </div>
+    </div>
+
+    <h2 id="ufunc-daha-fazla">Ufunc'lar: Daha fazla bilgi</h2>
+
+    <p>Evrensel fonksiyonlar hakkında daha fazla bilgi (mevcut fonksiyonların tam listesi dahil) <a href="https://www.numpy.org/" target="_blank" rel="noopener">NumPy</a> ve <a href="https://www.scipy.org/" target="_blank" rel="noopener">SciPy</a> dokümantasyon sitelerindedir.</p>
+
+    <p>Paketleri içe aktarıp IPython'da sekme tamamlama ve yardım (<code>?</code>) işlevini kullanarak bilgiye doğrudan erişebileceğinizi de unutmayın — <a href="../01-ipython/01-help-and-documentation.html">1.1 IPython'da Yardım ve Dokümantasyon</a>.</p>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="04-aggregates.html">2.4 Toplama İşlemleri: Min, Max ve Aradaki Her Şey →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

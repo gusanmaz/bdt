@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2.1 Python'da Veri Tiplerini Anlamak — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="02-numpy" data-section="01-understanding-data-types" data-preload-numpy="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.01-understanding-data-types.html" target="_blank" rel="noopener">01 Understanding Data Types</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+    
+<h1>2.1 Python'da Veri Tiplerini Anlamak</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.01-understanding-data-types.html" target="_blank" rel="noopener">Understanding Data Types in Python</a></em></p>
+
+    <p>Veri odaklı bilim ve hesaplamada verimli çalışmak için verinin <strong>nasıl saklandığını ve işlendiğini</strong> anlamak gerekir. Bu bölüm, dizilerin saf Python'da nasıl ele alındığını NumPy'nin buna nasıl iyileştirme getirdiğini karşılaştırır. Kitabın geri kalanını anlamanın temeli burasıdır.</p>
+
+    <h2 id="dinamik-tipleme">Dinamik tipleme</h2>
+
+    <p>Python kullanıcılarını çeken şeylerden biri kolaylıktır; bunun parçası da <strong>dinamik tiplemedir</strong>. C veya Java gibi <strong>statik tipli</strong> dillerde her değişkenin tipi açıkça yazılır; Python'da bu zorunluluk yoktur.</p>
+
+    <p>Örneğin C'de şu işlem:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="ornek.c">
+      <pre><code>/* C kodu */
+int result = 0;
+for(int i=0; i&lt;100; i++){
+    result += i;
+}</code></pre>
+    </div>
+
+    <p>Python'da eşdeğeri:</p>
+
+    <div class="code-block" data-lang="python" data-filename="ornek.py">
+      <pre><code># Python kodu
+result = 0
+for i in range(100):
+    result += i</code></pre>
+    </div>
+
+    <p>Fark: C'de her değişkenin tipi açıkça belirtilir; Python'da tipler <strong>çalışma anında</strong> çıkarılır. Bu yüzden bir değişkene istediğiniz türde veri atayabilirsiniz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="tip_degistir.py">
+      <pre><code>x = 4
+x = "four"  # x artık string — Python'da geçerli</code></pre>
+    </div>
+
+    <p>Aynı şey C'de (derleyiciye göre) derleme hatası veya beklenmeyen sonuç verir:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="c_hata.c">
+      <pre><code>/* C kodu */
+int x = 4;
+x = "four";  // HATA</code></pre>
+    </div>
+
+    <p>Bu esneklik Python'u kullanışlı kılar. Veriyi verimli analiz etmek için bunun <em>nasıl</em> çalıştığını anlamak önemlidir. Python değişkenleri yalnızca değer taşımaz; değerin <strong>tipi</strong> hakkında ek meta bilgi de içerir — aşağıda bunu açıyoruz.</p>
+
+    <h2 id="python-tamsayi">Python tamsayısı sadece bir tamsayı değil</h2>
+
+    <p>Standart Python uygulaması (CPython) C ile yazılmıştır. Her Python nesnesi aslında yalnızca değil, <strong>ek bilgiler taşıyan bir C yapısıdır</strong>. Örneğin <code>x = 10000</code> dediğinizde <code>x</code> “çıplak” bir tamsayı değildir; birkaç alan içeren bileşik bir C yapısına işaret eder. Python 3.10 kaynak kodunda tamsayı (<code>long</code>) tipi kabaca şöyledir (makrolar genişletildikten sonra):</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="longobject.h">
+      <pre><code>struct _longobject {
+    long ob_refcnt;
+    PyTypeObject *ob_type;
+    size_t ob_size;
+    long ob_digit[1];
+};</code></pre>
+    </div>
+
+    <p>Tek bir Python tamsayısı aslında dört parçadan oluşur:</p>
+    <ul>
+      <li><code>ob_refcnt</code> — referans sayacı; bellek tahsisini/serbest bırakmayı sessizce yönetir</li>
+      <li><code>ob_type</code> — değişkenin tipini kodlar</li>
+      <li><code>ob_size</code> — sonraki veri üyelerinin boyutu</li>
+      <li><code>ob_digit</code> — beklediğimiz asıl tamsayı değeri</li>
+    </ul>
+
+    <p>C'deki tamsayıya kıyasla Python'da saklama <strong>ek yük (overhead)</strong> getirir — kitaptaki şekil bunu gösterir:</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/cint_vs_pyint.png" alt="C tamsayısı ile Python tamsayısının bellek düzeni karşılaştırması" width="700" loading="lazy">
+      <figcaption>Şekil: C tamsayısı vs Python tamsayısı bellek düzeni (kaynak: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.01-understanding-data-types.html" target="_blank" rel="noopener">PDS Handbook</a>)</figcaption>
+    </figure>
+
+    <p><code>PyObject_HEAD</code>, referans sayacı, tip kodu ve diğer başlık alanlarını içeren kısımdır.</p>
+
+    <p><strong>C tamsayısı</strong>, bellekte belirli bir konumdaki baytların tamsayı değerini kodlamasıdır. <strong>Python tamsayısı</strong> ise tüm nesne bilgisini (tamsayı baytları dahil) içeren bellek bloğuna bir <em>işaretçidir</em>. Bu ek yapı Python'un dinamik doğasını mümkün kılar; maliyeti ise özellikle çok sayıda nesne bir araya gelince belirginleşir.</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu</div>
+      <p>Milyonlarca sayıyı Python listesinde tutmak, NumPy <code>int32</code> dizisine kıyasla hem bellek hem süre açısından pahalıdır — çünkü her eleman tam bir Python nesnesidir.</p>
+    </div>
+
+    <h2 id="python-liste">Python listesi de sadece liste değil</h2>
+
+    <p>Birden fazla Python nesnesi tutan yapı düşünelim. Python'da standart çok elemanlı değiştirilebilir konteyner <strong>list</strong>dir.</p>
+
+    <p>Tamsayı listesi:</p>
+
+    <div class="code-block" data-lang="python" data-filename="liste_tamsayi.py">
+      <pre><code>L = list(range(10))
+print(L)
+print(type(L[0]))</code></pre>
+    </div>
+
+    <p>Benzer şekilde string listesi:</p>
+
+    <div class="code-block" data-lang="python" data-filename="liste_string.py">
+      <pre><code>L = list(range(10))
+L2 = [str(c) for c in L]
+print(L2)
+print(type(L2[0]))</code></pre>
+    </div>
+
+    <p>Dinamik tipleme sayesinde <strong>heterojen</strong> (karışık tipli) listeler de mümkündür:</p>
+
+    <div class="code-block" data-lang="python" data-filename="liste_heterojen.py">
+      <pre><code>L3 = [True, "2", 3.0, 4]
+print([type(item) for item in L3])</code></pre>
+    </div>
+
+    <p>Bu esnekliğin bedeli: listedeki her öğe kendi tip bilgisi, referans sayacı vb. ile <strong>tam bir Python nesnesi</strong> olmalıdır. Tüm elemanlar aynı tipteyse bu bilginin çoğu gereksizdir — sabit tipli (NumPy tarzı) dizi çok daha verimlidir. Fark kitaptaki ikinci şekilde:</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/array_vs_list.png" alt="Python listesi ile NumPy dizisinin bellek düzeni karşılaştırması" width="700" loading="lazy">
+      <figcaption>Şekil: Dinamik tipli liste vs sabit tipli NumPy dizisi (kaynak: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.01-understanding-data-types.html" target="_blank" rel="noopener">PDS Handbook</a>)</figcaption>
+    </figure>
+
+    <p>Uygulama düzeyinde: NumPy dizisi tek bir işaretçiyle <strong>ardışık veri bloğuna</strong> gider. Python listesi ise işaretçiler bloğuna gider; her işaretçi yukarıdaki gibi tam bir Python nesnesine (ör. tamsayı) bağlanır. Liste esnektir; NumPy dizisi aynı tipte kalır ama saklama ve işleme çok daha hızlıdır.</p>
+
+    <h2 id="sabit-tipi-diziler">Python'da sabit tipli diziler</h2>
+
+    <p>Python, veriyi verimli sabit tipli tamponlarda saklamanın birkaç yolunu sunar. Python 3.3'ten beri yerleşik <code>array</code> modülü:</p>
+
+    <div class="code-block" data-lang="python" data-filename="array_modulu.py">
+      <pre><code>import array
+L = list(range(10))
+A = array.array('i', L)
+print(A)</code></pre>
+    </div>
+
+    <p><code>'i'</code> içeriğin tamsayı olduğunu belirten tip kodudur.</p>
+
+    <p>Daha kullanışlı olanı NumPy'daki <code>ndarray</code> nesnesidir. <code>array.array</code> verimli depolar; NumPy buna <strong>verimli işlemler</strong> (ufunc, broadcasting vb.) ekler — sonraki bölümlerde.</p>
+
+    <p>Standart import:</p>
+
+    <div class="code-block" data-lang="python" data-filename="numpy_import.py">
+      <pre><code>import numpy as np</code></pre>
+    </div>
+
+    <h2 id="listelerden-dizi">Python listelerinden dizi oluşturma</h2>
+
+    <p><code>np.array</code> ile listeden dizi:</p>
+
+    <div class="code-block" data-lang="python" data-filename="np_array_liste.py">
+      <pre><code>import numpy as np
+
+# Tamsayı dizisi
+print(np.array([1, 4, 2, 5, 3]))</code></pre>
+    </div>
+
+    <p>Python listelerinin aksine NumPy dizilerinde tüm elemanlar <strong>aynı tip</strong> olmalıdır. Tipler uyuşmazsa NumPy mümkünse <strong>upcast</strong> yapar (burada tamsayılar float'a):</p>
+
+    <div class="code-block" data-lang="python" data-filename="upcast.py">
+      <pre><code>import numpy as np
+print(np.array([3.14, 4, 2, 3]))</code></pre>
+    </div>
+
+    <p>Sonucun tipini açıkça belirtmek için <code>dtype</code>:</p>
+
+    <div class="code-block" data-lang="python" data-filename="dtype_float32.py">
+      <pre><code>import numpy as np
+print(np.array([1, 2, 3, 4], dtype='float32'))</code></pre>
+    </div>
+
+    <p>NumPy dizileri açıkça <strong>çok boyutlu</strong> olabilir; iç içe listelerle:</p>
+
+    <div class="code-block" data-lang="python" data-filename="cok_boyutlu.py">
+      <pre><code>import numpy as np
+# İç listeler sonuçtaki 2B dizinin satırları olur
+print(np.array([range(i, i + 3) for i in [2, 4, 6]]))</code></pre>
+    </div>
+
+    <div class="alert alert-warning handbook-addon">
+      <div class="alert-title">⚠️ Ders notu</div>
+      <p>İç içe listelerde her satır aynı uzunlukta olmalı; aksi halde <code>object</code> dtype veya hata alırsınız.</p>
+    </div>
+
+    <h2 id="sifirdan-dizi">Sıfırdan dizi oluşturma</h2>
+
+    <p>Özellikle büyük dizilerde NumPy'nin yerleşik rutinleriyle sıfırdan oluşturmak daha verimlidir. Kitaptaki örneklerin tamamı:</p>
+
+    <div class="code-block" data-lang="python" data-filename="sifirdan_ornekler.py">
+      <pre><code>import numpy as np
+
+# Uzunluk 10, sıfırlarla dolu tamsayı dizisi
+print("zeros:", np.zeros(10, dtype=int))
+
+# 3x5, birlerle dolu float dizisi
+print("ones:\n", np.ones((3, 5), dtype=float))
+
+# 3x5, 3.14 ile dolu
+print("full:\n", np.full((3, 5), 3.14))
+
+# 0'dan 20'ye 2'şer artış (range benzeri)
+print("arange:", np.arange(0, 20, 2))
+
+# 0 ile 1 arasında 5 eşit aralıklı değer
+print("linspace:", np.linspace(0, 1, 5))
+
+# 3x3, [0,1) uniform rastgele
+np.random.seed(0)
+print("random:\n", np.random.random((3, 3)))
+
+# 3x3, ortalama 0 std 1 normal dağılım
+print("normal:\n", np.random.normal(0, 1, (3, 3)))
+
+# 3x3, [0, 10) arası rastgele tamsayı
+print("randint:\n", np.random.randint(0, 10, (3, 3)))
+
+# 3x3 birim matris
+print("eye:\n", np.eye(3))
+
+# 3 elemanlı başlatılmamış dizi (bellekte ne varsa o!)
+print("empty:", np.empty(3))</code></pre>
+    </div>
+
+    <div class="alert alert-warning handbook-addon">
+      <div class="alert-title">⚠️ np.empty</div>
+      <p><code>np.empty</code> bellek ayırır ama <strong>sıfırlamaz</strong> — içindeki değerler anlamsız (çöp) olabilir. Hızlı yer ayırmak için kullanılır; hemen üzerine yazacaksanız uygundur.</p>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>Kitaptaki gibi <code>np.linspace(0, 10, 6)</code> ve <code>np.random.randint(0, 10, (3, 3))</code> deneyin; <code>dtype</code> ve <code>shape</code> yazdırın.</p>
+      <div class="code-block" data-lang="python" data-filename="deneme_linspace.py">
+        <pre><code>import numpy as np
+a = np.linspace(0, 10, 6)
+b = np.random.randint(0, 10, (3, 3))
+print(a, a.dtype, a.shape)
+print(b, b.dtype, b.shape)</code></pre>
+      </div>
+    </div>
+
+    <h2 id="numpy-dtype">NumPy standart veri tipleri</h2>
+
+    <p>NumPy dizileri tek tip değer içerir; tipleri ve sınırlarını bilmek önemlidir. NumPy C ile yazıldığı için tipler C/Fortran kullanıcılarına tanıdık gelir.</p>
+
+    <p>Dizi oluştururken string ile:</p>
+
+    <div class="code-block" data-lang="python" data-filename="dtype_string.py">
+      <pre><code>import numpy as np
+print(np.zeros(10, dtype='int16'))</code></pre>
+    </div>
+
+    <p>veya NumPy nesnesi ile:</p>
+
+    <div class="code-block" data-lang="python" data-filename="dtype_nesne.py">
+      <pre><code>import numpy as np
+print(np.zeros(10, dtype=np.int16))</code></pre>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="vocab-table">
+        <thead><tr><th>Veri tipi</th><th>Açıklama</th></tr></thead>
+        <tbody>
+          <tr><td><code>bool_</code></td><td>Boolean (True/False), bayt olarak saklanır</td></tr>
+          <tr><td><code>int_</code></td><td>Varsayılan tamsayı (C <code>long</code>; genelde int64 veya int32)</td></tr>
+          <tr><td><code>intc</code></td><td>C <code>int</code> ile aynı</td></tr>
+          <tr><td><code>intp</code></td><td>İndeksleme tamsayısı (C <code>ssize_t</code>)</td></tr>
+          <tr><td><code>int8</code></td><td>Bayt (−128 … 127)</td></tr>
+          <tr><td><code>int16</code></td><td>−32768 … 32767</td></tr>
+          <tr><td><code>int32</code></td><td>−2147483648 … 2147483647</td></tr>
+          <tr><td><code>int64</code></td><td>Çok büyük tamsayı aralığı</td></tr>
+          <tr><td><code>uint8</code> … <code>uint64</code></td><td>İşaretsiz tamsayılar</td></tr>
+          <tr><td><code>float_</code></td><td><code>float64</code> kısaltması</td></tr>
+          <tr><td><code>float16</code></td><td>Yarı hassasiyet (5 üs, 10 mantis)</td></tr>
+          <tr><td><code>float32</code></td><td>Tek hassasiyet (8 üs, 23 mantis)</td></tr>
+          <tr><td><code>float64</code></td><td>Çift hassasiyet (11 üs, 52 mantis)</td></tr>
+          <tr><td><code>complex_</code></td><td><code>complex128</code> kısaltması</td></tr>
+          <tr><td><code>complex64</code></td><td>İki float32'den karmaşık sayı</td></tr>
+          <tr><td><code>complex128</code></td><td>İki float64'ten karmaşık sayı</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Big-endian / little-endian gibi daha gelişmiş tip tanımları mümkündür — ayrıntı için <a href="https://numpy.org/doc/stable/reference/arrays.dtypes.html" target="_blank" rel="noopener">NumPy dtype dokümantasyonu</a>. Bileşik (compound) tipler kitapta <a href="09-structured-arrays.html">2.9 Yapılandırılmış Diziler</a> bölümünde.</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin — bellek farkı</div>
+      <p>1000 elemanlı Python listesi ile <code>np.arange(1000, dtype=np.int32)</code> boyutunu karşılaştırın:</p>
+      <div class="code-block" data-lang="python" data-filename="bellek_karsilastirma.py">
+        <pre><code>import numpy as np
+import sys
+
+L = list(range(1000))
+A = np.arange(1000, dtype=np.int32)
+print("Liste (sys.getsizeof, yaklaşık):", sys.getsizeof(L), "byte")
+print("NumPy nbytes:", A.nbytes, "byte")</code></pre>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="02-basics-of-numpy-arrays.html">2.2 NumPy Dizilerinin Temelleri →</a> (indeksleme, slice, reshape)</p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

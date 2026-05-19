@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1.6 Hatalar ve Hata Ayıklama — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="01-ipython" data-section="06-errors-and-debugging">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/01.06-errors-and-debugging.html" target="_blank" rel="noopener">06 Errors and Debugging</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>1.6 Hatalar ve Hata Ayıklama</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/01.06-errors-and-debugging.html" target="_blank" rel="noopener">Errors and Debugging</a></em></p>
+
+    <p>Kod geliştirme ve veri analizi her zaman bir miktar deneme yanılma gerektirir; IPython bu süreci kolaylaştıran araçlar içerir. Bu bölüm kısaca Python'un istisna raporlamasını kontrol etme seçeneklerini, ardından kodda hataları ayıklama araçlarını ele alır.</p>
+
+    <h2 id="xmode">İstisnaları kontrol etmek: %xmode</h2>
+
+    <p>Python betiği çoğu zaman başarısız olduğunda bir istisna fırlatır. Yorumlayıcı bu istisnalardan birine çarptığında hatanın nedeni hakkında bilgi <em>traceback</em> (izleme) içinde bulunur; bu bilgiye Python içinden erişilebilir. <code>%xmode</code> magic fonksiyonu ile IPython, istisna yükseltildiğinde yazdırılan bilgi miktarını kontrol etmenizi sağlar. Aşağıdaki kodu düşünün:</p>
+
+    <div class="code-block" data-lang="python" data-filename="func_ornek.py">
+      <pre><code>def func1(a, b):
+    return a / b
+
+def func2(x):
+    a = x
+    b = x - 1
+    return func1(a, b)</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="func2_cagri.py">
+      <pre><code>func2(1)</code></pre>
+    </div>
+
+    <p><code>func2</code> çağrısı bir hataya yol açar; yazdırılan izlemeyi okuyarak tam olarak ne olduğunu görebilirsiniz. Varsayılan modda bu izleme, hataya giden her adımın bağlamını gösteren birkaç satır içerir. <code>%xmode</code> magic fonksiyonu (<em>exception mode</em>, istisna modu kısaltması) ile yazdırılan bilgiyi değiştirebiliriz.</p>
+
+    <p><code>%xmode</code> tek bir argüman alır: mod. Üç seçenek vardır: <code>Plain</code>, <code>Context</code> ve <code>Verbose</code>. Varsayılan <code>Context</code>'tir; az önce gösterilen çıktıya benzer sonuç verir. <code>Plain</code> daha özdür ve daha az bilgi verir:</p>
+
+    <div class="code-block" data-lang="python" data-readonly="true" data-filename="xmode_plain.ipynb">
+      <pre><code>%xmode Plain</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="func2_plain.py">
+      <pre><code>func2(1)</code></pre>
+    </div>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu</div>
+      <p><code>%xmode</code>, <code>%debug</code> ve <code>%pdb</code> yalnızca IPython/Jupyter'de çalışır. Bu handbook editöründe (Pyodide) çalışmaz; aşağıdaki hücreleri yerel notebook'ta deneyin. Burada <code>func2(1)</code> çalıştırırsanız standart Python traceback görürsünüz.</p>
+    </div>
+
+    <p><code>Verbose</code> modu, çağrılan fonksiyonların argümanları dahil ek bilgi ekler:</p>
+
+    <div class="code-block" data-lang="python" data-readonly="true" data-filename="xmode_verbose.ipynb">
+      <pre><code>%xmode Verbose</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="func2_verbose.py">
+      <pre><code>func2(1)</code></pre>
+    </div>
+
+    <p>Bu ek bilgi istisnanın neden yükseltildiğini daraltmaya yardımcı olur. O halde neden her zaman <code>Verbose</code> kullanmayalım? Kod karmaşıklaştıkça bu tür traceback'ler son derece uzun olabilir. Bağlama göre bazen <code>Plain</code> veya <code>Context</code> modunun kısalığı daha kullanışlıdır.</p>
+
+    <h2 id="debugging">Hata ayıklama: Traceback okumak yetmediğinde</h2>
+
+    <p>Etkileşimli hata ayıklama için standart Python aracı <code>pdb</code> (Python debugger)'dır. Bu debugger kullanıcının kodda satır satır ilerlemesine ve daha zor bir hatanın nedenini görmesine olanak tanır. IPython ile geliştirilmiş sürümü <code>ipdb</code>'dir.</p>
+
+    <p>Her iki debugger'ı başlatmanın ve kullanmanın birçok yolu vardır; burada tam olarak ele almayacağız. Daha fazla bilgi için bu iki aracın çevrimiçi dokümantasyonuna bakın.</p>
+
+    <p>IPython'da belki de hata ayıklamanın en uygun arayüzü <code>%debug</code> magic komutudur. Bir istisnadan sonra çağırırsanız otomatik olarak istisnanın oluştuğu noktada etkileşimli bir hata ayıklama istemi açar. <code>ipdb</code> istemi yığının mevcut durumunu keşfetmenize, kullanılabilir değişkenlere bakmanıza ve hatta Python komutları çalıştırmanıza izin verir!</p>
+
+    <p>En son istisnaya bakalım ve temel işlemler yapalım. <code>a</code> ve <code>b</code> değerlerini yazdırıp ardından hata ayıklama oturumundan çıkmak için <code>quit</code> yazın:</p>
+
+    <div class="code-block" data-lang="python" data-readonly="true" data-filename="debug.ipynb">
+      <pre><code>%debug</code></pre>
+    </div>
+
+    <p>Etkileşimli debugger bundan çok daha fazlasını sağlar — yığın içinde yukarı ve aşağı adımlayıp değişken değerlerini orada da inceleyebilirsiniz:</p>
+
+    <div class="code-block" data-lang="python" data-readonly="true">
+      <pre><code>%debug</code></pre>
+    </div>
+
+    <p>Böylece yalnızca hataya neyin yol açtığını değil, hataya hangi fonksiyon çağrılarının öncülük ettiğini de hızla bulabiliriz.</p>
+
+    <p>İstisna yükseltildiğinde debugger'ın otomatik açılmasını istiyorsanız <code>%pdb</code> magic fonksiyonu ile bu davranışı açabilirsiniz:</p>
+
+    <div class="code-block" data-lang="python" data-readonly="true" data-filename="pdb_on.ipynb">
+      <pre><code>%xmode Plain
+%pdb on
+func2(1)</code></pre>
+    </div>
+
+    <p>Son olarak, baştan etkileşimli modda çalıştırmak istediğiniz bir betiğiniz varsa <code>%run -d</code> komutuyla çalıştırıp <code>next</code> ile kod satırlarında adım adım ilerleyebilirsiniz.</p>
+
+    <h3 id="debug-komutlari">Hata ayıklama komutlarının kısmi listesi</h3>
+
+    <p>Burada gösterdiklerimden çok daha fazla etkileşimli hata ayıklama komutu vardır. Aşağıdaki tablo yaygın ve kullanışlı bazılarını özetler:</p>
+
+    <div class="table-wrapper">
+      <table class="vocab-table">
+        <thead><tr><th>Komut</th><th>Açıklama</th></tr></thead>
+        <tbody>
+          <tr><td><code>l(ist)</code></td><td>Dosyadaki geçerli konumu göster</td></tr>
+          <tr><td><code>h(elp)</code></td><td>Komut listesini veya belirli bir komutun yardımını göster</td></tr>
+          <tr><td><code>q(uit)</code></td><td>Debugger'dan ve programdan çık</td></tr>
+          <tr><td><code>c(ontinue)</code></td><td>Debugger'dan çık, programda devam et</td></tr>
+          <tr><td><code>n(ext)</code></td><td>Programın bir sonraki adımına git</td></tr>
+          <tr><td><code>&lt;enter&gt;</code></td><td>Önceki komutu tekrarla</td></tr>
+          <tr><td><code>p(rint)</code></td><td>Değişkenleri yazdır</td></tr>
+          <tr><td><code>s(tep)</code></td><td>Bir alt programa gir (step into)</td></tr>
+          <tr><td><code>r(eturn)</code></td><td>Alt programdan çık (return)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Daha fazla bilgi için debugger'da <code>help</code> komutunu kullanın veya <code>ipdb</code> <a href="https://github.com/gotcha/ipdb" target="_blank" rel="noopener">çevrimiçi dokümantasyonuna</a> bakın.</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>Bu sayfadaki <code>func1</code> / <code>func2</code> tanımlarını çalıştırın; <code>func2(1)</code> ile <code>ZeroDivisionError</code> üretin. Traceback'i en alttan yukarı okuyun — hata hangi satırda?</p>
+      <div class="code-block" data-lang="python" data-filename="traceback_okuma.py">
+        <pre><code>def func1(a, b):
+    return a / b
+
+def func2(x):
+    a = x
+    b = x - 1
+    return func1(a, b)
+
+try:
+    func2(1)
+except ZeroDivisionError as e:
+    print("Yakalandı:", type(e).__name__, e)</code></pre>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="07-timing-and-profiling.html">1.7 Profil ve Zamanlama →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDS Handbook — Türkçe | Python Data Science</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="0">
+
+<header class="top-nav">
+  <a href="index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<section class="hero handbook-hero">
+  <span class="week-badge">📘 KAYNAK KİTAP</span>
+  <h1>Python Data Science Handbook</h1>
+  <p class="subtitle">Jake VanderPlas'ın klasik kitabının Türkçe uyarlaması — orijinal içeriğe sadık, zor konularda genişletilmiş ders notları ve tarayıcıda çalıştırılabilir kod.</p>
+  <div class="meta-info">
+    <span>📖 Kaynak: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/" target="_blank" rel="noopener">Orijinal kitap (EN)</a></span>
+    <span>▶️ Pyodide · düzenlenebilir editörler</span>
+    <span>📦 Standalone yayına hazır yapı</span>
+  </div>
+</section>
+
+<main class="handbook-index">
+  <p class="handbook-index-intro">
+    Bu site ders notlarından <strong>bağımsız</strong> bir referans kitabıdır — GitHub Pages’te tek başına yayınlanabilir.
+    Her konu ayrı HTML dosyasındadır. Orijinal kitaptaki kod ve yapı korunur;
+    üzerine <span class="handbook-addon-tag">ders notu</span> ve <strong>🧪 Şimdi deneyin</strong> eklenir.
+  </p>
+
+  <div class="alert alert-warning handbook-env-notice" style="margin-bottom: 2rem;">
+    <div class="alert-title">⚙️ Web editörleri vs Jupyter</div>
+    <p>Sayfalardaki kod editörleri tarayıcıda <strong>Pyodide</strong> ile çalışır — <em>Jupyter notebook değildir</em>. Magic komutlar (<code>%timeit</code>), kabuk (<code>!ls</code>) ve <code>?</code> yardımı web'de çalışmaz.</p>
+    <p><strong>Önerilen:</strong> Her konu için indirilebilir <strong>.ipynb</strong> dosyası var — <a href="https://jupyter.org/" target="_blank" rel="noopener">JupyterLab</a>, VS Code veya Colab ile açıp hücreleri sırayla çalıştırın. Kodlar genelde <strong>birbirine bağımlıdır</strong> (üstten alta).</p>
+  </div>
+
+  <div class="handbook-parts">
+
+    <article class="handbook-part-card">
+      <h2>Bölüm 1 — IPython</h2>
+      <p class="part-meta">Jupyter ortamı · yardım · magic · hata ayıklama · zamanlama</p>
+      <a href="chapters/01-ipython/index.html" class="chapter-link">📄 Bölüm özeti →</a>
+      <ul class="handbook-topic-list">
+        <li><a href="chapters/01-ipython/00-introduction.html">IPython'a Giriş</a></li>
+        <li><a href="chapters/01-ipython/01-help-and-documentation.html">1.1 Yardım ve Dokümantasyon</a></li>
+        <li><a href="chapters/01-ipython/02-keyboard-shortcuts.html">1.2 Klavye Kısayolları</a></li>
+        <li><a href="chapters/01-ipython/03-magic-commands.html">1.3 Magic Komutlar</a></li>
+        <li><a href="chapters/01-ipython/04-input-output-history.html">1.4 Girdi ve Çıktı Geçmişi</a></li>
+        <li><a href="chapters/01-ipython/05-shell-commands.html">1.5 IPython ve Shell</a></li>
+        <li><a href="chapters/01-ipython/06-errors-and-debugging.html">1.6 Hatalar ve Hata Ayıklama</a></li>
+        <li><a href="chapters/01-ipython/07-timing-and-profiling.html">1.7 Profil ve Zamanlama</a></li>
+        <li><a href="chapters/01-ipython/08-more-resources.html">1.8 Daha Fazla Kaynak</a></li>
+      </ul>
+    </article>
+
+    <article class="handbook-part-card">
+      <h2>Bölüm 2 — NumPy</h2>
+      <p class="part-meta">Diziler · ufunc · agregasyon · broadcasting · maske · fancy index · sıralama</p>
+      <a href="chapters/02-numpy/index.html" class="chapter-link">📄 Bölüm özeti →</a>
+      <ul class="handbook-topic-list">
+        <li><a href="chapters/02-numpy/00-introduction.html">NumPy'ye Giriş</a></li>
+        <li><a href="chapters/02-numpy/01-understanding-data-types.html">2.1 Veri Tipleri</a></li>
+        <li><a href="chapters/02-numpy/02-basics-of-numpy-arrays.html">2.2 Dizi Temelleri</a></li>
+        <li><a href="chapters/02-numpy/03-computation-ufuncs.html">2.3 UFuncs</a></li>
+        <li><a href="chapters/02-numpy/04-aggregates.html">2.4 Agregasyonlar</a></li>
+        <li><a href="chapters/02-numpy/05-broadcasting.html">2.5 Broadcasting</a></li>
+        <li><a href="chapters/02-numpy/06-boolean-masks.html">2.6 Boolean Maskeler</a></li>
+        <li><a href="chapters/02-numpy/07-fancy-indexing.html">2.7 Fancy Indexing</a></li>
+        <li><a href="chapters/02-numpy/08-sorting.html">2.8 Sıralama</a></li>
+        <li><a href="chapters/02-numpy/09-structured-arrays.html">2.9 Yapılandırılmış Diziler</a></li>
+      </ul>
+    </article>
+
+    <article class="handbook-part-card">
+      <h2>Bölüm 3 — Pandas</h2>
+      <p class="part-meta">DataFrame · indeksleme · eksik veri · birleştirme · gruplama · zaman serileri</p>
+      <a href="chapters/03-pandas/index.html" class="chapter-link">📄 Bölüm özeti →</a>
+      <ul class="handbook-topic-list">
+        <li><a href="chapters/03-pandas/00-introduction.html">Pandas'a Giriş</a></li>
+        <li><a href="chapters/03-pandas/01-introducing-pandas-objects.html">3.1 Pandas Nesneleri</a></li>
+        <li><a href="chapters/03-pandas/02-data-indexing-and-selection.html">3.2 İndeksleme ve Seçim</a></li>
+        <li><a href="chapters/03-pandas/03-operations-in-pandas.html">3.3 Pandas İşlemleri</a></li>
+        <li><a href="chapters/03-pandas/04-missing-values.html">3.4 Eksik Veri</a></li>
+        <li><a href="chapters/03-pandas/05-hierarchical-indexing.html">3.5 Hiyerarşik İndeks</a></li>
+        <li><a href="chapters/03-pandas/06-concat-and-append.html">3.6 Concat ve Append</a></li>
+        <li><a href="chapters/03-pandas/07-merge-and-join.html">3.7 Merge ve Join</a></li>
+        <li><a href="chapters/03-pandas/08-aggregation-and-grouping.html">3.8 Agregasyon ve Gruplama</a></li>
+        <li><a href="chapters/03-pandas/09-pivot-tables.html">3.9 Pivot Tablolar</a></li>
+        <li><a href="chapters/03-pandas/10-working-with-strings.html">3.10 Dizeler</a></li>
+        <li><a href="chapters/03-pandas/11-working-with-time-series.html">3.11 Zaman Serileri</a></li>
+        <li><a href="chapters/03-pandas/12-performance-eval-and-query.html">3.12 Performans ve Sorgu</a></li>
+        <li><a href="chapters/03-pandas/13-further-resources.html">3.13 Kaynaklar</a></li>
+      </ul>
+    </article>
+
+    <article class="handbook-part-card">
+      <h2>Bölüm 4 — Matplotlib</h2>
+      <p class="part-meta">Çizgi · saçılım · histogram · alt grafik · 3B · Seaborn</p>
+      <a href="chapters/04-matplotlib/index.html" class="chapter-link">📄 Bölüm özeti →</a>
+      <ul class="handbook-topic-list">
+        <li><a href="chapters/04-matplotlib/00-introduction.html">Matplotlib'e Giriş</a></li>
+        <li><a href="chapters/04-matplotlib/01-simple-line-plots.html">4.1 Çizgi Grafikleri</a></li>
+        <li><a href="chapters/04-matplotlib/02-simple-scatter-plots.html">4.2 Saçılım Grafikleri</a></li>
+        <li><a href="chapters/04-matplotlib/03-errorbars.html">4.3 Hata Çubukları</a></li>
+        <li><a href="chapters/04-matplotlib/04-density-and-contour-plots.html">4.4 Yoğunluk ve Kontur</a></li>
+        <li><a href="chapters/04-matplotlib/05-histograms-and-binnings.html">4.5 Histogramlar</a></li>
+        <li><a href="chapters/04-matplotlib/06-customizing-legends.html">4.6 Lejantlar</a></li>
+        <li><a href="chapters/04-matplotlib/07-customizing-colorbars.html">4.7 Renk Çubukları</a></li>
+        <li><a href="chapters/04-matplotlib/08-multiple-subplots.html">4.8 Alt Grafikler</a></li>
+        <li><a href="chapters/04-matplotlib/09-text-and-annotation.html">4.9 Metin ve Açıklama</a></li>
+        <li><a href="chapters/04-matplotlib/10-customizing-ticks.html">4.10 Eksen İşaretleri</a></li>
+        <li><a href="chapters/04-matplotlib/11-settings-and-stylesheets.html">4.11 Ayarlar ve Stiller</a></li>
+        <li><a href="chapters/04-matplotlib/12-three-dimensional-plotting.html">4.12 3B Çizim</a></li>
+        <li><a href="chapters/04-matplotlib/14-visualization-with-seaborn.html">4.14 Seaborn</a></li>
+        <li><a href="chapters/04-matplotlib/15-further-resources.html">4.15 Kaynaklar</a></li>
+      </ul>
+    </article>
+
+    <article class="handbook-part-card">
+      <h2>Bölüm 5 — Makine Öğrenmesi</h2>
+      <p class="part-meta">scikit-learn · doğrulama · sınıflandırma · regresyon · kümeleme · PCA</p>
+      <a href="chapters/05-sklearn/index.html" class="chapter-link">📄 Bölüm özeti →</a>
+      <ul class="handbook-topic-list">
+        <li><a href="chapters/05-sklearn/00-introduction.html">Makine Öğrenmesine Giriş</a></li>
+        <li><a href="chapters/05-sklearn/01-what-is-machine-learning.html">5.1 Makine Öğrenmesi Nedir?</a></li>
+        <li><a href="chapters/05-sklearn/02-introducing-scikit-learn.html">5.2 Scikit-Learn</a></li>
+        <li><a href="chapters/05-sklearn/03-hyperparameters-and-model-validation.html">5.3 Hiperparametreler</a></li>
+        <li><a href="chapters/05-sklearn/04-feature-engineering.html">5.4 Öznitelik Mühendisliği</a></li>
+        <li><a href="chapters/05-sklearn/05-naive-bayes.html">5.5 Naive Bayes</a></li>
+        <li><a href="chapters/05-sklearn/06-linear-regression.html">5.6 Doğrusal Regresyon</a></li>
+        <li><a href="chapters/05-sklearn/07-support-vector-machines.html">5.7 SVM</a></li>
+        <li><a href="chapters/05-sklearn/08-random-forests.html">5.8 Rastgele Ormanlar</a></li>
+        <li><a href="chapters/05-sklearn/09-principal-component-analysis.html">5.9 PCA</a></li>
+        <li><a href="chapters/05-sklearn/10-manifold-learning.html">5.10 Manifold Öğrenme</a></li>
+        <li><a href="chapters/05-sklearn/11-k-means.html">5.11 K-Means</a></li>
+        <li><a href="chapters/05-sklearn/12-gaussian-mixtures.html">5.12 Gauss Karışımları</a></li>
+        <li><a href="chapters/05-sklearn/13-kernel-density-estimation.html">5.13 KDE</a></li>
+        <li><a href="chapters/05-sklearn/14-image-features.html">5.14 Görüntü Öznitelikleri</a></li>
+        <li><a href="chapters/05-sklearn/15-learning-more.html">5.15 Kaynaklar</a></li>
+      </ul>
+    </article>
+
+  </div>
+
+  <div class="alert alert-info handbook-attribution" style="margin-top: 2.5rem;">
+    <div class="alert-title">📜 Kaynak, lisans ve uyarlama ilkesi</div>
+    <p>
+      Metin <strong><a href="https://jakevdp.github.io/PythonDataScienceHandbook/" target="_blank" rel="noopener">Python Data Science Handbook</a></strong>
+      (Jake VanderPlas) eserinden uyarlanmıştır — bölüm sırası, kod örnekleri ve örnek senaryolar orijinale sadıktır.
+      Türkçe sürümde zor kısımlar genişletilir; <strong>hiçbir orijinal konu atlanmaz</strong>.
+    </p>
+    <p>
+      Orijinal metin <a href="https://creativecommons.org/licenses/by-nc-nd/3.0/us/deed.tr" target="_blank" rel="noopener">CC-BY-NC-ND</a>,
+      kod <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener">MIT</a>.
+    </p>
+  </div>
+</main>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="../ders-notlari/hafta1.html">← Ders Notları</a>
+    <a href="https://jakevdp.github.io/PythonDataScienceHandbook/" target="_blank" rel="noopener">Orijinal kitap →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<script src="assets/nav.js"></script>
+<script src="assets/script.js"></script>
+</body>
+</html>

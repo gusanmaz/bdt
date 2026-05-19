@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2.9 Yapılandırılmış Diziler — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="02-numpy" data-section="09-structured-arrays" data-preload-numpy="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.09-structured-data-numpy.html" target="_blank" rel="noopener">09 Structured Data: NumPy's Structured Arrays</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+    
+<h1>2.9 Yapılandırılmış Veri: NumPy Structured Arrays</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.09-structured-data-numpy.html" target="_blank" rel="noopener">09 Structured Data: NumPy's Structured Arrays</a></em></p>
+
+    <p>Verimiz çoğu zaman homojen sayı dizisi olarak temsil edilir; bazen bu yeterli değildir. Bu bölüm NumPy'nin <strong>structured arrays</strong> (yapılandırılmış diziler) ve <strong>record arrays</strong> (<code>recarray</code>) yapılarını anlatır — bileşik, heterojen veri için verimli depolama. Basit işlemler için kullanışlı olsalar da benzer senaryolar genelde Pandas <code>DataFrame</code>'e yönelir (<a href="../03-pandas/index.html">Bölüm 3 — Pandas</a>).</p>
+    <div class="code-block" data-lang="python" data-filename="import_numpy.py">
+      <pre><code>import numpy as np</code></pre>
+    </div>
+
+    <p>Birkaç kişinin adı, yaşı, kilosu gibi kategorileri ayrı dizilerde tutmak mümkün:</p>
+    <div class="code-block" data-lang="python" data-filename="separate_arrays.py">
+      <pre><code>name = ['Alice', 'Bob', 'Cathy', 'Doug']
+age = [25, 45, 37, 19]
+weight = [55.0, 85.5, 68.0, 61.5]</code></pre>
+    </div>
+
+    <p>Bu biraz hantal — üç dizinin ilişkili olduğunu göstermez. Structured array tek yapıda tüm veriyi tutar:</p>
+    <div class="code-block" data-lang="python" data-filename="zeros_simple.py">
+      <pre><code>x = np.zeros(4, dtype=int)</code></pre>
+    </div>
+
+    <p>Bileşik veri tipi ile structured array:</p>
+    <div class="code-block" data-lang="python" data-filename="structured_create.py">
+      <pre><code>data = np.zeros(4, dtype={'names': ('name', 'age', 'weight'),
+                          'formats': ('U10', 'i4', 'f8')})
+print(data.dtype)</code></pre>
+    </div>
+
+    <p><code>'U10'</code> = en fazla 10 karakter Unicode string; <code>'i4'</code> = 32 bit tamsayı; <code>'f8'</code> = 64 bit float.</p>
+    <div class="code-block" data-lang="python" data-filename="structured_fill.py">
+      <pre><code>data['name'] = name
+data['age'] = age
+data['weight'] = weight
+print(data)</code></pre>
+    </div>
+
+    <p>İndeks veya alan adıyla erişim:</p>
+    <div class="code-block" data-lang="python" data-filename="struct_names.py">
+      <pre><code>data['name']          # tüm isimler</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="struct_row0.py">
+      <pre><code>data[0]               # ilk satır</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="struct_last_name.py">
+      <pre><code>data[-1]['name']      # son satırın adı</code></pre>
+    </div>
+
+    <p>Boolean maskeleme ile filtreleme:</p>
+    <div class="code-block" data-lang="python" data-filename="struct_filter.py">
+      <pre><code>data[data['age'] < 30]['name']  # 30 yaş altı isimler</code></pre>
+    </div>
+
+    <p>Bunlardan karmaşık işlemler için muhtemelen Pandas düşünün — <code>DataFrame</code> NumPy dizileri üzerine kurulu, çok daha zengin manipülasyon sunar (<a href="../03-pandas/index.html">Bölüm 3</a>).</p>
+
+    <h2 id="dtype-olusturma">Structured Array Oluşturmayı Keşfetmek</h2>
+
+    <p>Structured array veri tipleri birkaç yolla belirtilebilir. Sözlük yöntemi:</p>
+    <div class="code-block" data-lang="python" data-filename="dtype_dict.py">
+      <pre><code>np.dtype({'names': ('name', 'age', 'weight'),
+          'formats': ('U10', 'i4', 'f8')})</code></pre>
+    </div>
+
+    <p>Sayısal tipler Python veya NumPy tipleriyle:</p>
+    <div class="code-block" data-lang="python" data-filename="dtype_python_types.py">
+      <pre><code>np.dtype({'names': ('name', 'age', 'weight'),
+          'formats': ((np.str_, 10), int, np.float32)})</code></pre>
+    </div>
+
+    <p>Tuple listesi:</p>
+    <div class="code-block" data-lang="python" data-filename="dtype_list.py">
+      <pre><code>np.dtype([('name', 'S10'), ('age', 'i4'), ('weight', 'f8')])</code></pre>
+    </div>
+
+    <p>Alan adları önemli değilse yalnızca tipler virgülle ayrılmış string:</p>
+    <div class="code-block" data-lang="python" data-filename="dtype_string.py">
+      <pre><code>np.dtype('S10,i4,f8')</code></pre>
+    </div>
+
+    <p>Kısa format kodları: isteğe bağlı ilk karakter <code>&lt;</code> veya <code>&gt;</code> (little/big endian); sonra veri tipi karakteri; son olarak bayt cinsinden boyut.</p>
+
+    <div class="table-wrapper">
+      <table class="vocab-table">
+        <thead><tr><th>Karakter</th><th>Açıklama</th><th>Örnek</th></tr></thead>
+        <tbody>
+          <tr><td><code>'b'</code></td><td>Byte</td><td><code>np.dtype('b')</code></td></tr>
+          <tr><td><code>'i'</code></td><td>İşaretli tamsayı</td><td><code>np.dtype('i4') == np.int32</code></td></tr>
+          <tr><td><code>'u'</code></td><td>İşaretsiz tamsayı</td><td><code>np.dtype('u1') == np.uint8</code></td></tr>
+          <tr><td><code>'f'</code></td><td>Kayan nokta</td><td><code>np.dtype('f8') == np.float64</code></td></tr>
+          <tr><td><code>'c'</code></td><td>Karmaşık sayı</td><td><code>np.dtype('c16') == np.complex128</code></td></tr>
+          <tr><td><code>'S'</code>, <code>'a'</code></td><td>String (byte)</td><td><code>np.dtype('S5')</code></td></tr>
+          <tr><td><code>'U'</code></td><td>Unicode string</td><td><code>np.dtype('U') == np.str_</code></td></tr>
+          <tr><td><code>'V'</code></td><td>Ham veri (void)</td><td><code>np.dtype('V') == np.void</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="gelismis-bilesik">Daha Gelişmiş Bileşik Tipler</h2>
+
+    <p>Her eleman dizi veya matris içeren tip tanımlanabilir. $3 	imes 3$ float matris alanı <code>mat</code>:</p>
+    <div class="code-block" data-lang="python" data-filename="nested_matrix.py">
+      <pre><code>tp = np.dtype([('id', 'i8'), ('mat', 'f8', (3, 3))])
+X = np.zeros(1, dtype=tp)
+print(X[0])
+print(X['mat'][0])</code></pre>
+    </div>
+
+    <p>Her eleman <code>id</code> ve $3 	imes 3$ matris içerir. Neden çok boyutlu dizi veya sözlük değil? NumPy <code>dtype</code> doğrudan C yapı tanımına karşılık gelir — C/Fortran kütüphaneleriyle arayüzde güçlü köprü.</p>
+
+    <h2 id="recarray">Record Arrays: Structured Array'in Bir Varyantı</h2>
+
+    <p>NumPy <code>np.recarray</code> sınıfı structured array ile neredeyse aynıdır; ek özellik: alanlara sözlük anahtarı yerine <strong>nokta notasyonu</strong> ile erişim.</p>
+    <div class="code-block" data-lang="python" data-filename="rec_age_bracket.py">
+      <pre><code>data['age']</code></pre>
+    </div>
+
+    <p>Record array olarak:</p>
+    <div class="code-block" data-lang="python" data-filename="rec_age_dot.py">
+      <pre><code>data_rec = data.view(np.recarray)
+data_rec.age</code></pre>
+    </div>
+
+    <p>Dezavantaj: record array'lerde alan erişiminde ek yük vardır — kitaptaki zamanlama (notebook <code>%timeit</code>):</p>
+    <div class="code-block" data-lang="python" data-filename="recarray_timing.py">
+      <pre><code>import time
+
+def bench(fn, n=10000):
+    t0 = time.perf_counter()
+    for _ in range(n):
+        fn()
+    return (time.perf_counter() - t0) / n * 1e6
+
+d = data  # structured array
+dr = data.view(np.recarray)
+
+print(f"data['age']:     {bench(lambda: d['age']):.2f} µs")
+print(f"data_rec['age']: {bench(lambda: dr['age']):.2f} µs")
+print(f"data_rec.age:    {bench(lambda: dr.age):.2f} µs")</code></pre>
+    </div>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — recarray zamanlama</div>
+      <p>Nokta notasyonu (<code>data_rec.age</code>) biraz daha yavaştır. Kolaylık mı performans mı — uygulamanıza bağlı. Günlük tablo verisinde Pandas DataFrame genelde daha iyi seçimdir.</p>
+    </div>
+
+    <h2 id="pandas-gecis">Pandas'a Geçiş</h2>
+
+    <p>Bu bölüm kitabın bu kısmının sonunda bilinçli olarak yer alır — bir sonraki pakete, <strong>Pandas</strong>'a doğal geçiş sağlar. Structured array C/Fortran ikili formatlarına eşlemede işe yarar; günlük yapılandırılmış veri için Pandas çok daha iyi — <a href="../03-pandas/index.html">Bölüm 3</a>'te derinlemesine ele alınır. Bkz. ayrıca <a href="01-understanding-data-types.html">2.1 Veri Tipleri</a>'ndeki bileşik tip atfı.</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>İki kişilik structured array oluşturup <code>age</code> alanına göre filtreleyin.</p>
+    <div class="code-block" data-lang="python" data-filename="deneme_structured.py">
+      <pre><code>import numpy as np
+d = np.array([('Ali', 20), ('Ayşe', 30)], dtype=[('name', 'U10'), ('age', 'i4')])
+print(d[d['age'] >= 25])</code></pre>
+    </div>
+
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

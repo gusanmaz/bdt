@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agregasyon ve Gruplama — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="03-pandas" data-section="08-aggregation-and-grouping" data-preload-numpy="true" data-preload-pandas="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.08-aggregation-and-grouping.html" target="_blank" rel="noopener">03.08 Aggregation and Grouping</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+
+<h1>3.8 Agregasyon ve Gruplama</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/03.08-aggregation-and-grouping.html" target="_blank" rel="noopener">Aggregation and Grouping</a></em></p>
+
+    <p>Birçok veri analizi görevinin temel parçası verimli özetlemedir: büyük bir veri kümesinin belirli yönlerini tek sayıyla özetleyen <code>sum</code>, <code>mean</code>, <code>median</code>, <code>min</code>, <code>max</code> gibi agregasyonlar. Bu bölümde Pandas'ta NumPy dizilerindekine benzer basit işlemlerden <code>groupby</code> kavramına dayalı daha gelişmiş işlemlere geçeceğiz.</p>
+
+    <p>Kolaylık için önceki bölümlerdeki <code>display</code> yardımcı sınıfını kullanacağız:</p>
+    <div class="code-block" data-lang="python" data-filename="imports_display.py">
+      <pre><code>import numpy as np
+import pandas as pd
+
+class display(object):
+    """Display HTML representation of multiple objects"""
+    template = """&lt;div style="float: left; padding: 10px;"&gt;
+    &lt;p style='font-family:"Courier New", Courier, monospace'&gt;{0}&lt;/p&gt;{1}
+    &lt;/div&gt;"""
+    def __init__(self, *args):
+        self.args = args
+        
+    def _repr_html_(self):
+        return '\n'.join(self.template.format(a, eval(a)._repr_html_())
+                         for a in self.args)
+    
+    def __repr__(self):
+        return '\n\n'.join(a + '\n' + repr(eval(a))
+                           for a in self.args)</code></pre>
+    </div>
+
+    <h2 id="planets-verisi">Planets Verisi</h2>
+
+    <p>Seaborn paketindeki Planets veri kümesini kullanacağız (bkz. görselleştirme bölümleri). Diğer yıldızların çevresinde keşfedilen <em>ötegezegen</em>lere ilişkin bilgi içerir; Seaborn ile indirilebilir:</p>
+    <div class="code-block" data-lang="python" data-filename="load_planets.py">
+      <pre><code>import seaborn as sns
+planets = sns.load_dataset('planets')
+planets.shape</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="planets_head.py">
+      <pre><code>planets.head()</code></pre>
+    </div>
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Seaborn ve Pyodide</div>
+      <p>Pyodide ortamında <code>seaborn</code> yüklüyse <code>sns.load_dataset('planets')</code> çalışır; aksi halde örnekleri okuyarak ilerleyin.</p>
+    </div>
+
+    <p>2014'e kadar keşfedilen 1000'den fazla ötegezegene ilişkin ayrıntılar içerir.</p>
+
+    <h2 id="basit-agregasyon">Pandas'ta Basit Agregasyon</h2>
+
+    <p><a href="../02-numpy/04-aggregates.html">2.4 Agregasyonlar</a>'da NumPy dizileri için agregasyonları gördük. Tek boyutlu <code>Series</code> için agregatlar tek değer döndürür:</p>
+    <div class="code-block" data-lang="python" data-filename="ser_random.py">
+      <pre><code>rng = np.random.RandomState(42)
+ser = pd.Series(rng.rand(5))
+ser</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="ser_sum.py">
+      <pre><code>ser.sum()</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="ser_mean.py">
+      <pre><code>ser.mean()</code></pre>
+    </div>
+
+    <p><code>DataFrame</code> için varsayılan olarak agregatlar her sütun içinde sonuç üretir:</p>
+    <div class="code-block" data-lang="python" data-filename="df_random.py">
+      <pre><code>df = pd.DataFrame({'A': rng.rand(5),
+                   'B': rng.rand(5)})
+df</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="df_mean.py">
+      <pre><code>df.mean()</code></pre>
+    </div>
+
+    <p><code>axis</code> ile satırlar boyunca da agregasyon yapılabilir:</p>
+    <div class="code-block" data-lang="python" data-filename="df_mean_axis_columns.py">
+      <pre><code>df.mean(axis='columns')</code></pre>
+    </div>
+
+    <p>Pandas <code>Series</code> ve <code>DataFrame</code> ortak agregasyonların yanı sıra her sütun için birkaç özet veren <code>describe</code> yöntemini içerir. Eksik satırları düşürerek Planets verisinde deneyelim:</p>
+    <div class="code-block" data-lang="python" data-filename="planets_describe.py">
+      <pre><code>planets.dropna().describe()</code></pre>
+    </div>
+
+    <p>Bu yöntem veri kümesinin genel özelliklerini anlamaya yardımcı olur. Örneğin <code>year</code> sütununda ötegezegenler 1989'dan beri keşfedilmiş olsa da veri kümesindeki gezegenlerin yarısı 2010 veya sonrasında keşfedilmiş — büyük ölçüde <em>Kepler</em> görevi sayesinde.</p>
+
+    <p>Pandas'taki diğer yerleşik agregasyonların özeti:</p>
+
+    <div class="table-wrapper">
+      <table class="vocab-table">
+        <thead><tr><th>Agregasyon</th><th>Döndürdüğü</th></tr></thead>
+        <tbody>
+          <tr><td><code>count</code></td><td>Toplam öğe sayısı</td></tr>
+          <tr><td><code>first</code>, <code>last</code></td><td>İlk ve son öğe</td></tr>
+          <tr><td><code>mean</code>, <code>median</code></td><td>Ortalama ve medyan</td></tr>
+          <tr><td><code>min</code>, <code>max</code></td><td>Minimum ve maksimum</td></tr>
+          <tr><td><code>std</code>, <code>var</code></td><td>Standart sapma ve varyans</td></tr>
+          <tr><td><code>mad</code></td><td>Ortalama mutlak sapma</td></tr>
+          <tr><td><code>prod</code></td><td>Tüm öğelerin çarpımı</td></tr>
+          <tr><td><code>sum</code></td><td>Tüm öğelerin toplamı</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Bunların hepsi <code>DataFrame</code> ve <code>Series</code> yöntemleridir.</p>
+
+    <p>Daha derine inmek için basit agregatlar çoğu zaman yeterli değildir. Bir sonraki düzey <code>groupby</code> işlemidir — verinin alt kümeleri üzerinde hızlı ve verimli agregasyon.</p>
+
+    <h2 id="groupby">groupby: Böl, Uygula, Birleştir</h2>
+
+    <p>Basit agregatlar veri kümesinin tadını verir; çoğu zaman etiket veya indekse göre koşullu agregasyon isteriz — SQL'deki “group by” komutundan gelen ad; Hadley Wickham'ın ifadesiyle <em>split, apply, combine</em> (böl, uygula, birleştir).</p>
+
+    <h3 id="split-apply-combine">Split, Apply, Combine</h3>
+
+    <p>“Uygula” adımının toplama agregasyonu olduğu kanonik örnek aşağıdaki şekilde gösterilir:</p>
+
+    <figure class="handbook-figure">
+      <img src="../../assets/images/03.08-split-apply-combine.png" alt="Split-apply-combine: veriyi gruplara bölme, agregasyon uygulama ve sonuçları birleştirme" width="700" loading="lazy">
+      <figcaption>Split-apply-combine şeması (<a href="https://github.com/jakevdp/PythonDataScienceHandbook/blob/master/notebooks/06.00-Figure-Code.ipynb#Split-Apply-Combine" target="_blank" rel="noopener">kitap ek kodu</a>)</figcaption>
+    </figure>
+
+    <p><code>groupby</code> şunları yapar:</p>
+    <ul>
+      <li><strong>Böl (split):</strong> <code>DataFrame</code> belirtilen anahtar değerine göre parçalanır ve gruplanır.</li>
+      <li><strong>Uygula (apply):</strong> Her grupta genelde agregasyon, dönüşüm veya filtreleme hesaplanır.</li>
+      <li><strong>Birleştir (combine):</strong> Sonuçlar çıktı dizisinde birleştirilir.</li>
+    </ul>
+
+    <p>Bunu maskeleme, agregasyon ve birleştirme ile elle yapabilirdiniz; önemli nokta: ara bölümlerin açıkça oluşturulması gerekmez. <code>groupby</code> çoğu zaman tek geçişte her grup için toplam, ortalama, sayım vb. günceller. Gücü, kullanıcının alttaki hesabı düşünmeden işlemi bir bütün olarak görmesidir.</p>
+
+    <p>Somut örnek için girdi <code>DataFrame</code>'ini oluşturalım:</p>
+    <div class="code-block" data-lang="python" data-filename="groupby_df_example.py">
+      <pre><code>df = pd.DataFrame({'key': ['A', 'B', 'C', 'A', 'B', 'C'],
+                   'data': range(6)}, columns=['key', 'data'])
+df</code></pre>
+    </div>
+
+    <p>En temel split-apply-combine, <code>DataFrame</code>'in <code>groupby</code> yöntemiyle istenen anahtar sütun adının verilmesiyle hesaplanır:</p>
+    <div class="code-block" data-lang="python" data-filename="df_groupby_key.py">
+      <pre><code>df.groupby('key')</code></pre>
+    </div>
+
+    <p>Dönen nesne bir <code>DataFrameGroupBy</code> nesnesidir, <code>DataFrame</code> kümesi değil. Gruplara “hazır” özel bir görünüm düşünün; agregasyon uygulanana kadar hesap yapılmaz (tembel değerlendirme).</p>
+    <div class="code-block" data-lang="python" data-filename="df_groupby_sum.py">
+      <pre><code>df.groupby('key').sum()</code></pre>
+    </div>
+
+    <p><code>sum</code> yalnızca bir seçenektir; çoğu Pandas/NumPy agregasyonu ve birçok <code>DataFrame</code> işlemi uygulanabilir.</p>
+
+    <h3 id="groupby-nesnesi">GroupBy Nesnesi</h3>
+
+    <p><code>GroupBy</code> esnek bir soyutlamadır; altta daha gelişmiş işlemler yapılır. Planets verisiyle örnekler: <em>aggregate</em>, <em>filter</em>, <em>transform</em>, <em>apply</em> — sonraki alt bölümde; önce temel <code>GroupBy</code> işlevleri.</p>
+
+    <h4 id="sutun-indeksleme">Sütun indeksleme</h4>
+
+    <p><code>GroupBy</code>, <code>DataFrame</code> gibi sütun indekslemesini destekler:</p>
+    <div class="code-block" data-lang="python" data-filename="planets_groupby_method.py">
+      <pre><code>planets.groupby('method')</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="planets_groupby_orbital.py">
+      <pre><code>planets.groupby('method')['orbital_period']</code></pre>
+    </div>
+
+    <p>Orijinal gruptan belirli bir <code>Series</code> seçildi; agregasyon çağrılana kadar hesap yok:</p>
+    <div class="code-block" data-lang="python" data-filename="planets_orbital_median.py">
+      <pre><code>planets.groupby('method')['orbital_period'].median()</code></pre>
+    </div>
+
+    <p>Her yöntemin duyarlı olduğu yörünge periyodu (gün) ölçeğine dair fikir verir.</p>
+
+    <h4 id="gruplar-uzerinde-dongu">Gruplar üzerinde döngü</h4>
+
+    <p><code>GroupBy</code> gruplar üzerinde doğrudan yineleme destekler:</p>
+    <div class="code-block" data-lang="python" data-filename="planets_groupby_iter.py">
+      <pre><code>for (method, group) in planets.groupby('method'):
+    print("{0:30s} shape={1}".format(method, group.shape))</code></pre>
+    </div>
+
+    <p>Hata ayıklma için elle incelemede yararlıdır; çoğu zaman yerleşik <code>apply</code> daha hızlıdır.</p>
+
+    <h4 id="dispatch-yontemleri">Dispatch yöntemleri</h4>
+
+    <p><code>GroupBy</code>'da açıkça tanımlanmayan yöntemler gruplara iletilir; <code>describe</code> her grup için <code>describe</code> çağırmaya eşdeğerdir:</p>
+    <div class="code-block" data-lang="python" data-filename="planets_year_describe.py">
+      <pre><code>planets.groupby('method')['year'].describe().unstack()</code></pre>
+    </div>
+
+    <p>Bu tablo veriyi anlamaya yardımcı olur: 2014'e kadar gezegenlerin büyük çoğunluğu Radial Velocity ve Transit yöntemleriyle keşfedilmiş; Transit son yıllarda yaygınlaşmış. Transit Timing Variation ve Orbital Brightness Modulation 2011'den sonra kullanılmış.</p>
+
+    <h3 id="agg-filter-transform-apply">Aggregate, Filter, Transform, Apply</h3>
+
+    <p>Önceki tartışma birleştirme için agregasyona odaklandı; <code>GroupBy</code>'da <code>aggregate</code>, <code>filter</code>, <code>transform</code> ve <code>apply</code> de vardır. Aşağıdaki alt bölümler için örnek <code>DataFrame</code>:</p>
+    <div class="code-block" data-lang="python" data-filename="agg_filter_df.py">
+      <pre><code>rng = np.random.RandomState(0)
+df = pd.DataFrame({'key': ['A', 'B', 'C', 'A', 'B', 'C'],
+                   'data1': range(6),
+                   'data2': rng.randint(0, 10, 6)},
+                   columns = ['key', 'data1', 'data2'])
+df</code></pre>
+    </div>
+
+    <h4 id="aggregation">Aggregation</h4>
+
+    <p><code>sum</code>, <code>median</code> ile tanıdık agregasyonların ötesinde <code>aggregate</code> daha fazla esneklik sunar — dize, fonksiyon veya liste alıp hepsini birden hesaplayabilir:</p>
+    <div class="code-block" data-lang="python" data-filename="groupby_aggregate_multi.py">
+      <pre><code>df.groupby('key').aggregate(['min', np.median, max])</code></pre>
+    </div>
+
+    <p>Yaygın desen: sütun adlarını o sütuna uygulanacak işlemlere eşleyen sözlük:</p>
+    <div class="code-block" data-lang="python" data-filename="groupby_aggregate_dict.py">
+      <pre><code>df.groupby('key').aggregate({'data1': 'min',
+                             'data2': 'max'})</code></pre>
+    </div>
+
+    <h4 id="filtering">Filtering</h4>
+
+    <p>Filtreleme, grup özelliklerine göre veriyi düşürür. Örneğin standart sapması eşiğin üstündeki grupları tutmak:</p>
+    <div class="code-block" data-lang="python" data-filename="groupby_filter_func.py">
+      <pre><code>def filter_func(x):
+    return x['data2'].std() &gt; 4
+
+display('df', "df.groupby('key').std()",
+        "df.groupby('key').filter(filter_func)")</code></pre>
+    </div>
+
+    <p>Filtre fonksiyonu grubun geçip geçmeyeceğini belirten Boolean döndürmelidir. Burada A grubunun standart sapması 4'ten büyük olmadığı için düşürülür.</p>
+
+    <h4 id="transformation">Transformation</h4>
+
+    <p>Agregasyon verinin küçültülmüş biçimini döndürürken dönüşüm, birleştirmek için tam verinin dönüştürülmüş biçimini döndürür — çıktı girişle aynı şekildedir. Yaygın örnek: grup ortalamasını çıkararak ortalamak:</p>
+    <div class="code-block" data-lang="python" data-filename="groupby_transform_center.py">
+      <pre><code>def center(x):
+    return x - x.mean()
+df.groupby('key').transform(center)</code></pre>
+    </div>
+
+    <h4 id="apply-yontemi">apply yöntemi</h4>
+
+    <p><code>apply</code>, gruba keyfi bir fonksiyon uygular. Fonksiyon <code>DataFrame</code> alıp Pandas nesnesi veya skaler döndürmelidir. Örneğin ilk sütunu ikincinin toplamına göre normalize etmek:</p>
+    <div class="code-block" data-lang="python" data-filename="groupby_apply_norm.py">
+      <pre><code>def norm_by_data2(x):
+    # x is a DataFrame of group values
+    x['data1'] /= x['data2'].sum()
+    return x
+
+df.groupby('key').apply(norm_by_data2)</code></pre>
+    </div>
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — apply ve SettingWithCopy</div>
+      <p><code>apply</code> içinde sütunlara atama yapmak bazen uyarı üretir; üretim kodunda <code>transform</code> veya açık döngü tercih edin.</p>
+    </div>
+
+    <p><code>GroupBy</code> içinde <code>apply</code> esnektir; tek ölçüt fonksiyonun <code>DataFrame</code> alıp Pandas nesnesi veya skaler döndürmesidir.</p>
+
+    <h3 id="split-anahtari">Bölme Anahtarının Belirtilmesi</h3>
+
+    <p>Basit örneklerde <code>DataFrame</code> tek sütun adına göre bölündü. Gruplar başka yollarla da tanımlanabilir.</p>
+
+    <h4 id="liste-dizi-seri-indeks">Liste, dizi, seri veya indeks</h4>
+
+    <p>Anahtar, <code>DataFrame</code> uzunluğuyla eşleşen herhangi bir seri veya liste olabilir:</p>
+    <div class="code-block" data-lang="python" data-filename="groupby_list_L.py">
+      <pre><code>L = [0, 1, 0, 1, 2, 0]
+df.groupby(L).sum()</code></pre>
+    </div>
+
+    <p>Bu, <code>df.groupby('key')</code>'nin daha ayrıntılı eşdeğeridir:</p>
+    <div class="code-block" data-lang="python" data-filename="groupby_df_key.py">
+      <pre><code>df.groupby(df['key']).sum()</code></pre>
+    </div>
+
+    <h4 id="sozluk-seri-esleme">Sözlük veya seri ile indeks eşlemesi</h4>
+
+    <p>İndeks değerlerini grup anahtarlarına eşleyen sözlük de verilebilir:</p>
+    <div class="code-block" data-lang="python" data-filename="groupby_mapping.py">
+      <pre><code>df2 = df.set_index('key')
+mapping = {'A': 'vowel', 'B': 'consonant', 'C': 'consonant'}
+display('df2', 'df2.groupby(mapping).sum()')</code></pre>
+    </div>
+
+    <h4 id="python-fonksiyonu">Herhangi bir Python fonksiyonu</h4>
+
+    <p>İndeks değerini alıp grup döndüren herhangi bir fonksiyon:</p>
+    <div class="code-block" data-lang="python" data-filename="groupby_str_lower.py">
+      <pre><code>df2.groupby(str.lower).mean()</code></pre>
+    </div>
+
+    <h4 id="gecerli-anahtar-listesi">Geçerli anahtarların listesi</h4>
+
+    <p>Önceki anahtar seçenekleri çoklu indeks için birleştirilebilir:</p>
+    <div class="code-block" data-lang="python" data-filename="groupby_multi_keys.py">
+      <pre><code>df2.groupby([str.lower, mapping]).mean()</code></pre>
+    </div>
+
+    <h3 id="gruplama-ornegi">Gruplama Örneği</h3>
+
+    <p>Birkaç satır Python ile yöntem ve on yıla göre keşfedilen gezegen sayısını sayabiliriz:</p>
+    <div class="code-block" data-lang="python" data-filename="planets_decade_method.py">
+      <pre><code>decade = 10 * (planets['year'] // 10)
+decade = decade.astype(str) + 's'
+decade.name = 'decade'
+planets.groupby(['method', decade])['number'].sum().unstack().fillna(0)</code></pre>
+    </div>
+
+    <p>Bu, gerçekçi veri kümelerinde öğrendiğimiz işlemleri birleştirmenin gücünü gösterir: ötegezegenlerin ilk keşfinden sonra ne zaman ve nasıl tespit edildiğine dair kaba bir resim hızla elde edilir.</p>
+
+    <p>Bu kod satırlarını adım adım inceleyip her adımın sonuca ne yaptığını anlamanızı öneririm — karmaşık görünse de parçaları anlamak kendi verinizi keşfetmenin yolunu açar.</p>
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p><code>planets</code> verisinde (veya küçük bir örnek çerçevede) <code>groupby('method')['distance'].median()</code> hesaplayın:</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_groupby_median.py">
+      <pre><code>import pandas as pd
+try:
+    import seaborn as sns
+    planets = sns.load_dataset('planets')
+    print(planets.groupby('method')['distance'].median())
+except Exception as e:
+    df = pd.DataFrame({'method': ['A','A','B'], 'distance': [1.0, 2.0, 5.0]})
+    print(df.groupby('method')['distance'].median())</code></pre>
+    </div>
+
+    </div>
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="09-pivot-tables.html">3.9 Pivot Tablolar →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Pandas yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

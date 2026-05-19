@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daha Fazla Makine Öğrenmesi Kaynağı — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="05-sklearn" data-section="15-learning-more">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.15-learning-more.html" target="_blank" rel="noopener">05.15 Learning More</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>5.15 Daha Fazla Makine Öğrenmesi Kaynağı</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.15-learning-more.html" target="_blank" rel="noopener">05.15 Learning More</a></em></p>
+
+    <p>Kitabın bu bölümü Python'da makine öğrenmesine hızlı bir tur oldu; esas olarak Scikit-Learn kütüphanesindeki araçları kullandık. Bu bölümler ne kadar uzun olsa da birçok ilginç ve önemli algoritma, yaklaşım ve tartışmayı kapsamak için hâlâ çok kısa. İlgilenenler için Python'da makine öğrenmesi hakkında daha fazla bilgi edinmek üzere şu kaynakları öneririm:</p>
+
+    <ul>
+      <li><a href="https://scikit-learn.org/" target="_blank" rel="noopener">Scikit-Learn web sitesi</a>: Burada ele aldığımız modellerin birçoğunu ve çok daha fazlasını kapsayan etkileyici genişlikte dokümantasyon ve örnekler vardır. En önemli ve sık kullanılan makine öğrenmesi algoritmalarına kısa bir genel bakış istiyorsanız iyi bir başlangıç noktasıdır.</li>
+      <li><em>SciPy, PyCon ve PyData eğitim videoları</em>: Scikit-Learn ve diğer makine öğrenmesi konuları birçok Python odaklı konferans serisinin eğitim programlarında sürekli favoridir; özellikle PyCon, SciPy ve PyData. Bu konferansların çoğu keynote, konuşma ve eğitim videolarını ücretsiz yayınlar; uygun bir web aramasıyla (ör. "PyCon 2022 videos") kolayca bulunabilir.</li>
+      <li><a href="https://learning.oreilly.com/library/view/introduction-to-machine/9781449377939/" target="_blank" rel="noopener"><em>Introduction to Machine Learning with Python</em></a>, Andreas C. Müller ve Sarah Guido (O'Reilly). Bu kitap bu bölümlerde tartışılan makine öğrenmesi temellerinin çoğunu kapsar; özellikle Scikit-Learn'in ek tahminciler, model doğrulama yaklaşımları ve pipeline'lar gibi daha gelişmiş özellikleri için uygundur.</li>
+      <li><a href="https://www.packtpub.com/product/machine-learning-with-pytorch-and-scikit-learn/9781801819312" target="_blank" rel="noopener"><em>Machine Learning with PyTorch and Scikit-Learn</em></a>, Sebastian Raschka (Packt). Raschka'nın en yeni kitabı bu bölümlerde kapsanan bazı temel konularla başlar; ardından bu kavramların <a href="https://pytorch.org/" target="_blank" rel="noopener">PyTorch</a> kütüphanesiyle daha sofistike ve hesaplama açısından yoğun derin öğrenme ve pekiştirmeli öğrenme modellerine nasıl uygulandığını gösterir.</li>
+    </ul>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Pyodide sınırı</div>
+      <p>Bu handbook'taki interaktif hücreler tarayıcıda Pyodide ile çalışır; PyTorch, büyük veri kümeleri ve GPU hızlandırması gibi konular için yerel Jupyter ortamı veya tam Python kurulumu gerekir.</p>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>Scikit-Learn dokümantasyonuna hızlı erişim — bir tahmincinin hiperparametrelerini keşfedin:</p>
+      <div class="code-block" data-lang="python" data-filename="deneme_sklearn_kaynak.py">
+        <pre><code>from sklearn.cluster import KMeans
+print(KMeans.__doc__[:400], &quot;...&quot;)
+print(&quot;n_init =&quot;, KMeans().n_init)</code></pre>
+      </div>
+    </div>
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

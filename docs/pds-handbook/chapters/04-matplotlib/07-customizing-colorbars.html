@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Renk Çubukları Özelleştirme — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="04-matplotlib" data-section="07-customizing-colorbars" data-preload-numpy="true" data-preload-matplotlib="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/04.07-customizing-colorbars.html" target="_blank" rel="noopener">04.07 Customizing Colorbars</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/04.07-customizing-colorbars.html" target="_blank" rel="noopener">04.07 Customizing Colorbars</a></em></p>
+<h1>Renk Çubukları Özelleştirme</h1>
+
+    <p>Lejantlar ayrık noktaların ayrık etiketlerini gösterir.
+    Nokta, çizgi veya bölgelerin rengine dayalı sürekli etiketler için etiketli bir renk çubuğu (colorbar) çok işe yarar.
+    Matplotlib'de renk çubuğu, renklerin anlamına anahtar sağlayan ayrı bir eksen olarak çizilir.
+    Kitap siyah-beyaz basıldığı için bu bölümün renkli şekilleri için
+    <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">çevrimiçi eki</a> vardır.
+    Çizim için not defterini hazırlayıp kullanacağımız işlevleri içe aktararak başlayalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="import_plt_style.py">
+      <pre><code>import matplotlib.pyplot as plt
+plt.style.use(&#x27;seaborn-white&#x27;)</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="matplotlib_inline.py">
+      <pre><code>%matplotlib inline
+import numpy as np</code></pre>
+    </div>
+
+    <p>Daha önce birkaç kez gördüğümüz gibi, en basit renk çubuğu <code>plt.colorbar</code> ile oluşturulur (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="colorbar_basic.py">
+      <pre><code>x = np.linspace(0, 10, 1000)
+I = np.sin(x) * np.cos(x[:, np.newaxis])
+
+plt.imshow(I)
+plt.colorbar();</code></pre>
+    </div>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — get_cmap ve seaborn-white</div>
+      <p>Matplotlib 3.7+ için <code>matplotlib.colormaps['Blues']</code> veya <code>plt.colormaps['Blues']</code> tercih edilir; kod orijinal <code>get_cmap</code> ile bırakılmıştır. <code>seaborn-white</code> güncel sürümlerde farklı adla gelebilir.</p>
+    </div>
+
+
+    <p>Şimdi bu renk çubuklarını özelleştirme ve çeşitli durumlarda etkili kullanma fikirlerine bakalım.</p>
+
+    <h2 id="renk-cubugu-ozellestirme">Renk çubuklarını özelleştirme</h2>    <p>Renk haritası (colormap), görselleştirmeyi oluşturan çizim işlevinin <code>cmap</code> bağımsız değişkeniyle belirtilir (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="imshow_blues.py">
+      <pre><code>plt.imshow(I, cmap=&#x27;Blues&#x27;);</code></pre>
+    </div>
+
+    <p>Kullanılabilir renk haritalarının adları <code>plt.cm</code> ad alanındadır; IPython sekme tamamlama ile yerleşik listeyi görebilirsiniz:</p>
+    <div class="code-block" data-lang="text" data-filename="tab_tamamlama.txt" data-readonly="true">
+      <pre><code>plt.cm.&lt;TAB&gt;</code></pre>
+    </div>
+    <p>Ancak renk haritası <em>seçebilmek</em> yalnızca ilk adımdır; asıl önemli olan olasılıklar arasında <em>nasıl karar vereceğinizdir</em>!
+    Seçim ilk bakışta beklediğinizden çok daha incelikli olabilir.</p>
+
+    <h3 id="renk-haritasi-secimi">Renk haritası seçimi</h3>    <p>Görselleştirmede renk seçiminin tam bir işlenmesi bu kitabın kapsamı dışındadır; konuyla ilgili eğlenceli okuma için Nicholas Rougier, Michael Droettboom ve Philip Bourne'un
+    <a href="http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1003833" target="_blank" rel="noopener">"Ten Simple Rules for Better Figures"</a> makalesine bakın.
+    Matplotlib çevrimiçi belgelerinde de renk haritası seçimi üzerine
+    <a href="https://matplotlib.org/stable/tutorials/colors/colormaps.html" target="_blank" rel="noopener">ayrıntılı bir tartışma</a> vardır.</p>
+    <p>Genel olarak üç renk haritası kategorisini bilmelisiniz:</p>
+    <ul>
+      <li><em>Sıralı (sequential) haritalar</em>: Tek sürekli renk dizisi (ör. <code>binary</code>, <code>viridis</code>).</li>
+      <li><em>Ayrışan (divergent) haritalar</em>: Ortalamadan pozitif/negatif sapmaları gösteren iki belirgin renk (ör. <code>RdBu</code>, <code>PuOr</code>).</li>
+      <li><em>Nitel (qualitative) haritalar</em>: Belirli bir sıra olmadan karışık renkler (ör. <code>rainbow</code>, <code>jet</code>).</li>
+    </ul>
+    <p>Matplotlib 2.0 öncesi varsayılan olan <code>jet</code> nitel bir haritaya örnektir.
+    Varsayılan olması talihsizdi; nitel haritalar nicel veriyi göstermek için genelde kötü seçimdir.
+    Sorunlardan biri, ölçek arttıkça parlaklıkta düzgün bir ilerleme olmamasıdır.</p>
+    <p><code>jet</code> renk çubuğunu siyah-beyaza çevirerek bunu görebiliriz (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="grayscale_cmap.py">
+      <pre><code>from matplotlib.colors import LinearSegmentedColormap
+
+def grayscale_cmap(cmap):
+    &quot;&quot;&quot;Return a grayscale version of the given colormap&quot;&quot;&quot;
+    cmap = plt.cm.get_cmap(cmap)
+    colors = cmap(np.arange(cmap.N))
+    
+    # Convert RGBA to perceived grayscale luminance
+    # cf. http://alienryderflex.com/hsp.html
+    RGB_weight = [0.299, 0.587, 0.114]
+    luminance = np.sqrt(np.dot(colors[:, :3] ** 2, RGB_weight))
+    colors[:, :3] = luminance[:, np.newaxis]
+        
+    return LinearSegmentedColormap.from_list(
+        cmap.name + &quot;_gray&quot;, colors, cmap.N)
+    
+
+def view_colormap(cmap):
+    &quot;&quot;&quot;Plot a colormap with its grayscale equivalent&quot;&quot;&quot;
+    cmap = plt.cm.get_cmap(cmap)
+    colors = cmap(np.arange(cmap.N))
+    
+    cmap = grayscale_cmap(cmap)
+    grayscale = cmap(np.arange(cmap.N))
+    
+    fig, ax = plt.subplots(2, figsize=(6, 2),
+                           subplot_kw=dict(xticks=[], yticks=[]))
+    ax[0].imshow([colors], extent=[0, 10, 0, 1])
+    ax[1].imshow([grayscale], extent=[0, 10, 0, 1])</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-filename="view_jet.py">
+      <pre><code>view_colormap(&#x27;jet&#x27;)</code></pre>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Renk haritası karşılaştırın</div>
+      <p><code>view_colormap('plasma')</code> ve <code>view_colormap('jet')</code> yan yana düşünün; gri tonlamada hangisi daha düzgün?</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_plasma.py">
+      <pre><code>view_colormap('plasma')</code></pre>
+    </div>
+
+    </div>
+
+
+    <p>Gri tonlamalı görüntüdeki parlak şeritlere dikkat edin.
+    Tam renkte bile düzensiz parlaklık, gözün renk aralığının belirli bölümlerine çekilmesine ve veri setinin önemsiz kısımlarının vurgulanmasına yol açabilir.
+    <code>viridis</code> (Matplotlib 2.0'dan beri varsayılan) gibi aralık boyunca eşit parlaklık değişimi için tasarlanmış bir harita daha iyidir; hem renk algısıyla uyumludur hem gri baskıya iyi aktarılır (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="view_viridis.py">
+      <pre><code>view_colormap(&#x27;viridis&#x27;)</code></pre>
+    </div>
+
+    <p>Ortalamadan pozitif/negatif sapmaları göstermek gibi durumlarda <code>RdBu</code> (*Kırmızı–Mavi*) gibi çift renkli çubuklar yardımcıdır. Ancak aşağıdaki şekilde görüldüğü gibi pozitif/negatif bilgi gri tonlamaya geçince kaybolabilir!</p>
+
+    <div class="code-block" data-lang="python" data-filename="view_rdbu.py">
+      <pre><code>view_colormap(&#x27;RdBu&#x27;)</code></pre>
+    </div>
+
+    <p>Bu haritaların kullanımına devam ederken örnekler göreceğiz.</p>
+    <p>Matplotlib'de çok sayıda renk haritası vardır; listelemek için IPython ile <code>plt.cm</code> alt modülünü keşfedebilirsiniz. Python'da daha ilkeli bir renk yaklaşımı için Seaborn kütüphanesine bakın
+    (<a href="14-visualization-with-seaborn.html">Seaborn ile Görselleştirme</a>).</p>
+
+    <h3 id="renk-sinirlari-uzatmalar">Renk sınırları ve uzatmalar</h3>    <p>Matplotlib renk çubuğu özelleştirmesinde geniş olanak sunar.
+    Renk çubuğu kendisi bir <code>Axes</code> örneğidir; gördüğümüz eksen ve işaret biçimlendirme yöntemleri geçerlidir.
+    Örneğin renk sınırlarını daraltıp <code>extend</code> ile üst/alt sınır dışı değerleri üçgen okla gösterebiliriz.
+    Gürültülü bir görüntü gösterirken işe yarayabilir (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="color_limits_extend.py">
+      <pre><code># make noise in 1% of the image pixels
+speckles = (np.random.random(I.shape) &lt; 0.01)
+I[speckles] = np.random.normal(0, 3, np.count_nonzero(speckles))
+
+plt.figure(figsize=(10, 3.5))
+
+plt.subplot(1, 2, 1)
+plt.imshow(I, cmap=&#x27;RdBu&#x27;)
+plt.colorbar()
+
+plt.subplot(1, 2, 2)
+plt.imshow(I, cmap=&#x27;RdBu&#x27;)
+plt.colorbar(extend=&#x27;both&#x27;)
+plt.clim(-1, 1)</code></pre>
+    </div>
+
+    <p>Sol panelde varsayılan renk sınırları gürültülü piksellere uyum sağlar ve gürültü aralığı ilgilendiğimiz deseni tamamen bastırır.
+    Sağ panelde sınırları elle ayarlayıp uzatmalar ekledik; sonuç veri için çok daha yararlı bir görselleştirmedir.</p>
+
+    <h3 id="ayrik-renk-cubuklari">Ayrık renk çubukları</h3>    <p>Renk haritaları varsayılan olarak süreklidir; bazen ayrık değerleri temsil etmek istersiniz.
+    Bunun en kolay yolu uygun bir harita adıyla birlikte istenen bölme sayısını <code>plt.cm.get_cmap</code>'e vermektir (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="discrete_colorbar.py">
+      <pre><code>plt.imshow(I, cmap=plt.cm.get_cmap(&#x27;Blues&#x27;, 6))
+plt.colorbar(extend=&#x27;both&#x27;)
+plt.clim(-1, 1);</code></pre>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Ayrık renk çubuğu</div>
+      <p>6 bölümlü bir Blues haritası ve <code>extend='both'</code> deneyin.</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_discrete_cbar.py">
+      <pre><code>plt.imshow(I, cmap=plt.cm.get_cmap('Blues', 6))
+plt.colorbar(extend='both')
+plt.clim(-1, 1)</code></pre>
+    </div>
+
+    </div>
+
+
+    <p>Ayrık renk haritası diğerleri gibi kullanılabilir.</p>
+
+    <h2 id="ornek-el-yazisi-rakamlar">Örnek: El yazısı rakamlar</h2>    <p>Uygulama örneği: Scikit-Learn'deki rakamlar veri setinden el yazısı rakam görselleştirmesi; yaklaşık 2.000 adet $8 \times 8$ küçük resim.</p>
+    <p>Veri setini indirip birkaç örneği <code>plt.imshow</code> ile göstererek başlayalım (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="digits_imshow.py">
+      <pre><code># load images of the digits 0 through 5 and visualize several of them
+from sklearn.datasets import load_digits
+digits = load_digits(n_class=6)
+
+fig, ax = plt.subplots(8, 8, figsize=(6, 6))
+for i, axi in enumerate(ax.flat):
+    axi.imshow(digits.images[i], cmap=&#x27;binary&#x27;)
+    axi.set(xticks=[], yticks=[])</code></pre>
+    </div>
+
+    <p>Her rakam 64 pikselin tonuyla tanımlandığından, her rakam 64 boyutlu uzayda bir nokta düşünülebilir: her boyut bir pikselin parlaklığıdır.
+    Bu kadar yüksek boyutlu veriyi görselleştirmek zordur; bir yaklaşım, ilişkileri koruyarak boyutu düşüren <em>boyut indirgeme</em> (ör. manifold öğrenme) kullanmaktır.
+    Boyut indirgeme denetimsiz makine öğrenmesine örnektir;
+    <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.01-what-is-machine-learning.html" target="_blank" rel="noopener">Makine Öğrenmesi Nedir?</a> bölümünde ayrıntılandırılacaktır.</p>
+    <p>Ayrıntıları erteleyerek rakam verisinin iki boyutlu bir manifold projeksiyonuna bakalım (ayrıntılar için
+    <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.10-manifold-learning.html" target="_blank" rel="noopener">Manifold Öğrenme</a>):</p>
+
+    <div class="code-block" data-lang="python" data-filename="digits_isomap.py">
+      <pre><code># project the digits into 2 dimensions using Isomap
+from sklearn.manifold import Isomap
+iso = Isomap(n_components=2, n_neighbors=15)
+projection = iso.fit_transform(digits.data)</code></pre>
+    </div>
+
+    <p>Sonuçları ayrık renk haritamızla göstereceğiz; estetik için <code>ticks</code> ve <code>clim</code> ayarlayacağız (aşağıdaki şekil):</p>
+
+    <div class="code-block" data-lang="python" data-filename="digits_scatter_cbar.py">
+      <pre><code># plot the results
+plt.scatter(projection[:, 0], projection[:, 1], lw=0.1,
+            c=digits.target, cmap=plt.cm.get_cmap(&#x27;plasma&#x27;, 6))
+plt.colorbar(ticks=range(6), label=&#x27;digit value&#x27;)
+plt.clim(-0.5, 5.5)</code></pre>
+    </div>
+
+    <p>Projeksiyon veri seti içindeki ilişkilere de ışık tutar: örneğin 2 ve 3 aralıkları neredeyse örtüşür; bazı 2 ve 3'lerin ayırt edilmesi zordur ve otomatik sınıflandırıcılar karıştırabilir.
+    0 ve 1 gibi değerler daha uzaktır, karışma olasılığı daha düşüktür.</p>
+    <p>Manifold öğrenme ve rakam sınıflandırmasına
+    <a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.00-introduction.html" target="_blank" rel="noopener">Bölüm 5</a>'te döneceğiz.</p>
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="08-multiple-subplots.html">4.8 Çoklu Alt Grafikler →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Matplotlib yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

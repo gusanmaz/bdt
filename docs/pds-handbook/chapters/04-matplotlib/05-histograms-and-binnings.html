@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histogramlar ve Binleme — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="04-matplotlib" data-section="05-histograms-and-binnings" data-preload-numpy="true" data-preload-matplotlib="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/04.05-histograms-and-binnings.html" target="_blank" rel="noopener">04.05 Histograms and Binnings</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>Histogramlar ve Binleme</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/04.05-histograms-and-binnings.html" target="_blank" rel="noopener">04.05 Histograms and Binnings</a></em></p>
+    <p>Basit bir histogram veri setini anlamanın iyi bir ilk adımı olabilir.
+    Daha önce Matplotlib'in histogram işlevinin önizlemesini görmüştük
+    (<a href="../02-numpy/06-boolean-masks.html">Karşılaştırma, Maskeler ve Boolean Mantık</a> bölümünde tartışıldı);
+    standart içe aktarmalardan sonra tek satırda temel histogram oluşturur (aşağıdaki şekle bakın):</p>
+
+    <div class="code-block" data-lang="python" data-filename="histogram_setup.py" data-readonly="true">
+      <pre><code>%matplotlib inline
+import numpy as np
+import matplotlib.pyplot as plt
+plt.style.use('seaborn-white')
+
+rng = np.random.default_rng(1701)
+data = rng.normal(size=1000)</code></pre>
+    </div>
+
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — density=True</div>
+      <p><code>density=True</code> histogramı olasılık yoğunluğuna normalize eder (alan 1); ham sayım için varsayılan <code>density=False</code> kullanın. <code>bins</code> kutuların sayısını veya sınır listesini belirler.</p>
+    </div>
+
+
+    <div class="code-block" data-lang="python" data-filename="hist_basic.py">
+      <pre><code>plt.hist(data);</code></pre>
+    </div>
+
+
+    <p><code>hist</code> hem hesaplamayı hem görüntüyü ayarlamak için birçok seçenek sunar;
+    daha özelleştirilmiş bir histogram örneği aşağıdaki şekilde:</p>
+
+    <div class="code-block" data-lang="python" data-filename="hist_custom.py">
+      <pre><code>plt.hist(data, bins=30, density=True, alpha=0.5,
+         histtype='stepfilled', color='steelblue',
+         edgecolor='none');</code></pre>
+    </div>
+
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — histtype seçenekleri</div>
+      <p><code>histtype='stepfilled'</code> dolu adım histogram; <code>'step'</code> yalnızca kenar çizgisi. Üst üste binen dağılımlarda <code>alpha</code> karşılaştırmayı kolaylaştırır.</p>
+    </div>
+
+
+    <p><code>plt.hist</code> docstring'inde başka özelleştirme seçenekleri vardır.
+    Birkaç dağılımın histogramlarını karşılaştırırken <code>histtype='stepfilled'</code> ile bir miktar saydamlık (<code>alpha</code>) yararlı bulurum (aşağıdaki şekle bakın):</p>
+
+    <div class="code-block" data-lang="python" data-filename="hist_multiple.py">
+      <pre><code>x1 = rng.normal(0, 0.8, 1000)
+x2 = rng.normal(-2, 1, 1000)
+x3 = rng.normal(3, 2, 1000)
+
+kwargs = dict(histtype='stepfilled', alpha=0.3, density=True, bins=40)
+
+plt.hist(x1, **kwargs)
+plt.hist(x2, **kwargs)
+plt.hist(x3, **kwargs);</code></pre>
+    </div>
+
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Üç dağılımı üst üste çizin</div>
+      <p>Üç farklı normal dağılımdan 500'er örnek alıp aynı eksende yarı saydam histogram çizin:</p>
+          <div class="code-block" data-lang="python" data-filename="hist_coklu_deneme.py">
+      <pre><code>import matplotlib.pyplot as plt
+import numpy as np
+
+rng = np.random.default_rng(0)
+kwargs = dict(histtype='stepfilled', alpha=0.4, density=True, bins=30)
+for mu, sigma in [(0, 1), (-2, 0.8), (2, 1.5)]:
+    data = rng.normal(mu, sigma, 500)
+    plt.hist(data, **kwargs, label=f'μ={mu}, σ={sigma}')
+plt.legend()
+plt.title('Üç normal dağılım')</code></pre>
+    </div>
+
+    </div>
+
+
+    <p>Histogramı hesaplamak ama göstermemek istiyorsanız (yani verilen kutudaki nokta sayısını saymak),
+    <code>np.histogram</code> kullanılabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="np_histogram.py">
+      <pre><code>counts, bin_edges = np.histogram(data, bins=5)
+print(counts)</code></pre>
+    </div>
+
+
+    <h2 id="iki-boyutlu-histogramlar">İki boyutlu histogramlar ve binleme</h2>
+
+    <div class="code-block" data-lang="python" data-filename="bivariate_normal_sample.py">
+      <pre><code>mean = [0, 0]
+cov = [[1, 1], [1, 2]]
+x, y = rng.multivariate_normal(mean, cov, 10000).T</code></pre>
+    </div>
+
+
+    <h3 id="plt-hist2d">plt.hist2d: İki boyutlu histogram</h3>    <p>İki boyutlu histogram çizmenin doğrudan yolu Matplotlib'in <code>plt.hist2d</code> işlevidir (aşağıdaki şekle bakın):</p>
+
+    <div class="code-block" data-lang="python" data-filename="hist2d_plot.py">
+      <pre><code>plt.hist2d(x, y, bins=30)
+cb = plt.colorbar()
+cb.set_label('counts in bin')</code></pre>
+    </div>
+
+
+    <p><code>plt.hist</code> gibi <code>plt.hist2d</code>'nin de grafik ve binlemeyi ince ayarlayan seçenekleri vardır; docstring'te güzel özetlenmiştir.
+    <code>plt.hist</code>'in <code>np.histogram</code> karşılığı olduğu gibi <code>plt.hist2d</code>'nin karşılığı <code>np.histogram2d</code>'dir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="np_histogram2d.py">
+      <pre><code>counts, xedges, yedges = np.histogram2d(x, y, bins=30)
+print(counts.shape)</code></pre>
+    </div>
+
+
+    <p>İki boyuttan fazla boyutta binlemenin genellemesi için <code>np.histogramdd</code> işlevine bakın.</p>
+
+    <h3 id="plt-hexbin">plt.hexbin: Altıgen binleme</h3>    <p>İki boyutlu histogram eksenler boyunca karelerden oluşan bir döşeme oluşturur.
+    Bu tür döşeme için doğal bir başka şekil düzenli altıgendir.
+    Matplotlib bu amaçla <code>plt.hexbin</code> sunar; iki boyutlu veriyi altıgen ızgarada gruplar (aşağıdaki şekle bakın):</p>
+
+    <div class="code-block" data-lang="python" data-filename="hexbin_plot.py">
+      <pre><code>plt.hexbin(x, y, gridsize=30)
+cb = plt.colorbar(label='count in bin')</code></pre>
+    </div>
+
+
+    <p><code>plt.hexbin</code>'in ek seçenekleri vardır: her nokta için ağırlık belirtme, her kutudaki çıktıyı herhangi bir NumPy toplamına (ağırlık ortalaması, ağırlık standart sapması vb.) çevirme.</p>
+
+    <h3 id="cekirdek-yogunluk-tahmini">Çekirdek yoğunluk tahmini</h3>    <p>Çok boyutlu yoğunlukları tahmin etmenin ve göstermenin bir başka yaygın yolu <em>çekirdek yoğunluk tahmini</em> (KDE)'dir.
+    Bu konu kitapta ayrıntılı ele alınır; şimdilik KDE'nin uzaydaki noktaları «yayarak» sonucu toplayıp pürüzsüz bir fonksiyon elde etme yolu olarak düşünülebilir.
+    <code>scipy.stats</code> paketinde çok hızlı ve basit bir KDE uygulaması vardır.
+    KDE kullanımına kısa bir örnek (aşağıdaki şekle bakın):</p>
+
+    <div class="code-block" data-lang="python" data-filename="kde_plot.py">
+      <pre><code>from scipy.stats import gaussian_kde
+
+# fit an array of size [Ndim, Nsamples]
+data = np.vstack([x, y])
+kde = gaussian_kde(data)
+
+# evaluate on a regular grid
+xgrid = np.linspace(-3.5, 3.5, 40)
+ygrid = np.linspace(-6, 6, 40)
+Xgrid, Ygrid = np.meshgrid(xgrid, ygrid)
+Z = kde.evaluate(np.vstack([Xgrid.ravel(), Ygrid.ravel()]))
+
+# Plot the result as an image
+plt.imshow(Z.reshape(Xgrid.shape),
+           origin='lower', aspect='auto',
+           extent=[-3.5, 3.5, -6, 6])
+cb = plt.colorbar()
+cb.set_label("density")</code></pre>
+    </div>
+
+
+    <p>KDE'nin ayrıntı ile pürüzsüzlük arasında kaydıran bir yumuşatma uzunluğu vardır (yaygın önyargı–varyans ödünleşiminin bir örneği).
+    Uygun yumuşatma uzunluğu seçimi geniş bir literatüre sahiptir; <code>gaussian_kde</code> girdi verisi için neredeyse optimal bir uzunluk bulmaya çalışır.</p>
+    <p>SciPy ekosisteminde farklı güçlü ve zayıf yönleri olan başka KDE uygulamaları da vardır; örneğin <code>sklearn.neighbors.KernelDensity</code> ve <code>statsmodels.nonparametric.KDEMultivariate</code>.</p>
+    <p>KDE tabanlı görselleştirmelerde Matplotlib genelde fazla ayrıntılı olabilir.
+    <a href="14-visualization-with-seaborn.html">Seaborn ile Görselleştirme</a> bölümünde tartışılan Seaborn kütüphanesi KDE tabanlı görselleştirmeler için çok daha kompakt bir API sunar.</p>
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="06-customizing-legends.html">4.6 Lejant Özelleştirme →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Matplotlib yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

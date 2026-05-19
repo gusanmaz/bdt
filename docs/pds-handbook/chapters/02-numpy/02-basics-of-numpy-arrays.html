@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2.2 NumPy Dizilerinin Temelleri — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="02-numpy" data-section="02-basics-of-numpy-arrays" data-preload-numpy="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.02-the-basics-of-numpy-arrays.html" target="_blank" rel="noopener">02 The Basics Of NumPy Arrays</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>2.2 NumPy Dizilerinin Temelleri</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.02-the-basics-of-numpy-arrays.html" target="_blank" rel="noopener">The Basics of NumPy Arrays</a></em></p>
+
+    <p>Python'da veri işleme neredeyse NumPy dizi işleme ile eş anlamlıdır: Pandas (<a href="../03-pandas/index.html">Bölüm 3</a>) gibi daha yeni araçlar bile NumPy dizisi etrafında kuruludur. Bu bölüm, veriye ve alt dizilere erişmek, dizileri bölmek, yeniden şekillendirmek ve birleştirmek için NumPy dizi işlemlerinin birkaç örneğini sunar. Buradaki işlemler kuru ve pedantik görünebilir; kitabın geri kalanındaki birçok örneğin yapı taşlarıdır. İyi tanıyın!</p>
+
+    <p>Burada birkaç temel dizi işlemi kategorisini ele alacağız:</p>
+    <ul>
+      <li><em>Dizi öznitelikleri</em>: Boyut, şekil, bellek tüketimi ve veri tiplerini belirleme</li>
+      <li><em>Dizi indeksleme</em>: Tekil dizi elemanlarının değerlerini okuma ve yazma</li>
+      <li><em>Dizi dilimleme</em>: Büyük dizide daha küçük alt dizilere erişme ve yazma</li>
+      <li><em>Dizi yeniden şekillendirme</em>: Verilen dizinin şeklini değiştirme</li>
+      <li><em>Dizi birleştirme ve bölme</em>: Birden fazla diziyi birleştirme veya bir diziyi parçalara ayırma</li>
+    </ul>
+
+    <h2 id="dizi-oznitelikleri">NumPy dizi öznitelikleri</h2>
+
+    <p>Önce yararlı dizi özniteliklerini konuşalım. Bir, iki ve üç boyutlu rastgele diziler tanımlayarak başlayacağız. Her çalıştırmada aynı rastgele dizilerin üretilmesi için NumPy'nin rastgele sayı üretecini sabit bir tohum (<em>seed</em>) ile başlatacağız:</p>
+
+    <div class="code-block" data-lang="python" data-filename="dizi_tanimlama.py">
+      <pre><code>import numpy as np
+rng = np.random.default_rng(seed=1701)  # tekrarlanabilirlik için tohum
+
+x1 = rng.integers(10, size=6)           # tek boyutlu dizi
+x2 = rng.integers(10, size=(3, 4))      # iki boyutlu dizi
+x3 = rng.integers(10, size=(3, 4, 5))   # üç boyutlu dizi</code></pre>
+    </div>
+
+    <p>Her dizinin <code>ndim</code> (boyut sayısı), <code>shape</code> (her boyutun uzunluğu), <code>size</code> (toplam eleman sayısı) ve <code>dtype</code> (eleman tipi) gibi öznitelikleri vardır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="dizi_oznitelikleri.py">
+      <pre><code>print("x3 ndim: ", x3.ndim)
+print("x3 shape:", x3.shape)
+print("x3 size: ", x3.size)
+print("dtype:   ", x3.dtype)</code></pre>
+    </div>
+
+    <p>Veri tipleri hakkında daha fazla bilgi için <a href="01-understanding-data-types.html">2.1 Python'da Veri Tiplerini Anlamak</a> bölümüne bakın.</p>
+
+    <h2 id="dizi-indeksleme">Dizi indeksleme: Tek elemana erişim</h2>
+
+    <p>Python'un standart liste indekslemesine aşina iseniz NumPy indekslemesi tanıdık gelecektir. Tek boyutlu bir dizide, sıfırdan sayarak <code>i</code>. değere köşeli parantez içinde istenen indeks yazılarak erişilir — tıpkı Python listelerinde olduğu gibi:</p>
+
+    <div class="code-block" data-lang="python" data-filename="indeks_1b.py">
+      <pre><code>print(x1)
+print(x1[0])
+print(x1[4])</code></pre>
+    </div>
+
+    <p>Dizinin sonundan indekslemek için negatif indeksler kullanılabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="indeks_negatif.py">
+      <pre><code>print(x1[-1])
+print(x1[-2])</code></pre>
+    </div>
+
+    <p>Çok boyutlu bir dizide elemanlara virgülle ayrılmış <code>(satır, sütun)</code> demeti ile erişilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="indeks_2b.py">
+      <pre><code>print(x2)
+print(x2[0, 0])
+print(x2[2, 0])
+print(x2[2, -1])</code></pre>
+    </div>
+
+    <p>Değerler yukarıdaki indeks gösterimleriyle de değiştirilebilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="indeks_yazma.py">
+      <pre><code>x2[0, 0] = 12
+print(x2)</code></pre>
+    </div>
+
+    <p>Python listelerinin aksine NumPy dizilerinin <strong>sabit bir tipi</strong> vardır. Örneğin tamsayı dizisine kayan noktalı değer yazmaya çalışırsanız değer sessizce kesilir (truncate). Bu davranışa hazırlıksız yakalanmayın!</p>
+
+    <div class="code-block" data-lang="python" data-filename="tip_kesme.py">
+      <pre><code>x1[0] = 3.14159  # bu kesilecek!
+print(x1)</code></pre>
+    </div>
+
+    <div class="alert alert-warning handbook-addon">
+      <div class="alert-title">⚠️ Ders notu — sabit dtype</div>
+      <p><code>x1[0] = 3.14159</code> sonrası değer <code>3</code> olur; <code>3.14159</code> değil. NumPy dizisi oluşturulurken belirlenen dtype korunur.</p>
+    </div>
+
+    <h2 id="dizi-dilimleme">Dizi dilimleme: Alt dizilere erişim</h2>
+
+    <p>Tekil dizi elemanlarına köşeli parantezle erişebildiğimiz gibi, iki nokta (<code>:</code>) karakteriyle işaretlenen <em>dilim</em> gösterimiyle alt dizilere de erişebiliriz. NumPy dilim sözdizimi standart Python listesini izler; <code>x</code> dizisinin bir dilimine erişmek için:</p>
+
+    <div class="code-block" data-lang="python" data-readonly="true" data-filename="slice_syntax.py">
+      <pre><code>x[start:stop:step]</code></pre>
+    </div>
+
+    <p>Bunlardan herhangi biri belirtilmezse varsayılanlar <code>start=0</code>, <code>stop=&lt;boyut&gt;</code>, <code>step=1</code> olur. Tek ve çok boyutta alt dizilere erişimin birkaç örneğine bakalım.</p>
+
+    <h3 id="tek-boyutlu-alt-diziler">Tek boyutlu alt diziler</h3>
+
+    <p>Tek boyutlu alt dizilerde eleman erişimine örnekler:</p>
+
+    <div class="code-block" data-lang="python" data-filename="slice_1b.py">
+      <pre><code>print(x1)
+print(x1[:3])      # ilk üç eleman
+print(x1[3:])      # 3. indeksten sonraki elemanlar
+print(x1[1:4])      # orta alt dizi
+print(x1[::2])      # her ikinci eleman
+print(x1[1::2])     # 1. indeksten başlayarak her ikinci eleman</code></pre>
+    </div>
+
+    <p><code>step</code> değerinin negatif olduğu durum kafa karıştırıcı olabilir. Bu durumda <code>start</code> ve <code>stop</code> varsayılanları yer değiştirir. Bu, diziyi ters çevirmenin pratik bir yoludur:</p>
+
+    <div class="code-block" data-lang="python" data-filename="slice_ters.py">
+      <pre><code>print(x1[::-1])     # tüm elemanlar, ters sırada
+print(x1[4::-2])    # 4. indeksten başlayarak her ikinci eleman, ters</code></pre>
+    </div>
+
+    <h3 id="cok-boyutlu-alt-diziler">Çok boyutlu alt diziler</h3>
+
+    <p>Çok boyutlu dilimler aynı şekilde çalışır; birden fazla dilim virgülle ayrılır. Örneğin:</p>
+
+    <div class="code-block" data-lang="python" data-filename="slice_2b.py">
+      <pre><code>print(x2)
+print(x2[:2, :3])   # ilk iki satır ve üç sütun
+print(x2[:3, ::2])   # üç satır, her ikinci sütun
+print(x2[::-1, ::-1])  # tüm satır ve sütunlar, ters</code></pre>
+    </div>
+
+    <h4 id="satir-sutun-erisim">Dizi satır ve sütunlarına erişim</h4>
+
+    <p>Sık ihtiyaç duyulan bir işlem, dizinin tek bir satırına veya sütununa erişmektir. Bu, indeksleme ve dilimlemeyi birleştirerek, tek iki nokta (<code>:</code>) ile işaretlenen boş dilim kullanılarak yapılır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="satir_sutun.py">
+      <pre><code>print(x2[:, 0])   # x2'nin ilk sütunu
+print(x2[0, :])   # x2'nin ilk satırı</code></pre>
+    </div>
+
+    <p>Satır erişiminde boş dilim daha kısa sözdizimi için atlanabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="satir_kisa.py">
+      <pre><code>print(x2[0])      # x2[0, :] ile eşdeğer</code></pre>
+    </div>
+
+    <h3 id="kopya-olmayan-gorunumler">Alt diziler kopya değil görünümdür</h3>
+
+    <p>Python liste dilimlerinin aksine NumPy dizi dilimleri dizinin <em>kopyası</em> değil <em>görünümü</em> (view) olarak döner. Önceki iki boyutlu dizimize bakalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="view_ornek_1.py">
+      <pre><code>print(x2)</code></pre>
+    </div>
+
+    <p>Bundan 2×2'lik bir alt dizi çıkaralım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="view_ornek_2.py">
+      <pre><code>x2_sub = x2[:2, :2]
+print(x2_sub)</code></pre>
+    </div>
+
+    <p>Bu alt diziyi değiştirirsek orijinal dizinin de değiştiğini görürüz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="view_ornek_3.py">
+      <pre><code>x2_sub[0, 0] = 99
+print(x2_sub)
+print(x2)</code></pre>
+    </div>
+
+    <p>Bazı kullanıcılar bunu şaşırtıcı bulabilir; ancak büyük veri kümelerinde alttaki veri tamponunu kopyalamadan parçalara erişip işlemek avantajlıdır.</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — view vs copy</div>
+      <p>Alt diziyi bağımsız tutmak istiyorsanız <code>.copy()</code> kullanın. Aksi halde <code>x2_sub = x2[:2, :2]</code> ile yapılan değişiklikler <code>x2</code>'yi de etkiler.</p>
+    </div>
+
+    <h3 id="dizi-kopyalari">Dizi kopyaları oluşturma</h3>
+
+    <p>Dizi görünümlerinin güzel özelliklerine rağmen bazen dizinin veya alt dizinin verisini açıkça kopyalamak yararlıdır. En kolay yol <code>copy</code> yöntemidir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="copy_ornek_1.py">
+      <pre><code>x2_sub_copy = x2[:2, :2].copy()
+print(x2_sub_copy)</code></pre>
+    </div>
+
+    <p>Bu alt diziyi değiştirirsek orijinal dizi etkilenmez:</p>
+
+    <div class="code-block" data-lang="python" data-filename="copy_ornek_2.py">
+      <pre><code>x2_sub_copy[0, 0] = 42
+print(x2_sub_copy)
+print(x2)</code></pre>
+    </div>
+
+    <h2 id="yeniden-sekillendirme">Dizi yeniden şekillendirme</h2>
+
+    <p>Bir diğer yararlı işlem, <code>reshape</code> yöntemiyle dizileri yeniden şekillendirmektir. Örneğin 1'den 9'a kadar sayıları 3×3 bir ızgaraya yerleştirmek için:</p>
+
+    <div class="code-block" data-lang="python" data-filename="reshape_ornek.py">
+      <pre><code>grid = np.arange(1, 10).reshape(3, 3)
+print(grid)</code></pre>
+    </div>
+
+    <p>Bunun çalışması için başlangıç dizisinin boyutu yeniden şekillendirilmiş dizinin boyutuyla eşleşmelidir; çoğu durumda <code>reshape</code> başlangıç dizisinin kopyasız bir görünümünü döndürür.</p>
+
+    <p>Yaygın bir yeniden şekillendirme işlemi, tek boyutlu diziyi iki boyutlu satır veya sütun vektörüne dönüştürmektir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="reshape_vektor.py">
+      <pre><code>x = np.array([1, 2, 3])
+print(x.reshape((1, 3)))   # reshape ile satır vektörü
+print(x.reshape((3, 1)))   # reshape ile sütun vektörü</code></pre>
+    </div>
+
+    <p>Bunun pratik kısayolu dilim sözdiziminde <code>np.newaxis</code> kullanmaktır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="newaxis_ornek.py">
+      <pre><code>print(x[np.newaxis, :])   # newaxis ile satır vektörü
+print(x[:, np.newaxis])   # newaxis ile sütun vektörü</code></pre>
+    </div>
+
+    <p>Bu kalıbı kitabın geri kalanında sık kullanacağız.</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p><code>np.arange(12).reshape(3, 4)</code> oluşturun; <code>shape</code>, bir satır dilimi (<code>[:, 0]</code>) ve <code>.copy()</code> ile bağımsız alt dizi deneyin:</p>
+      <div class="code-block" data-lang="python" data-filename="deneme_reshape.py">
+        <pre><code>import numpy as np
+M = np.arange(12).reshape(3, 4)
+print(M.shape)
+print(M[:, 0])
+sub = M[:2, :2].copy()
+sub[0, 0] = 999
+print("sub:\n", sub)
+print("M değişmedi:\n", M)</code></pre>
+      </div>
+    </div>
+
+    <h2 id="birlestirme-bolme">Dizi birleştirme ve bölme</h2>
+
+    <p>Önceki tüm rutinler tek diziler üzerinde çalıştı. NumPy ayrıca birden fazla diziyi birleştirmek ve tek bir diziyi parçalara ayırmak için araçlar da sunar.</p>
+
+    <h3 id="dizi-birlestirme">Dizi birleştirme</h3>
+
+    <p>NumPy'de iki dizinin birleştirilmesi (concatenation) öncelikle <code>np.concatenate</code>, <code>np.vstack</code> ve <code>np.hstack</code> rutinleriyle yapılır. <code>np.concatenate</code> ilk argüman olarak demet veya dizi listesi alır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="concat_1d.py">
+      <pre><code>x = np.array([1, 2, 3])
+y = np.array([3, 2, 1])
+print(np.concatenate([x, y]))</code></pre>
+    </div>
+
+    <p>İkiden fazla diziyi de aynı anda birleştirebilirsiniz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="concat_uc.py">
+      <pre><code>z = np.array([99, 99, 99])
+print(np.concatenate([x, y, z]))</code></pre>
+    </div>
+
+    <p>İki boyutlu diziler için de kullanılabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="concat_2d.py">
+      <pre><code>grid = np.array([[1, 2, 3],
+                 [4, 5, 6]])
+
+# birinci eksen boyunca birleştir
+print(np.concatenate([grid, grid]))
+
+# ikinci eksen boyunca birleştir (sıfır indeksli)
+print(np.concatenate([grid, grid], axis=1))</code></pre>
+    </div>
+
+    <p>Karışık boyutlu dizilerle çalışırken <code>np.vstack</code> (dikey yığma) ve <code>np.hstack</code> (yatay yığma) daha anlaşılır olabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="vstack_hstack.py">
+      <pre><code># dizileri dikey yığ
+print(np.vstack([x, grid]))
+
+# dizileri yatay yığ
+y2 = np.array([[99],
+              [99]])
+print(np.hstack([grid, y2]))</code></pre>
+    </div>
+
+    <p>Benzer şekilde daha yüksek boyutlu diziler için <code>np.dstack</code> dizileri üçüncü eksen boyunca yığar.</p>
+
+    <h3 id="dizi-bolme">Dizi bölme</h3>
+
+    <p>Birleştirmenin tersi bölmedir; <code>np.split</code>, <code>np.hsplit</code> ve <code>np.vsplit</code> fonksiyonlarıyla uygulanır. Her biri için bölme noktalarını veren indeks listesi geçilebilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="split_1d.py">
+      <pre><code>x = [1, 2, 3, 99, 99, 3, 2, 1]
+x1, x2, x3 = np.split(x, [3, 5])
+print(x1, x2, x3)</code></pre>
+    </div>
+
+    <p><em>N</em> bölme noktası <em>N</em> + 1 alt dizi üretir. İlgili <code>np.hsplit</code> ve <code>np.vsplit</code> fonksiyonları benzerdir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="split_2d.py">
+      <pre><code>grid = np.arange(16).reshape((4, 4))
+print(grid)
+
+upper, lower = np.vsplit(grid, [2])
+print(upper)
+print(lower)
+
+left, right = np.hsplit(grid, [2])
+print(left)
+print(right)</code></pre>
+    </div>
+
+    <p>Benzer şekilde daha yüksek boyutlu diziler için <code>np.dsplit</code> dizileri üçüncü eksen boyunca böler.</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>4×4 bir <code>grid</code> oluşturup <code>np.hsplit</code> ile iki sütunlu parçalara ayırın; ardından <code>np.vstack</code> ile tekrar birleştirin:</p>
+      <div class="code-block" data-lang="python" data-filename="deneme_split_stack.py">
+        <pre><code>import numpy as np
+grid = np.arange(16).reshape(4, 4)
+left, right = np.hsplit(grid, [2])
+birlesik = np.hstack([left, right])
+print(birlesik.shape)
+print(np.array_equal(grid, birlesik))</code></pre>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="03-computation-ufuncs.html">2.3 Dizilerde Hesaplama: Evrensel Fonksiyonlar →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matplotlib ile Görselleştirme — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="04-matplotlib" data-section="00-introduction" data-preload-numpy="true" data-preload-matplotlib="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/04.00-introduction-to-matplotlib.html" target="_blank" rel="noopener">04.00 Introduction to Matplotlib</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>Matplotlib ile Görselleştirme</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/04.00-introduction-to-matplotlib.html" target="_blank" rel="noopener">04.00 Introduction to Matplotlib</a></em></p>
+
+    <p>Şimdi Python'da görselleştirme için Matplotlib paketine ayrıntılı bakacağız. Matplotlib, NumPy dizileri üzerine kurulu, daha geniş SciPy yığınıyla uyumlu çalışacak şekilde tasarlanmış çok platformlu bir veri görselleştirme kütüphanesidir. John Hunter tarafından 2002'de, başlangıçta IPython'dan MATLAB tarzı etkileşimli çizim yapabilmek için <code>gnuplot</code> ile IPython komut satırından grafik üretmeye yarayan bir yama olarak düşünülmüştü. IPython'un yaratıcısı Fernando Perez o sırada doktorasını bitirmeye çalışıyordu ve John'a yamayı incelemek için aylarca vakti olmayacağını söyledi. John bunu kendi yoluna çıkmak için bir işaret saydı; Matplotlib paketi doğdu ve 0.1 sürümü 2003'te yayımlandı. Hubble Uzay Teleskobu'nun arkasındaki Space Telescope Science Institute tarafından tercih edilen çizim paketi olarak benimsenmesi erken bir ivme kazandırdı; kurum Matplotlib gelişimini mali olarak destekledi ve yeteneklerini büyük ölçüde genişletti.</p>
+
+    <p>Matplotlib'in en önemli özelliklerinden biri birçok işletim sistemi ve grafik arka ucü (backend) ile sorunsuz çalabilmesidir. Matplotlib onlarca backend ve çıktı türünü destekler; yani hangi işletim sistemini kullandığınızdan veya hangi çıktı biçimini istediğinizden bağımsız olarak çalışacağına güvenebilirsiniz. Bu herkese-her şeye yaklaşım, Matplotlib'in büyük güçlerinden biridir; geniş bir kullanıcı tabanı, aktif geliştirici topluluğu ve bilimsel Python dünyasında güçlü araçlar ile yaygınlık getirmiştir.</p>
+
+    <p>Son yıllarda Matplotlib'in arayüzü ve stili yaşını göstermeye başladı. R dilindeki <code>ggplot</code> ve <code>ggvis</code> ile D3js ve HTML5 canvas tabanlı web görselleştirme araçları, Matplotlib'i bazen hantal ve eski moda hissettirebilir. Yine de Matplotlib'i iyi test edilmiş, platformlar arası bir grafik motoru olarak görmezden gelemez. Güncel sürümlerde yeni genel çizim stilleri ayarlamak nispeten kolaydır (<a href="11-settings-and-stylesheets.html">Matplotlib Özelleştirme: Yapılandırma ve Stil Sayfaları</a>); Seaborn (<a href="14-visualization-with-seaborn.html">Seaborn ile Görselleştirme</a>), <a href="http://yhat.github.io/ggpy/" target="_blank" rel="noopener"><code>ggpy</code></a>, <a href="http://holoviews.org/" target="_blank" rel="noopener">HoloViews</a> ve hatta Pandas'ın kendisi gibi paketler, Matplotlib'in güçlü iç yapısı üzerine daha temiz API'ler kurar. Bu sarmalayıcılarla bile son grafik çıktısını ince ayar için Matplotlib sözdizimine dalmak sıkça yararlıdır. Topluluk zamanla doğrudan Matplotlib API'sinden uzaklaşsa da Matplotlib'in veri görselleştirme yığınının vazgeçilmez parçası olarak kalacağına inanıyorum.</p>
+
+    <h2 id="genel-matplotlib-ipuclari">Genel Matplotlib İpuçları</h2>
+
+    <p>Matplotlib ile görselleştirme ayrıntılarına girmeden önce paketi kullanırken işinize yarayacak birkaç noktayı bilmek iyi olur.</p>
+
+    <h3 id="matplotlib-ice-aktarma">Matplotlib'i İçe Aktarma</h3>
+
+    <p>NumPy için <code>np</code>, Pandas için <code>pd</code> kısaltmalarını kullandığımız gibi Matplotlib içe aktarmalarında da standart kısaltmalar vardır:</p>
+
+    <div class="code-block" data-lang="python" data-filename="matplotlib_import.py">
+      <pre><code>import matplotlib as mpl
+import matplotlib.pyplot as plt</code></pre>
+    </div>
+
+
+    <p>Kitabın bu bölümünde en çok <code>plt</code> arayüzünü kullanacağız.</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — plt ve pyplot</div>
+      <p><code>import matplotlib.pyplot as plt</code> pratikte <code>matplotlib.pyplot</code> modülünün takma adıdır; çoğu örnek <code>plt.plot</code>, <code>plt.xlabel</code> gibi <em>pyplot</em> (MATLAB tarzı) arayüzünü kullanır. Daha ayrıntılı kontrol için <code>fig, ax = plt.subplots()</code> ile nesne yönelimli <code>ax.plot</code> yoluna geçilir — ikisi de aynı Matplotlib motorunu çalıştırır.</p>
+    </div>
+
+
+    <h3 id="stil-ayarlama">Stil Ayarlama</h3>
+
+    <p>Şekillerimiz için uygun estetik stilleri seçmek üzere <code>plt.style</code> yönergesini kullanacağız. Burada klasik Matplotlib görünümünü sağlayan <code>classic</code> stilini ayarlıyoruz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="matplotlib_classic_style.py">
+      <pre><code>plt.style.use('classic')</code></pre>
+    </div>
+
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — classic stili</div>
+      <p><code>plt.style.use('classic')</code> kitaptaki örneklerin orijinal görünümüne yakın kalır. Yeni projelerde <code>seaborn-v0_8</code> veya <code>ggplot</code> gibi stiller de yaygındır. Stil sayfalarının tam listesi için <a href="11-settings-and-stylesheets.html">4.11 Ayarlar ve Stil Sayfaları</a> bölümüne bakın.</p>
+    </div>
+
+
+    <p>Bu bölüm boyunca gerektiğinde stili değiştireceğiz.</p>
+
+    <h3 id="goster-yoksa-gosterme">Göster ya da Gösterme? Grafiklerinizi Nasıl Görüntülersiniz</h3>
+
+    <p>Göremediğiniz bir görselleştirme pek işe yaramaz; Matplotlib grafiklerini nasıl gördüğünüz bağlama bağlıdır. Matplotlib'i betikten, IPython terminalinden veya Jupyter not defterinden kullanmak kabaca üç ayrı senaryodur.</p>
+
+    <h4 id="betikten-cizim">Betikten Çizim</h4>
+
+    <p>Matplotlib'i bir betikten kullanıyorsanız <code>plt.show</code> işinize yarar. <code>plt.show</code> bir olay döngüsü başlatır, etkin tüm <code>Figure</code> nesnelerini bulur ve şekillerinizi gösteren etkileşimli pencereler açar.</p>
+
+    <p>Örneğin <em>myplot.py</em> adlı bir dosyanız olabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="myplot.py">
+      <pre><code># file: myplot.py
+import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.linspace(0, 10, 100)
+
+plt.plot(x, np.sin(x))
+plt.plot(x, np.cos(x))
+
+plt.show()</code></pre>
+    </div>
+
+
+    <p>Bu betiği komut satırından çalıştırdığınızda şeklinizin göründüğü bir pencere açılır:</p>
+
+    <div class="code-block" data-lang="text" data-filename="terminal_myplot.sh" data-readonly="true">
+      <pre><code>$ python myplot.py</code></pre>
+    </div>
+
+
+    <p><code>plt.show</code> sisteminizin etkileşimli grafik arka ucüyla konuştuğu için kurulumdan kuruluma davranış değişebilir; Matplotlib bu ayrıntıları mümkün olduğunca gizlemeye çalışır.</p>
+
+    <p>Dikkat: <code>plt.show</code> bir Python oturumunda <em>yalnızca bir kez</em> kullanılmalıdır; çoğu zaman betiğin en sonunda görülür. Birden fazla <code>show</code> çağrısı arka uca bağlı öngörülemeyen davranışlara yol açabilir.</p>
+
+    <h4 id="ipython-kabugundan-cizim">IPython Kabuğundan Çizim</h4>
+
+    <p>Matplotlib, IPython kabuğu içinde de sorunsuz çalışır (<a href="../01-ipython/00-introduction.html">IPython: Normal Python'un Ötesinde</a>). Matplotlib modunu etkinleştirmek için <code>ipython</code> başlattıktan sonra <code>%matplotlib</code> sihirli komutunu kullanabilirsiniz:</p>
+
+    <div class="code-block" data-lang="text" data-filename="ipython_matplotlib_magic.txt" data-readonly="true">
+      <pre><code>In [1]: %matplotlib
+Using matplotlib backend: TkAgg
+
+In [2]: import matplotlib.pyplot as plt</code></pre>
+    </div>
+
+
+    <p>Bu noktadan sonra her <code>plt</code> çizim komutu bir şekil penceresi açar; grafik güncellemek için ek komutlar çalıştırılabilir. Zaten çizilmiş çizgilerin özelliklerini değiştirmek gibi bazı işlemler otomatik yeniden çizilmez; zorlamak için <code>plt.draw</code> kullanın. IPython Matplotlib modunda <code>plt.show</code> gerekli değildir.</p>
+
+    <h4 id="jupyter-not-defterinden-cizim">Jupyter Not Defterinden Çizim</h4>
+
+    <p>Jupyter not defteri, anlatı, kod, grafik ve HTML öğelerini tek çalıştırılabilir belgede birleştiren tarayıcı tabanlı bir araçtır (<a href="../01-ipython/00-introduction.html">IPython: Normal Python'un Ötesinde</a>).</p>
+
+    <p>Not defteri içinde etkileşimli çizim <code>%matplotlib</code> ile yapılır; IPython kabuğuna benzer. Grafikleri doğrudan not defterine gömmek için iki seçenek vardır:</p>
+
+    <ul>
+      <li><code>%matplotlib inline</code> — grafiklerin <em>statik</em> gömülü görüntüleri.</li>
+      <li><code>%matplotlib notebook</code> — not defteri içinde <em>etkileşimli</em> grafikler.</li>
+    </ul>
+
+    <p>Bu kitapta çoğunlukla statik gömülü şekiller kullanacağız:</p>
+
+    <div class="code-block" data-lang="python" data-filename="jupyter_inline_magic.py" data-readonly="true">
+      <pre><code>%matplotlib inline</code></pre>
+    </div>
+
+
+    <div class="code-block" data-lang="python" data-filename="jupyter_basic_plot.py">
+      <pre><code>import numpy as np
+x = np.linspace(0, 10, 100)
+
+fig = plt.figure()
+plt.plot(x, np.sin(x), '-')
+plt.plot(x, np.cos(x), '--');</code></pre>
+    </div>
+
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Web sayfası ve Pyodide</div>
+      <p>Bu el kitabının HTML sayfalarında kod Pyodide ile tarayıcıda çalıştırılabilir; ancak <strong>Matplotlib şekilleri her ortamda güvenilir biçimde görüntülenmeyebilir</strong> (özellikle <code>%matplotlib inline</code> ve dosyaya kaydetme örnekleri). Grafik çıktısını görmek ve kaydetmek için orijinal <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter <code>.ipynb</code></a> dosyalarını yerel Jupyter Lab/Notebook'ta açmanızı öneririz.</p>
+    </div>
+
+
+    <h3 id="sekilleri-dosyaya-kaydetme">Şekilleri Dosyaya Kaydetme</h3>
+
+    <p>Matplotlib'in güzel bir özelliği şekilleri birçok biçimde kaydedebilmesidir. <code>savefig</code> komutuyla örneğin önceki şekli PNG olarak kaydedebiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-filename="savefig_png.py">
+      <pre><code>fig.savefig('my_figure.png')</code></pre>
+    </div>
+
+
+    <p>Çalışma dizininde <em>my_figure.png</em> oluşur:</p>
+
+    <div class="code-block" data-lang="text" data-filename="shell_ls_figure.sh" data-readonly="true">
+      <pre><code>!ls -lh my_figure.png</code></pre>
+    </div>
+
+
+    <p>İçeriği doğrulamak için IPython <code>Image</code> nesnesi kullanılabilir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="display_saved_figure.py">
+      <pre><code>from IPython.display import Image
+Image('my_figure.png')</code></pre>
+    </div>
+
+
+    <p><code>savefig</code> içinde dosya biçimi, dosya adının uzantısından çıkarılır. Kurulu arka uçlara bağlı olarak birçok biçim desteklenir. Desteklenen türlerin listesi:</p>
+
+    <div class="code-block" data-lang="python" data-filename="supported_filetypes.py">
+      <pre><code>fig.canvas.get_supported_filetypes()</code></pre>
+    </div>
+
+
+    <p>Şekli kaydederken daha önce bahsedilen <code>plt.show</code> veya benzeri komutlar gerekli değildir.</p>
+
+    <h3 id="iki-arayuz-teklik-fiyatina">Tek Paraya İki Arayüz</h3>
+
+    <p>Matplotlib'in kafa karıştırıcı olabilen özelliği çift arayüzdür: kullanışlı MATLAB tarzı durum tabanlı arayüz ve daha güçlü nesne yönelimli arayüz. Kısaca farkları özetleyelim.</p>
+
+    <h4 id="matlab-tarzi-arayuz">MATLAB Tarzı Arayüz</h4>
+
+    <p>Matplotlib başlangıçta MATLAB kullanıcıları için bir Python alternatifi olarak düşünüldü; sözdiziminin önemli kısmı bunu yansıtır. MATLAB tarzı araçlar <code>pyplot</code> (<code>plt</code>) arayüzündedir:</p>
+
+    <div class="code-block" data-lang="python" data-filename="matlab_style_subplots.py">
+      <pre><code>plt.figure()  # create a plot figure
+
+# create the first of two panels and set current axis
+plt.subplot(2, 1, 1) # (rows, columns, panel number)
+plt.plot(x, np.sin(x))
+
+# create the second panel and set current axis
+plt.subplot(2, 1, 2)
+plt.plot(x, np.cos(x));</code></pre>
+    </div>
+
+
+    <p>Bu arayüz <em>durum tabanlıdır</em>: «şu anki» şekil ve eksenleri izler; tüm <code>plt</code> komutları bunlara uygulanır. <code>plt.gcf</code> (get current figure) ve <code>plt.gca</code> (get current axes) ile referans alınabilir.</p>
+
+    <p>Basit grafiklerde hızlı ve pratiktir; ancak ikinci panel oluşturulduktan sonra birinciye bir şey eklemek gibi durumlarda MATLAB tarzı arayüz hantal kalabilir. Daha iyi bir yol vardır.</p>
+
+    <h4 id="nesne-yonelimli-arayuz">Nesne Yönelimli Arayüz</h4>
+
+    <p>Daha karmaşık durumlar ve şekil üzerinde daha fazla kontrol için nesne yönelimli arayüz kullanılır. «Aktif» şekil/eksen yerine çizim işlevleri açık <code>Figure</code> ve <code>Axes</code> nesnelerinin <em>yöntemleridir</em>:</p>
+
+    <div class="code-block" data-lang="python" data-filename="oo_style_subplots.py">
+      <pre><code># First create a grid of plots
+# ax will be an array of two Axes objects
+fig, ax = plt.subplots(2)
+
+# Call plot() method on the appropriate object
+ax[0].plot(x, np.sin(x))
+ax[1].plot(x, np.cos(x));</code></pre>
+    </div>
+
+
+    <p>Daha karmaşık grafiklerde nesne yönelimli yaklaşım zorunlu hale gelebilir. Sonraki bölümlerde uygun olanı kullanacağız; çoğu zaman fark <code>plt.plot</code> ile <code>ax.plot</code> arasındaki kadar küçüktür.</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Matplotlib&#x27;i içe aktarın ve sürümü kontrol edin</div>
+      <p>Aşağıdaki kodu çalıştırın; ardından basit bir çizgi çizmeyi deneyin (Jupyter'de grafik görünür, tarayıcıda Pyodide ile görünmeyebilir):</p>
+          <div class="code-block" data-lang="python" data-filename="matplotlib_hizli_deneme.py">
+      <pre><code>import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+
+print("Matplotlib sürümü:", matplotlib.__version__)
+plt.style.use('classic')
+x = np.linspace(0, 10, 50)
+plt.plot(x, np.sin(x))
+plt.title("Hızlı deneme")</code></pre>
+    </div>
+
+    </div>
+
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="01-simple-line-plots.html">4.1 Basit Çizgi Grafikleri →</a></p>
+    </div>
+
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Matplotlib yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

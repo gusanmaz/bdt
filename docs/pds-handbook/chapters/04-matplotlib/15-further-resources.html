@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daha Fazla Matplotlib Kaynağı — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="04-matplotlib" data-section="15-further-resources" data-preload-numpy="true" data-preload-matplotlib="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/04.15-further-matplotlib-resources.html" target="_blank" rel="noopener">04.15 Further Resources</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+
+<h1>4.15 Daha Fazla Matplotlib Kaynağı</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/04.15-further-matplotlib-resources.html" target="_blank" rel="noopener">Further Resources</a></em></p>
+
+    <p>Kitabın tek bir bölümü Matplotlib'da kullanılabilir tüm özellikleri ve grafik türlerini kapsamayı asla umamaz. Gördüğümüz diğer paketlerde olduğu gibi IPython'ın Tab tamamlama ve yardım işlevlerinin (<a href="../01-ipython/01-help-and-documentation.html">1.1 IPython'da Yardım ve Dokümantasyon</a>) Matplotlib API'sini keşfederken çok yardımcı olabileceğini unutmayın. Ayrıca Matplotlib'ın <a href="https://matplotlib.org/" target="_blank" rel="noopener">çevrimiçi dokümantasyonu</a> faydalı bir referans olabilir. Özellikle yüzlerce farklı grafik türünün küçük resimlerini gösteren ve her birini oluşturmak için kullanılan Python kod parçacığına bağlayan <a href="https://matplotlib.org/stable/gallery/" target="_blank" rel="noopener">Matplotlib galerisine</a> bakın. Bu, geniş bir grafik stili ve görselleştirme tekniği yelpazesini görsel olarak inceleyip öğrenmenize olanak tanır.</p>
+
+    <p>Matplotlib üzerine kitap uzunluğunda bir kaynak için Matplotlib çekirdek geliştiricisi Ben Root'un yazdığı <em>Interactive Applications Using Matplotlib</em> (Packt) kitabını öneririm.</p>
+
+    <h2 id="diger-kutuphaneler">Diğer Python Görselleştirme Kütüphaneleri</h2>
+
+    <p>Matplotlib en belirgin Python görselleştirme kütüphanesi olsa da keşfetmeye değer daha modern araçlar da vardır. Burada birkaçını kısaca anacağım:</p>
+
+    <ul>
+      <li><a href="http://bokeh.pydata.org" target="_blank" rel="noopener">Bokeh</a>: Python ön ucu olan bir JavaScript görselleştirme kütüphanesi; çok büyük ve/veya akış veri kümelerini işleyebilen yüksek etkileşimli görselleştirmeler oluşturur.</li>
+      <li><a href="http://plot.ly" target="_blank" rel="noopener">Plotly</a>: Plotly şirketinin aynı adlı açık kaynak ürünü; ruh olarak Bokeh'e benzer. Aktif geliştirilir ve geniş bir etkileşimli grafik türü yelpazesi sunar.</li>
+      <li><a href="https://holoviews.org/" target="_blank" rel="noopener">HoloViews</a>: Bokeh ve Matplotlib dahil çeşitli arka uçlarda grafik üretmek için daha bildirimsel, birleşik bir API.</li>
+      <li><a href="https://vega.github.io/" target="_blank" rel="noopener">Vega</a> ve <a href="https://vega.github.io/vega-lite" target="_blank" rel="noopener">Vega-Lite</a>: bildirimsel grafik gösterimleri; veri görselleştirme ve etkileşim hakkında nasıl düşünüleceğine dair yıllar süren araştırmanın ürünüdür. Referans oluşturma uygulaması JavaScript'tir; <a href="https://altair-viz.github.io/" target="_blank" rel="noopener">Altair paketi</a> bu grafikleri üretmek için Python API'si sağlar.</li>
+    </ul>
+
+    <p>Python dünyasındaki görselleştirme ortamı sürekli gelişiyor; bu kitap yayımlandığında bu listenin güncelliğini yitirmiş olabileceğini düşünüyorum. Ayrıca Python birçok alanda kullanıldığı için daha özel kullanım durumları için oluşturulmuş başka görselleştirme araçları da bulacaksınız. Hepsini takip etmek zor olabilir; ancak bu geniş görselleştirme araçları yelpazesini öğrenmek için iyi bir kaynak, birçok farklı görselleştirme aracının öğreticilerini ve örneklerini içeren açık, topluluk odaklı <a href="https://pyviz.org/" target="_blank" rel="noopener">pyviz.org</a> sitesidir.</p>
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — Matplotlib sonrası yol</div>
+      <p>Matplotlib temeli + Seaborn istatistiksel keşif + Plotly/Bokeh etkileşim iyi bir üçlüdür. Önce hangi soruya cevap vereceğinizi netleştirin; ardından pyviz.org veya Matplotlib galerisinden benzer örneği bulun.</p>
+    </div>
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Galeri keşfi</div>
+      <p>Matplotlib galerisinden bir örneği yerel ortamınızda çalıştırmadan önce API'yi keşfedin:</p>
+          <div class="code-block" data-lang="python" data-filename="deneme_mpl_kaynak.py">
+      <pre><code>import matplotlib.pyplot as plt
+print('Matplotlib sürümü:', plt.matplotlib.__version__)
+print('Stil sayfası sayısı:', len(plt.style.available))
+print('İlk 5 stil:', plt.style.available[:5])</code></pre>
+    </div>
+
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy + Matplotlib yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

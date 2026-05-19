@@ -16,12 +16,8 @@
 
 <!-- ═══════════ TOP NAV ═══════════ -->
 <header class="top-nav">
-  <a href="#" class="nav-brand">📊 Büyük Veri Teknolojileri</a>
+  <a href="hafta1.html" class="nav-brand">📊 Büyük Veri Teknolojileri</a>
   <div class="nav-links">
-    <a href="hafta1.html">Dağıtık Sistemler & Python</a>
-    <a href="hafta2.html">Veri Modelleme & Pandas</a>
-    <a href="hafta3.html" class="active">ETL & PySpark</a>
-    <a href="hafta4.html">Streaming & Güvenlik</a>
     <a href="uygulamalar2.html">🧪 Uygulamalar</a>
     <a href="odev1.html">📝 Ödev 1</a>
     <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
@@ -51,6 +47,9 @@
       <a href="hafta2.html">📗 Veri Modelleme & Pandas</a>
       <a href="hafta3.html" class="current-page">📙 ETL & PySpark</a>
       <a href="hafta4.html">📕 Streaming & Güvenlik</a>
+      <a href="hafta5.html">🧪 Kod Atölyesi</a>
+      <a href="hafta6.html">📊 Analiz & ML</a>
+      <a href="../pds-handbook/index.html" target="_blank" rel="noopener">📚 PDS Handbook</a>
       <a href="uygulamalar2.html">🧪 Uygulamalar</a>
       <a href="odev1.html">📝 Ödev 1</a>
     </div>
@@ -102,19 +101,19 @@
 
     <p>Bu bölüm rastgele konuların bir araya gelmesi değil; <strong>tek bir hikayenin</strong> adım adım büyümesidir. Hikayemizin kahramanı: küçük bir e-ticaret şirketinin veri ekibi. Her bölümde bir problemle karşılaşacaklar ve onu çözen aracı tanıyacağız:</p>
 
-    <div class="diagram-container">
+    <div class="diagram-container story-map">
       <div class="diagram-box">
         <div class="mermaid">
-flowchart TB
-    A["Adım 1: Veri her yerde dağınık<br/>(CRM, POS, web log, API)"] -->|"Nasıl tek yerde toplarım?"| B["Çözüm: ETL / ELT<br/>(Bölüm 1-2-3)"]
-    B --> C["Adım 2: Veriyi nereye koyacağım?<br/>Database mi, Warehouse mi, Lake mi?"]
-    C -->|"Cevap: amaca göre"| D["Üç farklı depolama tipini öğreneceğiz<br/>(Bölüm 4)"]
-    D --> E["Adım 3: CSV ile çalışıyordum ama<br/>1 GB dosya açılmıyor!"]
-    E -->|"Çözüm: sütunsal format"| F["Parquet<br/>(Bölüm 5)"]
-    F --> G["Adım 4: Parquet'i okuyabiliyorum ama<br/>200 GB'ı tek laptop işleyemiyor"]
-    G -->|"Çözüm: çok makineye dağıt"| H["Apache Spark + PySpark<br/>(Bölüm 6-7)"]
-    H --> I["Adım 5: Spark cluster kurmak/yönetmek zor"]
-    I -->|"Çözüm: hazır platform"| J["Databricks + Delta Lake<br/>(Bölüm 8)"]
+flowchart TD
+    P1["Veri dağınık<br/>(CRM, POS, log, API)"] --> A1["ETL / ELT<br/>(Bölüm 1–3)"]
+    A1 --> P2["Nereye koyalım?"]
+    P2 --> A2["Database / Warehouse / Lake<br/>(Ön bilgi)"]
+    A2 --> P3["CSV yavaş, dosya büyük"]
+    P3 --> A3["Parquet<br/>(Bölüm 4–5)"]
+    A3 --> P4["200 GB tek laptop'ta işlenmez"]
+    P4 --> A4["Spark + PySpark<br/>(Bölüm 6–7)"]
+    A4 --> P5["Cluster kurmak/yönetmek zor"]
+    P5 --> A5["Databricks + Delta Lake<br/>(Bölüm 8)"]
         </div>
       </div>
       <div class="diagram-caption">Şekil 0: Bu bölümün hikaye haritası — her aracı bir problemi çözmek için tanıyacağız</div>
@@ -198,52 +197,361 @@ flowchart TB
       </div>
     </div>
 
+    <div class="diagram-container">
+      <div class="diagram-box">
+        <div class="flow-viz">
+          <p style="margin:0 0 0.65rem;font-size:0.88rem;font-weight:600;text-align:center">Üç sistem yan yana — aynı şirkette farklı roller</p>
+
+          <div class="storage-triple-viz">
+            <div class="storage-triple-col db">
+              <h5>🗄️ Database</h5>
+              <div class="storage-triple-row"><span class="label">Rol</span><span>Canlı operasyon</span></div>
+              <div class="storage-triple-row"><span class="label">Kim yazar?</span><span>Web/mobil uygulama, kasa sistemi</span></div>
+              <div class="storage-triple-row"><span class="label">Kim okur?</span><span>Aynı uygulama (anlık)</span></div>
+              <div class="storage-triple-row"><span class="label">Gecikme</span><span>Milisaniye</span></div>
+              <div class="storage-triple-row"><span class="label">Veri hali</span><span>Düzenli tablo, kurallı şema</span></div>
+              <div class="storage-triple-row"><span class="label">Örnek soru</span><span>"Stok 1 azalt", "bakiye güncelle"</span></div>
+              <div class="storage-triple-row"><span class="label">Teknoloji</span><span>PostgreSQL, MySQL, MongoDB</span></div>
+              <div class="storage-triple-row"><span class="label">Analoji</span><span>Market kasası</span></div>
+            </div>
+            <div class="storage-triple-col dw">
+              <h5>🏛️ Data Warehouse</h5>
+              <div class="storage-triple-row"><span class="label">Rol</span><span>Rapor &amp; analiz</span></div>
+              <div class="storage-triple-row"><span class="label">Kim yazar?</span><span>Gece ETL (otomatik batch)</span></div>
+              <div class="storage-triple-row"><span class="label">Kim okur?</span><span>BI, yönetim, dashboard</span></div>
+              <div class="storage-triple-row"><span class="label">Gecikme</span><span>Dakika – saat (gece işlenir)</span></div>
+              <div class="storage-triple-row"><span class="label">Veri hali</span><span>Temiz, birleştirilmiş tablolar</span></div>
+              <div class="storage-triple-row"><span class="label">Örnek soru</span><span>"Geçen ay şehir bazlı ciro?"</span></div>
+              <div class="storage-triple-row"><span class="label">Teknoloji</span><span>Snowflake, BigQuery, Redshift</span></div>
+              <div class="storage-triple-row"><span class="label">Analoji</span><span>Genel merkez arşivi</span></div>
+            </div>
+            <div class="storage-triple-col lake">
+              <h5>🌊 Data Lake</h5>
+              <div class="storage-triple-row"><span class="label">Rol</span><span>Ham depo &amp; esneklik</span></div>
+              <div class="storage-triple-row"><span class="label">Kim yazar?</span><span>Log, sensör, API, dosya akışı</span></div>
+              <div class="storage-triple-row"><span class="label">Kim okur?</span><span>Veri bilimci, ML, sonra ETL</span></div>
+              <div class="storage-triple-row"><span class="label">Gecikme</span><span>Esnek — önce sakla, sonra işle</span></div>
+              <div class="storage-triple-row"><span class="label">Veri hali</span><span>Ham JSON, CSV, video, log…</span></div>
+              <div class="storage-triple-row"><span class="label">Örnek soru</span><span>"Bu log'larda ne var?" (henüz belli değil)</span></div>
+              <div class="storage-triple-row"><span class="label">Teknoloji</span><span>S3, ADLS, GCS + Parquet dosyaları</span></div>
+              <div class="storage-triple-row"><span class="label">Analoji</span><span>Etiketlenmemiş dev depo</span></div>
+            </div>
+          </div>
+
+          <div class="storage-triple-flow">
+            <p class="storage-triple-flow-title">Veri şirkette nasıl akar? (üç ayrı hat)</p>
+
+            <div class="storage-triple-lane db-lane">
+              <div class="storage-triple-lane-label">🔵 Hat 1 — Operasyonel (Database)</div>
+              <div class="flow-viz-row">
+                <div class="flow-viz-box">📱 Sipariş uygulaması</div>
+                <span class="flow-viz-arrow">⇄</span>
+                <div class="flow-viz-box highlight">🗄️ PostgreSQL<br><small>orders, stock</small></div>
+              </div>
+              <p>Müşteri sipariş verir → anında DB'ye yazılır → uygulama aynı DB'den okur. <em>Gece beklenmez.</em></p>
+            </div>
+
+            <div class="storage-triple-lane dw-lane">
+              <div class="storage-triple-lane-label">🟣 Hat 2 — Analitik (Warehouse)</div>
+              <div class="flow-viz-row">
+                <div class="flow-viz-box muted">🗄️ DB</div>
+                <span class="flow-viz-arrow">+</span>
+                <div class="flow-viz-box muted">📊 CRM</div>
+                <span class="flow-viz-arrow">+</span>
+                <div class="flow-viz-box muted">💳 Ödeme</div>
+                <span class="flow-viz-arrow">→</span>
+                <div class="flow-viz-box">🌙 ETL</div>
+                <span class="flow-viz-arrow">→</span>
+                <div class="flow-viz-box highlight">🏛️ Warehouse</div>
+                <span class="flow-viz-arrow">→</span>
+                <div class="flow-viz-box ok">📈 Dashboard</div>
+              </div>
+              <p>Her gece kaynaklardan veri çekilir, temizlenir, birleştirilir. Sabah yönetim "dünkü ciro" raporunu görür — SuperMarket hikayesindeki Ayşe Hanım buradan beslenir.</p>
+            </div>
+
+            <div class="storage-triple-lane lake-lane">
+              <div class="storage-triple-lane-label">🟢 Hat 3 — Ham depo (Lake)</div>
+              <div class="flow-viz-row">
+                <div class="flow-viz-box">📡 Kafka / log / IoT</div>
+                <span class="flow-viz-arrow">→</span>
+                <div class="flow-viz-box highlight">🌊 S3 / ADLS<br><small>ham dosyalar</small></div>
+                <span class="flow-viz-arrow">→</span>
+                <div class="flow-viz-box">🧪 ML / keşif</div>
+                <span class="flow-viz-arrow">→</span>
+                <div class="flow-viz-box muted">🌙 ETL (opsiyonel)</div>
+                <span class="flow-viz-arrow">→</span>
+                <div class="flow-viz-box muted">🏛️ DW</div>
+              </div>
+              <p>Henüz "ne yapacağımız belli değil" veri önce ucuz depoya düşer. Veri bilimci keşif yapar; temizlenmiş kısım ileride warehouse'a da gidebilir. Disiplin yoksa "data swamp" olur.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil Ö1: Database = canlı iş · Warehouse = düzenli rapor · Lake = ham depo — çoğu şirkette <em>üçü birlikte</em> vardır</div>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔍 Şekil Ö1 — Neden üçünü birden gösteriyoruz?</div>
+      <p>Bunlar birbirinin yerine geçen alternatifler değil. Trendyol gibi bir şirkette:</p>
+      <ul>
+        <li><strong>Database</strong> — sipariş anında stok düşer, ödeme alınır (canlı uygulama).</li>
+        <li><strong>Warehouse</strong> — gece tüm mağazalardan satışlar toplanır; sabah "kategori bazlı ciro" raporu çıkar.</li>
+        <li><strong>Lake</strong> — tıklama log'ları, arama geçmişi, reklam verisi ham halde birikir; öneri modeli veya ilerideki raporlar buradan beslenir.</li>
+      </ul>
+      <p><strong>Sık hata:</strong> "Büyük veri = sadece data lake" sanmak. Gerçekte lake genelde warehouse ve operasyonel DB'nin <em>yanında</em> durur. Lake'teki ham veriyi doğrudan yönetime sunmazsınız — önce temizlersiniz (ETL → warehouse veya lakehouse katmanları).</p>
+    </div>
+
     <h4 style="margin-top:1.5rem">⚡ Data Warehouse'un Gizli Silahı — "Sütunsal saklama, paralel tarama, dev RAM" ne demek?</h4>
 
     <p>DW'un "yıllık trend" gibi devasa sorguları saniyeler içinde çözebilmesinin altında üç teknik var. Bu üçünü şimdi netleştirelim — Parquet bölümünde çok işimize yarayacak:</p>
 
     <div class="alert alert-tip">
       <div class="alert-title">1) Sütunsal saklama (columnar storage)</div>
-      <p>Klasik veritabanları (PostgreSQL, MySQL) satırları <strong>satır bazında</strong> diske yazar: 1. satırın tüm kolonları yan yana, sonra 2. satırın tüm kolonları… Tabii ki düz CSV gibi tutmazlar; arka planda B-tree gibi ağaç yapıları ve <em>indeks</em>'ler var. Ama ana tablonun fiziksel düzeni hala satır bazında: tek bir satır diskte tek bir bloğa sığar ve tüm kolonları birliktedir. İndeksler bu düzen üzerinde çalışan ek bir <em>işaretleme katmanı</em>dır.</p>
-      <p>Bu düzen OLTP için mükemmeldir: "kullanıcı 42'nin son siparişini getir" denildiğinde sistem o tek satırı alıp tüm kolonlarıyla birlikte döndürür — tek bir disk erişimi yeter. Ama "30 kolonlu 100 GB'lık bir tablodan sadece <code>sehir</code> ve <code>tutar</code>'ın yıllık toplamı" gibi bir OLAP sorusunda <em>her satırın tüm 30 kolonunu</em> diskten okumak zorunda kalır — çünkü kolonlar arasında atlama yapamaz, hepsi yan yana. İndeksler de burada çok yardım etmez; indeks "şu satırda şu değer var" demek için iyidir, milyonlarca satırın bir kolonunu toplamak için değil.</p>
-      <p>DW'ler (ve Parquet) ise tersini yapar: <strong>her kolonu ayrı bir dosya/blok olarak saklar</strong>. Tüm <code>id</code>'ler bir blokta, tüm <code>sehir</code>'ler ayrı bir blokta, tüm <code>tutar</code>'lar ayrı bir blokta… Aynı sorgu için sistem <em>sadece <code>sehir</code> ve <code>tutar</code> bloklarını</em> diskten okur; diğer 28 kolona hiç dokunmaz. 100 GB tablodan örneğin sadece 4 GB okuyup cevap döner. Üstelik aynı kolondaki değerler birbirine çok benzediği için <em>sıkıştırma oranı</em> da çok daha yüksek olur. Bu düzenin Parquet'teki somut hali Bölüm 5'te çizilecek.</p>
+      <p>Klasik veritabanları (PostgreSQL, MySQL) veriyi <strong>satır satır</strong> diske yazar: önce 1. satırın tüm kolonları yan yana, sonra 2. satırın tüm kolonları… Arka planda <strong>B-tree indeks</strong> gibi yapılar vardır; ama tablonun <em>ana fiziksel düzeni</em> satır bazlıdır — bir satırın kolonları genelde aynı disk bloğunda birlikte durur.</p>
+      <p>Bu düzen <strong>OLTP</strong> için mükemmeldir: "kullanıcı 42'nin son siparişini getir" denildiğinde sistem o satırı bir kerede okur. <code>WHERE id = 42</code> veya <code>WHERE sehir = 'Ankara'</code> gibi <strong>dar filtrelerde</strong> indeks devreye girer — PostgreSQL/MySQL ilgili satırları hızlı bulur; her seferinde tüm tabloyu taramak zorunda kalmaz.</p>
+      <p><strong>Peki indeks varken neden warehouse / Parquet anlatıyoruz?</strong> Çünkü raporlama sorguları çoğu zaman <em>tablonun büyük bir kısmını</em> tarar:</p>
+      <ul style="margin:0.5rem 0">
+        <li><code>SELECT SUM(tutar) FROM orders</code> — filtresiz, tüm satırlar</li>
+        <li><code>SELECT sehir, SUM(tutar) … GROUP BY sehir</code> — milyonlarca satır, birkaç kolon</li>
+        <li>"Son 12 ay" — satırların çoğu indeks aralığına girer</li>
+      </ul>
+      <p>Bu durumda satır bazlı sistem, satırı diskten okurken çoğu zaman <em>o satırın tüm kolonlarını</em> da getirir — siz sadece <code>tutar</code> isteseniz bile. İndeks dar filtrede kurtarır; <strong>geniş taramada</strong> satır düzeninin dezavantajı ortaya çıkar. (İstisna: sadece ihtiyaç duyulan kolonları içeren <em>covering index</em> / index-only scan — bu kısmen yardım eder ama her rapor kolonu için ayrı indeks tutmak pratik değildir ve yazma maliyetini artırır.)</p>
+      <p><strong>DW ve Parquet</strong> ise baştan sütun bazlı tasarlanmıştır: aynı sorguda sadece <code>sehir</code> ve <code>tutar</code> blokları okunur; gereksiz 26 kolon diskten gelmez. Aynı kolondaki benzer değerler de daha iyi sıkışır. Aşağıdaki şema <em>tam tablo taraması</em> senaryosunu gösterir — indeksli dar filtre değil:</p>
+
+      <div class="diagram-container" style="margin:1rem 0 0.5rem">
+        <div class="diagram-box">
+          <div class="storage-viz">
+            <p style="margin:0 0 0.5rem;font-size:0.88rem">Örnek tablo — 3 satır, gerçekte 30 kolon olsun (<code>…</code> = kullanmadığımız 26 kolon):</p>
+            <table class="storage-table-mini">
+              <thead><tr><th>id</th><th>isim</th><th>sehir</th><th>tutar</th><th>…</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>Ali</td><td>Ankara</td><td>120</td><td class="dim">+26 kolon</td></tr>
+                <tr><td>2</td><td>Ayşe</td><td>İzmir</td><td>340</td><td class="dim">+26 kolon</td></tr>
+                <tr><td>3</td><td>Veli</td><td>Ankara</td><td>180</td><td class="dim">+26 kolon</td></tr>
+              </tbody>
+            </table>
+
+            <div class="storage-viz-grid">
+              <!-- SATIR BAZLI -->
+              <div class="storage-viz-panel">
+                <h5>📄 Satır bazlı (PostgreSQL, MySQL) <span class="tag tag-oltp">OLTP'ye iyi</span></h5>
+                <p style="margin:0 0 0.5rem;font-size:0.8rem">Her satır diskte <em>tek parça</em> halinde yan yana durur:</p>
+                <div class="storage-disk-label">Diskteki bloklar</div>
+                <div class="storage-row-block highlight-read">
+                  <span class="storage-cell storage-cell-id storage-cell-read">id=1</span>
+                  <span class="storage-cell storage-cell-text storage-cell-read">Ali</span>
+                  <span class="storage-cell storage-cell-city storage-cell-read">Ankara</span>
+                  <span class="storage-cell storage-cell-money storage-cell-read">120</span>
+                  <span class="storage-cell storage-cell-extra storage-cell-read">+26 kolon</span>
+                </div>
+                <div class="storage-row-block">
+                  <span class="storage-cell storage-cell-id">id=2</span>
+                  <span class="storage-cell storage-cell-text">Ayşe</span>
+                  <span class="storage-cell storage-cell-city">İzmir</span>
+                  <span class="storage-cell storage-cell-money">340</span>
+                  <span class="storage-cell storage-cell-extra">+26 kolon</span>
+                </div>
+                <div class="storage-row-block">
+                  <span class="storage-cell storage-cell-id">id=3</span>
+                  <span class="storage-cell storage-cell-text">Veli</span>
+                  <span class="storage-cell storage-cell-city">Ankara</span>
+                  <span class="storage-cell storage-cell-money">180</span>
+                  <span class="storage-cell storage-cell-extra">+26 kolon</span>
+                </div>
+                <div class="storage-query-box">SELECT * FROM orders WHERE id = 1</div>
+                <div class="storage-result good">✅ Sadece 1. satır bloğu okunur — hızlı</div>
+              </div>
+
+              <!-- SÜTUN BAZLI -->
+              <div class="storage-viz-panel">
+                <h5>📊 Sütun bazlı (DW, Parquet) <span class="tag tag-olap">OLAP'a iyi</span></h5>
+                <p style="margin:0 0 0.5rem;font-size:0.8rem">Her kolon <em>ayrı blok</em> halinde üst üste durur:</p>
+                <div class="storage-col-stack">
+                  <div class="storage-col-block skip">
+                    <div class="col-name">id</div>
+                    <div class="col-values">1, 2, 3</div>
+                  </div>
+                  <div class="storage-col-block skip">
+                    <div class="col-name">isim</div>
+                    <div class="col-values">Ali, Ayşe, Veli</div>
+                  </div>
+                  <div class="storage-col-block read">
+                    <div class="col-name">sehir ✓</div>
+                    <div class="col-values">Ankara, İzmir, Ankara</div>
+                  </div>
+                  <div class="storage-col-block read">
+                    <div class="col-name">tutar ✓</div>
+                    <div class="col-values">120, 340, 180</div>
+                  </div>
+                </div>
+                <p style="margin:0.45rem 0 0;font-size:0.72rem;color:var(--text-muted)">+ 26 kolon daha var ama soluk — bu sorguda okunmuyor</p>
+                <div class="storage-query-box">SELECT sehir, SUM(tutar) … GROUP BY sehir</div>
+                <div class="storage-result good">✅ Sadece 2 kolon bloğu okunur (~100 GB → ~4 GB)</div>
+              </div>
+            </div>
+
+            <div class="storage-viz-grid" style="margin-top:1rem">
+              <div class="storage-viz-panel">
+                <h5>📄 Satır bazlı + geniş tarama</h5>
+                <p style="margin:0 0 0.4rem;font-size:0.75rem;color:var(--text-muted)">Sorgu: <code>SELECT sehir, SUM(tutar) … GROUP BY sehir</code> (milyonlarca satır)</p>
+                <div class="storage-row-block highlight-waste">
+                  <span class="storage-cell storage-cell-id storage-cell-read">id</span>
+                  <span class="storage-cell storage-cell-text storage-cell-read">isim</span>
+                  <span class="storage-cell storage-cell-city storage-cell-read">sehir</span>
+                  <span class="storage-cell storage-cell-money storage-cell-read">tutar</span>
+                  <span class="storage-cell storage-cell-extra storage-cell-read">+26</span>
+                </div>
+                <div class="storage-row-block highlight-waste">
+                  <span class="storage-cell storage-cell-id storage-cell-read">…</span>
+                  <span class="storage-cell storage-cell-text storage-cell-read">…</span>
+                  <span class="storage-cell storage-cell-city storage-cell-read">…</span>
+                  <span class="storage-cell storage-cell-money storage-cell-read">…</span>
+                  <span class="storage-cell storage-cell-extra storage-cell-read">+26</span>
+                </div>
+                <div class="storage-result bad">Tam taramada satır bloğunun tamamı gelir — sadece 2 kolon isteseniz bile</div>
+                <p style="margin:0.35rem 0 0;font-size:0.72rem;color:var(--text-muted)"><strong>Not:</strong> <code>WHERE id = 1</code> gibi dar filtrede indeks hızlıdır — bu panel o senaryo değil.</p>
+              </div>
+              <div class="storage-viz-panel">
+                <h5>✅ Sütun bazlı + analitik sorgu</h5>
+                <div class="storage-col-stack">
+                  <div class="storage-col-block skip"><div class="col-name">id</div><div class="col-values">atlandı</div></div>
+                  <div class="storage-col-block skip"><div class="col-name">isim</div><div class="col-values">atlandı</div></div>
+                  <div class="storage-col-block read"><div class="col-name">sehir ✓</div><div class="col-values">okundu</div></div>
+                  <div class="storage-col-block read"><div class="col-name">tutar ✓</div><div class="col-values">okundu</div></div>
+                </div>
+                <div class="storage-result good">İhtiyaç duyulan kolonlar + iyi sıkıştırma = hızlı</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="diagram-caption">Şekil A: Satır bazlı = tek kayıt / dar filtre hızlı; sütun bazlı = geniş tarama / rapor hızlı</div>
+      </div>
+
+      <p style="margin-top:0.75rem"><strong>Ne zaman hangisi?</strong> Tek kayıt veya indeksli dar filtre → satır bazlı veritabanı (PostgreSQL). Yıllık ciro, şehir kırılımı gibi <em>geniş tarama</em> → sütun bazlı DW/Parquet. İkisi farklı iş yükü için optimize edilmiştir; "PostgreSQL yavaş mı?" sorusunun cevabı <em>ne sorduğunuza</em> bağlıdır. Parquet'teki somut dosya yapısını Bölüm 5'te göreceğiz.</p>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 Peki ya SQL veritabanı? — İndeks ve sütun bazlı istisnalar</div>
+      <p>Yukarıdaki anlatımı <em>bilerek</em> sade tuttuk; gerçekte SQL dünyasında da Parquet'e yaklaşan teknikler var. Ama bunlar varsayılan tablo düzeninin yerine <strong>ekstra tasarım kararlarıdır</strong>:</p>
+      <ul>
+        <li><strong>Covering / composite index:</strong> İndekse sorguda kullanacağınız kolonları da eklerseniz (<code>CREATE INDEX … ON orders (sehir, tutar)</code>), PostgreSQL bazen satırın kendisine gitmeden indeksten cevap verir (<em>index-only scan</em>). Dar ve öngörülebilir sorgular için işe yarar.</li>
+        <li><strong>Partial index:</strong> Sadece aktif siparişler gibi bir alt küme için indeks — yine belirli senaryolarda hızlandırır.</li>
+        <li><strong>Sütun bazlı depolama:</strong> Vanilla PostgreSQL'de tablo varsayılan olarak satır bazlıdır. SQL Server <em>columnstore index</em>, Oracle <em>In-Memory Column Store</em> gibi ürünlerde sütun bazlı motor vardır; PostgreSQL tarafında <code>cstore_fdw</code> gibi eklentiler veya veriyi zaten Parquet/DW'de tutmak yaygındır.</li>
+      </ul>
+      <p><strong>Sınır nerede?</strong> Her rapor kolonu için ayrı indeks üretmek disk ve yazma maliyetini artırır; TB ölçekte tek makinede paralel tarama da sınırlı kalır. Bu yüzden büyük şirketler canlı iş için PostgreSQL, gece raporu için Snowflake/BigQuery/Parquet hattını <em>yan yana</em> kullanır — "PostgreSQL yerine warehouse" değil, "PostgreSQL <strong>ve</strong> warehouse".</p>
     </div>
 
     <div class="alert alert-tip">
       <div class="alert-title">2) Paralel tarama (parallel scan)</div>
-      <p>Bir DW genelde tek sunucu değil, <strong>onlarca/yüzlerce sunucudan oluşan bir küme</strong>dir. 100 GB'lık tablo, kümeye eşit parçalara bölünür (örn. 100 makine × 1 GB). Bir sorgu geldiğinde 100 sunucu <em>aynı anda</em> kendi parçasını tarar; sonuçlar koordinatör düğümde birleşir. Tek bir sunucuda 100 saniye sürecek iş, 100 sunucuda teorik olarak 1 saniyede biter. “Paralel” budur: aynı anda çok yerde çalışmak. (Bu fikri Spark bölümünde tekrar göreceğiz — aynı mantık.)</p>
+      <p>Bir DW genelde tek sunucu değil, <strong>onlarca veya yüzlerce sunucudan oluşan bir kümedir</strong>. 100 GB'lık tablo parçalara bölünür (örneğin 100 makine × 1 GB). Sorgu gelince her sunucu kendi parçasını <em>aynı anda</em> tarar; koordinatör sonuçları birleştirir. Tek makinede 100 saniye sürecek iş, 100 makinede teorik olarak ~1 saniyeye inebilir. Spark bölümünde aynı "böl ve paralelleştir" fikrini tekrar göreceğiz.</p>
+
+      <div class="diagram-container" style="margin:0.75rem 0 0.25rem">
+        <div class="diagram-box">
+          <div class="storage-viz storage-parallel">
+            <div style="font-weight:700;font-size:0.88rem">100 GB tablo → 4 sunucuya böl</div>
+            <div class="storage-parallel-row">
+              <div class="storage-worker">Sunucu 1<div class="chunk">Parça A<br>25 GB</div></div>
+              <div class="storage-worker">Sunucu 2<div class="chunk">Parça B<br>25 GB</div></div>
+              <div class="storage-worker">Sunucu 3<div class="chunk">Parça C<br>25 GB</div></div>
+              <div class="storage-worker">Sunucu 4<div class="chunk">Parça D<br>25 GB</div></div>
+            </div>
+            <div style="font-size:1.1rem;color:var(--text-muted)">↓ aynı anda taranır ↓</div>
+            <div class="storage-coordinator">Koordinatör: sonuçları birleştir → tek cevap</div>
+            <p style="margin:0.5rem 0 0;font-size:0.82rem;color:var(--text-muted)">100 saniyelik iş → teoride ~25 saniye (4 sunucu). 100 sunucuda ~1 saniye.</p>
+          </div>
+        </div>
+        <div class="diagram-caption">Şekil B: Paralel tarama — "böl, aynı anda çalıştır, birleştir"</div>
+      </div>
+      <p style="margin-top:0.5rem">Pratikte %100 linear hızlanma olmaz (ağ, birleştirme maliyeti var); ama büyük tablolarda fark dramatiktir. Sütunsal okuma ile birleşince DW'ler devasa sorguları saniyelere indirebilir.</p>
     </div>
 
     <div class="alert alert-tip">
-      <div class="alert-title">3) Dev RAM</div>
-      <p>RAM (hafıza), diskten <em>100–10.000 kat</em> daha hızlıdır. DW makineleri tipik olarak <strong>256 GB – 2 TB RAM</strong>'e sahiptir; sık kullanılan tabloları ve sorgu sonuçlarını RAM'de tutar ("caching"). Bir kolonu bir kez diskten okuyup RAM'e aldıktan sonra, aynı kolon üzerine gelen diğer sorgular diske hiç dokunmadan anında cevap verir.</p>
+      <div class="alert-title">3) Dev RAM — ve depolama hiyerarşisi</div>
+      <p>Bilgisayarda veri sadece "disk veya RAM" diye ikiye ayrılmaz. <strong>CPU'ya yaklaştıkça erişim hızlanır, kapasite küçülür</strong> — bu hiyerarşi büyük veri performansını anlamanın anahtarıdır:</p>
+
+      <div class="diagram-container" style="margin:0.65rem 0 0.25rem">
+        <div class="diagram-box">
+          <div class="memory-hierarchy-caption">↑ CPU'ya yaklaştıkça: <strong>hız artar</strong> · <strong>kapasite azalır</strong> ↓</div>
+          <div class="memory-hierarchy">
+            <div class="memory-tier tier-cache">
+              <span class="tier-label">🔴 CPU önbelleği (cache)</span>
+              <span class="tier-meta">~MB · ns<br>en hızlı</span>
+            </div>
+            <div class="memory-hierarchy-arrow">↑ hız · ↓ kapasite</div>
+            <div class="memory-tier tier-ram">
+              <span class="tier-label">⚡ RAM</span>
+              <span class="tier-meta">~GB–TB · µs<br>DW burayı doldurur</span>
+            </div>
+            <div class="memory-hierarchy-arrow">↑ hız · ↓ kapasite</div>
+            <div class="memory-tier tier-ssd">
+              <span class="tier-label">💿 SSD / NVMe</span>
+              <span class="tier-meta">~TB · ms<br>diskten hızlı</span>
+            </div>
+            <div class="memory-hierarchy-arrow">↑ hız · ↓ kapasite</div>
+            <div class="memory-tier tier-disk">
+              <span class="tier-label">💾 Disk / S3 / HDFS</span>
+              <span class="tier-meta">~PB · ms–s<br>en ucuz, en yavaş</span>
+            </div>
+          </div>
+        </div>
+        <div class="diagram-caption">Şekil C0: Depolama hiyerarşisi — veri mümkün olduğunca yukarı (RAM) çekilir</div>
+      </div>
+
+      <p><strong>RAM neden kritik?</strong> Diskten (veya S3'ten) okumak CPU cache'e göre binlerce kat yavaştır. DW sunucuları tipik olarak <strong>256 GB – 2 TB RAM</strong> takar — amacı: sık kullanılan kolonları ve ara sonuçları RAM'de tutmak (<em>cache</em>). Bir kolon bir kez diskten okunup RAM'e alındıktan sonra, aynı kolon üzerine gelen sonraki sorgular diske gitmeden cevap verir — tıpkı bir kitabı ilk seferde raftan alıp masaya koyduktan sonra tekrar tekrar masadan okumak gibi.</p>
+      <p><strong>Büyük veri pratiği:</strong> Verinin tamamı RAM'e sığmaz (100 TB tablo ≠ 100 TB RAM). Strateji: (1) sütunsal okuma ile sadece gerekli kolonları çek, (2) paralel tarama ile hızlandır, (3) sık kullanılan parçayı RAM'de tut. Spark'taki <em>cache/persist</em> de aynı fikir — "bu DataFrame'i RAM'de sakla, tekrar kullanacağım."</p>
+
+      <div class="diagram-container" style="margin:0.75rem 0 0.25rem">
+        <div class="diagram-box">
+          <div class="storage-viz">
+            <p style="margin:0 0 0.5rem;font-size:0.82rem;font-weight:600;text-align:center">Cache mantığı — aynı veriye ikinci sorgu</p>
+            <div class="storage-ram-flow">
+              <div class="storage-ram-box">
+                <div class="label">💾 Disk / S3</div>
+                <div class="speed">1. sorgu<br>yavaş okuma</div>
+              </div>
+              <div class="storage-ram-arrow">→</div>
+              <div class="storage-ram-box hot">
+                <div class="label">⚡ RAM</div>
+                <div class="speed">kolon bellekte<br>kaldı</div>
+              </div>
+              <div class="storage-ram-arrow">→</div>
+              <div class="storage-ram-box">
+                <div class="label">📊 2. sorgu</div>
+                <div class="speed">diske gitmeden<br>anında</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="diagram-caption">Şekil C: İlk okuma diskten, sonraki okumalar RAM'den</div>
+      </div>
+      <p style="margin-top:0.5rem">Bu üçlü birlikte çalışır: önce sadece gerekli kolonları oku (sütunsal), sonra bunu çok makinede paralel yap, sonra sonucu RAM'de tut. Klasik tek sunuculu satır bazlı veritabanında aynı sorgu saatler sürebilir veya hiç bitmeyebilir.</p>
     </div>
 
-    <p><strong>Üçü bir araya gelince:</strong> 100 sunucu × sadece gerekli kolonlar × RAM hızı = milyonlarca satırlık sorgular saniyeler içinde. Klasik bir veritabanında aynı sorgu saatler sürer veya hiç bitmez.</p>
+    <p><strong>Üçü bir araya gelince:</strong> sadece gerekli kolonlar + paralel tarama + RAM = milyonlarca satırlık sorgular saniyeler içinde.</p>
 
     <h4 style="margin-top:1.5rem">🏢 Popüler Data Warehouse ürünleri — Kısa kısa</h4>
 
     <div class="card-grid">
       <div class="card">
-        <div class="card-title">❄️ Snowflake</div>
+        <div class="card-title">❄️ <a href="https://www.snowflake.com/" target="_blank" rel="noopener">Snowflake</a></div>
         <div class="card-desc">
-          <p>2012'de kurulan, 2020 IPO'su ile o güne kadarki en büyük yazılım halka arzı olan bağımsız bulut DW. Özgünlüğü: <strong>storage ile compute'u tamamen ayırdı</strong>. Veri S3/Blob/GCS'de ucuz şekilde durur; sorgu çalıştırmak gerektiğinde "sanal warehouse" denilen geçici hesaplama kümeleri aniden açılıp iş bitince kapanır. Bugün bulut DW dünyasının pazar lideri kabul edilir; AWS/Azure/GCP üçü üzerinde de çalışabilir (vendor-neutral).</p>
+          <p>2012'de kurulan, 2020'de <strong>IPO</strong> (<em>Initial Public Offering</em> = halka arz: şirketin hisselerinin borsada ilk kez halka satılması) yapan bağımsız bulut DW — o dönemde yazılım sektörünün en büyük halka arzlarından biri olarak kayda geçti. Özgünlüğü: <strong>storage ile compute'u tamamen ayırdı</strong>. Veri S3/Blob/GCS'de ucuz şekilde durur; sorgu çalıştırmak gerektiğinde "sanal warehouse" denilen geçici hesaplama kümeleri aniden açılıp iş bitince kapanır. Bugün bulut DW dünyasının pazar lideri kabul edilir; AWS/Azure/GCP üçü üzerinde de çalışabilir (vendor-neutral).</p>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">🔍 Google BigQuery</div>
+        <div class="card-title">🔍 <a href="https://cloud.google.com/bigquery" target="_blank" rel="noopener">Google BigQuery</a></div>
         <div class="card-desc">
           <p>Google'ın açtığı, Google'ın kendi Dremel motoruna dayanan <strong>tamamen sunucusuz (serverless)</strong> DW. Kullanıcı hiçbir küme veya sunucu yönetmez; sadece SQL yazar ve <em>taranan veri miktarı başına</em> öder. Petabyte'ları saniyeler içinde tarayabilir. Reklamcılık, telemetri, log analizi gibi devasa veri senaryolarında çok yaygın. Sadece Google Cloud'da çalışır.</p>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">📦 Amazon Redshift</div>
+        <div class="card-title">📦 <a href="https://aws.amazon.com/redshift/" target="_blank" rel="noopener">Amazon Redshift</a></div>
         <div class="card-desc">
           <p>Amazon'un 2013'te çıkardığı, AWS dünyasının ilk büyük DW ürünü. PostgreSQL ile uyumlu, dolayısıyla mevcut SQL araçları doğrudan bağlanır. Yeni "RA3" mimarisi storage/compute ayrımını da getirdi. AWS içinde derin entegre olduğu için "zaten AWS'deyim" diyen şirketlerin tercihi; ama son yıllarda Snowflake ve BigQuery'nin gerisinde kaldı diyenler de var.</p>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">🏛️ Teradata</div>
+        <div class="card-title">🏛️ <a href="https://www.teradata.com/" target="_blank" rel="noopener">Teradata</a></div>
         <div class="card-desc">
           <p>"Eski dünyanın yıldızı." 1979'da kurulan, on yıllarca bankalar, havayolları ve telekomların çekirdeğini taşıyan klasik DW. Fiziksel cihazlar (appliance) şeklinde satılırdı; çok pahalı ama çok stabil. Bulut çağında pazar payı düştü, ancak Türkiye dahil birçok büyük kurum hala Teradata üzerinden raporlama yapıyor; sektörde karşılaşma ihtimaliniz yüksek.</p>
         </div>
@@ -256,8 +564,8 @@ flowchart TB
       <table>
         <thead><tr><th>İhtiyaç</th><th>Seçim</th><th>Örnek</th></tr></thead>
         <tbody>
-          <tr><td>Canlı uygulama verisi, ATM, kasa, rezervasyon</td><td><strong>Database</strong></td><td>PostgreSQL, MySQL</td></tr>
-          <tr><td>Yönetim raporları, BI dashboard'ları, KPI takibi</td><td><strong>Data Warehouse</strong></td><td>Snowflake, BigQuery</td></tr>
+          <tr><td>Canlı uygulama verisi, ATM, kasa, rezervasyon</td><td><strong>Database</strong></td><td><a href="https://www.postgresql.org/" target="_blank" rel="noopener">PostgreSQL</a>, <a href="https://www.mysql.com/" target="_blank" rel="noopener">MySQL</a></td></tr>
+          <tr><td>Yönetim raporları, BI dashboard'ları, KPI takibi</td><td><strong>Data Warehouse</strong></td><td><a href="https://www.snowflake.com/" target="_blank" rel="noopener">Snowflake</a>, <a href="https://cloud.google.com/bigquery" target="_blank" rel="noopener">BigQuery</a></td></tr>
           <tr><td>Veri bilimi, ML eğitim verisi, "belki ileride lazım olur"</td><td><strong>Data Lake</strong></td><td>S3 + Parquet</td></tr>
         </tbody>
       </table>
@@ -270,7 +578,7 @@ flowchart TB
       <li><strong>OLTP</strong> (Online <u>T</u>ransaction Processing) = günlük tek tek işlemler. ATM'den para çekme, ürün siparişi. <em>Database'in doğal alanı.</em></li>
       <li><strong>OLAP</strong> (Online <u>A</u>nalytical Processing) = analiz/raporlama. "Son 3 ayın satış trendi", "şehir-kategori kırılımında ciro". <em>Warehouse/Lake'in doğal alanı.</em></li>
     </ul>
-    <p>İkisi için <em>tamamen farklı</em> veri saklama mantığı gerekir — bu yüzden iki ayrı sistem inşa edilir.</p>
+    <p>İkisi farklı <em>sorgu tipleri</em> için optimize edilir — bu yüzden büyük şirketlerde genelde ikisi birlikte bulunur (canlı iş → DB, rapor → warehouse).</p>
 
     <h3>🛠️ Yazılım / API Tarafı</h3>
 
@@ -284,7 +592,7 @@ flowchart TB
         <dd>Veritabanı sorgu dili — 1970'lerden beri standart. Sadece İngilizce gibi okunan bir cümle yazarsınız, sistem size cevabı verir: <code>SELECT isim FROM ogrenciler WHERE not &gt; 70 ORDER BY not DESC</code>. Veri dünyasında SQL bilmek <em>su gibi temel</em>dir; Spark, BigQuery, Snowflake, hatta Pandas (<code>query()</code>) hep SQL benzeri arayüz sunar.</dd>
 
         <dt>API</dt>
-        <dd>"Application Programming Interface" — bir yazılımın <strong>başka yazılımlarla konuşma kapısı</strong>. Hava durumu sitesinin "<code>GET /weather?city=istanbul</code>" gibi bir URL'e istek atıldığında JSON cevap vermesi bir API'dir. Genelde HTTP üzerinden çalışır. ETL'lerde çok kullanılır: "her saat başı hava durumu API'sinden veri çek".</dd>
+        <dd>"Application Programming Interface" — bir yazılımın <strong>başka yazılımlarla konuşma kapısı</strong>. Ödeme sağlayıcısının "<code>GET /payments?date=2026-05-19</code>" gibi bir URL'e istek atıldığında JSON cevap vermesi bir API'dir. Genelde HTTP üzerinden çalışır. ETL'lerde çok kullanılır: "her gece Stripe/iyzico API'sinden günlük işlemleri çek".</dd>
 
         <dt>JSON</dt>
         <dd>"JavaScript Object Notation" — insan tarafından okunabilir, makineler tarafından kolay işlenebilir veri formatı. API'lerin %95'i JSON konuşur. <code>{"isim": "Ali", "yas": 27}</code> gibi anahtar-değer çiftleriyle yazılır.</dd>
@@ -309,11 +617,83 @@ flowchart TB
     <div class="glossary">
       <div class="glossary-title">📖 Az önce geçen terimler</div>
       <dl>
-        <dt>CRM</dt><dd>"Customer Relationship Management" — <strong>müşteri ilişkileri yönetimi</strong> yazılımı. Şirketin müşterileriyle olan <em>tüm temas geçmişini</em> tek bir yerde tutar: hangi müşteri ne aldı, ne zaman aradı, hangi satış temsilcisiyle görüştü, hangi şikayeti açtı, hangi e-postaya tıkladı, hangi sözleşmeyi imzaladı. Satış, pazarlama ve destek ekipleri günlük işlerini bu sistem üzerinde yürütür. <em>Veri ekibi için önemi:</em> ETL'de en kıymetli kaynaklardan biridir, çünkü "kim, ne zaman, ne yaptı" sorusunun cevabı buradadır; sipariş verisiyle birleştirildiğinde <strong>müşteri segmentasyonu, churn tahmini, kampanya etkinliği</strong> gibi sorulara cevap verir. <em>Örnek ürünler:</em> <strong>Salesforce</strong> (pazar lideri, kurumsal — bulutta CRM kavramını kuran şirket), <strong>HubSpot</strong> (KOBİ ve pazarlama odaklı, ücretsiz başlangıç planıyla yaygın), <strong>Microsoft Dynamics 365</strong> (Microsoft ekosistemine sıkı entegre), <strong>Zoho CRM</strong> (uygun fiyatlı, küçük işletmeler), <strong>Pipedrive</strong> (satış hattı yönetimi odaklı). Türkiye'de Logo, Mikro gibi ERP sağlayıcılarının CRM modülleri de yaygındır.</dd>
+        <dt>CRM</dt><dd>"Customer Relationship Management" — <strong>müşteri ilişkileri yönetimi</strong> yazılımı. Şirketin müşterileriyle olan <em>tüm temas geçmişini</em> tek bir yerde tutar: hangi müşteri ne aldı, ne zaman aradı, hangi satış temsilcisiyle görüştü, hangi şikayeti açtı, hangi e-postaya tıkladı, hangi sözleşmeyi imzaladı. Satış, pazarlama ve destek ekipleri günlük işlerini bu sistem üzerinde yürütür. <em>Veri ekibi için önemi:</em> ETL'de en kıymetli kaynaklardan biridir, çünkü "kim, ne zaman, ne yaptı" sorusunun cevabı buradadır; sipariş verisiyle birleştirildiğinde <strong>müşteri segmentasyonu, churn tahmini, kampanya etkinliği</strong> gibi sorulara cevap verir. <em>Örnek ürünler:</em> <strong><a href="https://www.salesforce.com/" target="_blank" rel="noopener">Salesforce</a></strong> (pazar lideri, kurumsal — bulutta CRM kavramını kuran şirket), <strong><a href="https://www.hubspot.com/" target="_blank" rel="noopener">HubSpot</a></strong> (KOBİ ve pazarlama odaklı, ücretsiz başlangıç planıyla yaygın), <strong><a href="https://www.microsoft.com/en-us/dynamics-365" target="_blank" rel="noopener">Microsoft Dynamics 365</a></strong> (Microsoft ekosistemine sıkı entegre), <strong><a href="https://www.zoho.com/crm/" target="_blank" rel="noopener">Zoho CRM</a></strong> (uygun fiyatlı, küçük işletmeler), <strong><a href="https://www.pipedrive.com/" target="_blank" rel="noopener">Pipedrive</a></strong> (satış hattı yönetimi odaklı). Türkiye'de Logo, Mikro gibi ERP sağlayıcılarının CRM modülleri de yaygındır.</dd>
         <dt>POS</dt><dd>"Point of Sale" — kasa/satış noktası sistemi. Marketin yazar kasası, restoranın sipariş ekranı.</dd>
-        <dt>Log</dt><dd>Bir sistemin "olan biten her şeyi" yazdığı kayıt dosyası. Web sunucusu her isteği, hataları, kim ne tıkladı bilgisini log'a yazar.</dd>
+        <dt>Log</dt><dd>Bir sistemin <strong>zaman damgalı olay kaydı</strong> tuttuğu dosya veya akış — güvenlik kamerası kaydı gibi: uygulama çalışırken "ne oldu?" sorusunu satır satır yazar, sonradan incelenir. Web sunucusu her isteği, hatayı ve IP'yi log'a yazar. ETL'de log dosyaları çok değerlidir ama ham metin oldukları için önce parse edilmeleri gerekir. <em>Detaylı örnek ve Python <code>logging</code> anlatımı hemen aşağıdaki kutuda.</em> (<strong>Not:</strong> 4. haftadaki Kafka "log"u = sıralı olay defteri; buradaki = uygulama log dosyası.)</dd>
         <dt>Pipeline (boru hattı)</dt><dd>Veriyi A noktasından B noktasına götüren, aradaki adımları otomatik olarak çalıştıran zincir. Bir "montaj hattı" gibi düşünün.</dd>
       </dl>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">🐍 Log dosyası nedir? — Örnek satırlar ve Python <code>logging</code></div>
+
+      <p><strong>Web sunucusu log satırı</strong> (Apache/Nginx tarzı, sadeleştirilmiş) kabaca şöyle görünür:</p>
+      <div class="code-block" data-lang="text">
+        <pre><code>2026-05-19 14:32:01 | 192.168.1.42 | GET  /urun/1337   | 200 | 45ms
+2026-05-19 14:32:05 | 192.168.1.42 | POST /sepet/ekle   | 201 | 120ms
+2026-05-19 14:32:09 | 10.0.0.5     | GET  /odeme        | 500 | 890ms  ← hata!</code></pre>
+      </div>
+      <p>Her satırda genelde: <em>zaman</em>, <em>kim (IP)</em>, <em>ne yaptı (HTTP metodu + URL)</em>, <em>sonuç kodu</em>, <em>süre</em>. ETL boru hattı bu dosyaları okuyup tabloya çevirir (regex, Spark, ELK…).</p>
+
+      <p style="margin-top:1rem"><strong><code>print</code> yetmez mi?</strong> <code>print()</code> hızlı debug içindir; gece çalışan ETL'de kalıcı kayıt için <code>logging</code> modülü kullanılır:</p>
+      <div class="table-wrapper" style="margin:0.75rem 0">
+        <table>
+          <thead><tr><th></th><th><code>print()</code></th><th><code>logging</code></th></tr></thead>
+          <tbody>
+            <tr><td><strong>Nereye gider?</strong></td><td>Terminal / notebook ekranı</td><td>Dosya, ekran veya ikisi — siz seçersiniz</td></tr>
+            <tr><td><strong>Zaman damgası</strong></td><td>Yok (kendiniz eklersiniz)</td><td>Otomatik (<code>2026-05-19 14:32:01</code>)</td></tr>
+            <tr><td><strong>Seviye</strong></td><td>Yok — her şey aynı</td><td>DEBUG &lt; INFO &lt; WARNING &lt; ERROR — filtreleyebilirsiniz</td></tr>
+            <tr><td><strong>Üretim (production)</strong></td><td>Kaybolur, karışır, performansı etkiler</td><td><code>app.log</code> dosyasında kalır, gece job'ları inceler</td></tr>
+            <tr><td><strong>ETL'de</strong></td><td>"Kaç satır işlendi?" anlık bakmak için</td><td>"Job başladı / bitti / hata" kalıcı kayıt için</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Minimal örnek — dosyaya log yazmak:</strong></p>
+      <div class="code-block" data-lang="python">
+        <pre><code>import logging
+
+# Log'ları app.log dosyasına yaz; INFO ve üstü (WARNING, ERROR) kaydedilsin
+logging.basicConfig(
+    filename="app.log",
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(message)s",
+    encoding="utf-8",
+)
+
+logging.info("ETL job başladı")
+logging.info("orders.csv okundu: 12_450 satır")
+logging.warning("3 satırda amount negatif — atlandı")
+logging.error("PostgreSQL bağlantısı koptu — job durdu")
+
+# print("ETL job başladı")  ← bunu production'da dosyaya bırakmazsınız</code></pre>
+      </div>
+      <p>Oluşan <code>app.log</code> dosyası kabaca şöyle görünür:</p>
+      <div class="code-block" data-lang="text">
+        <pre><code>2026-05-19 02:00:01,123 | INFO | ETL job başladı
+2026-05-19 02:00:04,891 | INFO | orders.csv okundu: 12_450 satır
+2026-05-19 02:00:05,002 | WARNING | 3 satırda amount negatif — atlandı
+2026-05-19 02:00:12,441 | ERROR | PostgreSQL bağlantısı koptu — job durdu</code></pre>
+      </div>
+
+      <p><strong>Hem ekrana hem dosyaya</strong> (geliştirme sırasında sık kullanılır):</p>
+      <div class="code-block" data-lang="python">
+        <pre><code>import logging
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s | %(levelname)s | %(message)s",
+    handlers=[
+        logging.FileHandler("etl.log", encoding="utf-8"),
+        logging.StreamHandler(),   # aynı mesaj terminalde de görünsün
+    ],
+)
+
+logging.debug("Ara değişken: df.shape = (12450, 8)")  # sadece geliştirmede
+logging.info("Transform tamamlandı")</code></pre>
+      </div>
+
+      <p><strong>Özet:</strong> <code>print</code> = "şimdi ekranda göreyim". <code>logging</code> = "olan biteni kayda geç, sonra incele, hata ayıkla, denetle". Büyük veri boru hatlarında gece 02:00'de çalışan ETL çökerse, sabah bakacağınız yer genelde log dosyasıdır.</p>
     </div>
 
     <h3 id="etl-tanim">📌 ETL Tanımı</h3>
@@ -325,15 +705,18 @@ flowchart TB
         <div class="mermaid">
 flowchart LR
     subgraph SRC["🗂️ KAYNAKLAR (Sources)"]
+        direction TB
         S1["💳 POS<br>(satış)"]
         S2["🧑‍💼 CRM<br>(müşteri)"]
-        S3["🌐 Web Log<br>(tıklama)"]
-        S4["📡 API<br>(hava durumu)"]
+        S3["🌐 Web log<br>(tıklama)"]
+        S4["📧 E-posta<br>(kampanya)"]
+        S5["💰 Ödeme API<br>(Stripe)"]
     end
     E["📤 EXTRACT<br>Veriyi çek"]
     T["🛠️ TRANSFORM<br>Temizle, birleştir,<br>zenginleştir"]
     L["📥 LOAD<br>Hedefe yaz"]
     subgraph DST["🎯 HEDEF (Target)"]
+        direction TB
         D1["🏛️ Data Warehouse<br>(Snowflake / BigQuery)"]
         D2["🌊 Data Lake<br>(S3 + Parquet)"]
     end
@@ -341,6 +724,7 @@ flowchart LR
     S2 --> E
     S3 --> E
     S4 --> E
+    S5 --> E
     E --> T --> L
     L --> D1
     L --> D2
@@ -403,16 +787,45 @@ WHERE order_status &lt;&gt; 'returned';</pre>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">🏥 Özel Hastane Zinciri — Mükerrer hasta kayıtları</div>
+        <div class="card-title">🏥 Hastane — Aynı kişi, neden iki kayıt?</div>
         <div class="card-desc">
-          <p>Bir hastane zincirinde şöyle bir durum yaşanıyordu: hastane sistemi TC kimlik no'yu zorunlu olarak istiyor (ödemede sigorta için gerek), ama her şubedeki sekreter girer girmez aynı dakikada bir "hasta dosyası" oluşturuyor — eğer kayıt şubeler arası senkronize değilse, aynı TC numarası için 5 ayrı şubede 5 ayrı lokal dosya oluşabiliyor. Ek olarak hastalar bazen yanında gelen <em>yakını</em> adına (eş, anne, baba) randevu aldırdığı için TC kimliği onun adına giriliyor; konsolidasyon yapılmadığında muayene yine yanlış dosyaya yazılabiliyor. Üstelik ad-soyad alanlarında standart yok: "Ayşe Yılmaz", "AYŞE YILMAZ", evlilik öncesi "Ayşe Demir" gibi varyasyonlar veri kalitesini düşürüyor.</p>
-          <p>Bunun iki ciddi sonucu vardı:</p>
-          <ul>
-            <li><strong>Klinik risk:</strong> Bir doktor hastayı muayene ederken önceki ilaçlarını veya alerjilerini göremiyordu — çünkü o bilgi <em>başka bir şubenin lokal dosyasında</em> duruyordu.</li>
-            <li><strong>İş zekası hatası:</strong> "Zincirimizde kaç unique hasta var?" sorusu, gerçeğin yaklaşık <em>1.7 katı</em> sayı döndürüyordu. Yönetim "hasta sayımız arttı" sandı; gerçekte yeni hasta yoktu.</li>
-          </ul>
-          <p>Çözüm için ETL'in Transform adımında <em>entity resolution</em> (kimlik birleştirme) eklendi: TC kimlik no anahtar olarak kullanıldı; aynı TC'li tüm şube dosyaları tek bir <em>master patient ID</em> altında toplandı. TC kimliğin yakınına ait olduğu durumlar için "doğum tarihi + cinsiyet + iletisim telefonu" üçlüsüyle ekstra doğrulama yapıldı; şüpheli eşleşmeler insan onayına düştü. İsim alanları da küçük-büyük harf ve Türkçe karakter normalize edildi (Ş→s, İ→i vb.).</p>
-          <p><strong>Ders:</strong> Tek benzersiz alanınız (TC kimlik no) bile olsa, gerçek dünya süreçleri yüzünden aynı kişi <em>birden fazla sistemde, farklı zamanlarda, farklı kişiler tarafından</em> kaydedilir. Bu yüzden aynı kimsenin farklı görünmesi istisna değil, <strong>kural</strong>dır. ETL'in en zor işlerinden biri olan <em>de-duplication / entity resolution</em>, neredeyse her ciddi veri projesinin gördüğü problemdir.</p>
+          <p><strong>Önce günlük hayattan düşünün:</strong> Aynı kişinin iki farklı mağazada iki ayrı <em>müşteri kartı</em> olması gibi. Kart numaraları farklı; ama kişi tek. Hastanelerde de benzer şey olur — sadece sonuçları daha ciddidir.</p>
+
+          <p><strong>Hikâye (sadeleştirilmiş):</strong> İki şubeli küçük bir hastane var. Her şubenin kendi bilgisayarı var; genel müdürlük gece ikisinden veriyi çekip tek rapor üretiyor.</p>
+          <ol style="margin:0.5rem 0;padding-left:1.25rem">
+            <li>2023 — Ayşe Hanım <strong>Ankara şubesine</strong> gidiyor. Sekreter kayıt açıyor → hasta no <strong>101</strong>.</li>
+            <li>2025 — Aynı Ayşe Hanım <strong>İzmir şubesine</strong> gidiyor. Oradaki sekreter onu tanımıyor, yeni kayıt açıyor → hasta no <strong>205</strong>.</li>
+          </ol>
+          <p>Formda TC kimlik no yazılı; ama şubeler birbirine <em>bakmıyor</em>. Merkez sistemde Ayşe artık <strong>2 hasta</strong> gibi duruyor.</p>
+
+          <div class="table-wrapper" style="margin:0.65rem 0">
+            <table>
+              <thead><tr><th>Şube</th><th>Hasta no</th><th>İsim</th><th>TC</th></tr></thead>
+              <tbody>
+                <tr><td>Ankara</td><td>101</td><td>Ayşe Yılmaz</td><td>123…901</td></tr>
+                <tr><td>İzmir</td><td>205</td><td>Ayşe Yılmaz</td><td>123…901</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><strong>Rapor ne der, gerçek ne?</strong></p>
+          <div class="comparison" style="margin:0.5rem 0">
+            <div class="side">
+              <div class="side-title">❌ Sistem sayımı</div>
+              <p style="margin:0"><code>COUNT(DISTINCT hasta_no)</code> → <strong>2</strong></p>
+              <p style="margin:0.35rem 0 0;font-size:0.88em;color:var(--text-muted)">"2 hastamız var" sanılır</p>
+            </div>
+            <div class="side">
+              <div class="side-title">✅ Gerçek</div>
+              <p style="margin:0"><strong>1 kişi</strong> — Ayşe Hanım</p>
+              <p style="margin:0.35rem 0 0;font-size:0.88em;color:var(--text-muted)">İkinci kayıt mükerrer (duplicate)</p>
+            </div>
+          </div>
+
+          <p>Büyük hastane zincirlerinde aynı hata binlerce kez tekrarlanır: listede 85.000 "hasta" görünür, oysa gerçekte ~50.000 farklı kişi vardır. Yönetim "hasta sayımız arttı" sanır; oysa çoğu yeni hasta değil, <em>aynı kişinin ikinci kaydıdır</em>.</p>
+
+          <p><strong>ETL dersi:</strong> Extract sadece veriyi toplar; <em>Transform</em> adımında "101 ile 205 aynı kişi mi?" sorusu sorulmalıdır. Genelde TC (veya ad + doğum tarihi) ile eşleştirilir ve her gerçek kişiye tek bir <code>master_id</code> verilir. Buna <strong>çift kayıt temizleme (de-duplication)</strong> denir.</p>
+          <p style="margin-top:0.5rem"><strong>Ek risk:</strong> İzmir'deki doktor, Ayşe'nin Ankara'daki alerji bilgisini göremeyebilir — bu da veri birleştirmenin sadece rapor değil, <em>güvenlik</em> meselesi olduğunu gösterir.</p>
         </div>
       </div>
     </div>
@@ -426,8 +839,8 @@ WHERE order_status &lt;&gt; 'returned';</pre>
       <div class="alert-title">🧪 Endüstri standardı iki araç: <code>great_expectations</code> ve <code>dbt tests</code></div>
       <p>Veri kalitesi testleri "unit test'in veri için olanı" gibidir: her ETL koşusundan sonra otomatik çalışır, beklentilere uymayan veri varsa alarm verir veya pipeline'ı durdurur.</p>
       <ul>
-        <li><strong><code>great_expectations</code></strong> — Açık kaynak Python kütüphanesi. Sen "expectation" (beklenti) yazarsın, o doğrular. Örnek beklentiler: "<code>customer_id</code> kolonu hiç null olmasın", "<code>amount</code> kolonu 0 ile 100000 arasında olsun", "<code>email</code> kolonu unique olsun", "<code>country</code> sadece şu 195 ülkeden biri olsun". Sonuçtan otomatik HTML rapor üretir — "bugünkü veride 47 satırda <code>amount</code> negatifti" gibi.</li>
-        <li><strong><code>dbt tests</code></strong> — <em>dbt</em> (data build tool), bulut warehouse'ında SQL ile dönüşüm yazmanın endüstri standardı aracı (ELT'in <strong>T</strong>'si). İçine basit testler de gömülü gelir; her tablonun yanına bir <code>schema.yml</code> dosyası koyarsın:
+        <li><strong><code><a href="https://greatexpectations.io/" target="_blank" rel="noopener">great_expectations</a></code></strong> — Açık kaynak Python kütüphanesi. Sen "expectation" (beklenti) yazarsın, o doğrular. Örnek beklentiler: "<code>customer_id</code> kolonu hiç null olmasın", "<code>amount</code> kolonu 0 ile 100000 arasında olsun", "<code>email</code> kolonu unique olsun", "<code>country</code> sadece şu 195 ülkeden biri olsun". Sonuçtan otomatik HTML rapor üretir — "bugünkü veride 47 satırda <code>amount</code> negatifti" gibi.</li>
+        <li><strong><code><a href="https://www.getdbt.com/" target="_blank" rel="noopener">dbt tests</a></code></strong> — <em>dbt</em> (data build tool), bulut warehouse'ında SQL ile dönüşüm yazmanın endüstri standardı aracı (ELT'in <strong>T</strong>'si). İçine basit testler de gömülü gelir; her tablonun yanına bir <code>schema.yml</code> dosyası koyarsın:
           <div class="code-block" data-lang="yaml" style="margin-top:0.4rem"><pre><code>models:
   - name: orders
     columns:
@@ -442,7 +855,7 @@ WHERE order_status &lt;&gt; 'returned';</pre>
               field: id</code></pre></div>
           dbt her sabah çalışır; "234 satırda <code>order_id</code> tekrar etmiş" diye uyarır. Şirketler bu testlerin yeşil olmasını CI/CD'ye bağlar; kırmızıysa veri dashboard'lara gitmez.</li>
       </ul>
-      <p>Pratikte: <code>dbt tests</code> SQL/warehouse ağırlıklı ekipler için ideal, <code>great_expectations</code> ise Spark/Python pipeline'ları için daha esnek. İkisi birlikte de yaygın kullanılır.
+      <p>Pratikte: <code>dbt tests</code> SQL/warehouse ağırlıklı ekipler için ideal, <code>great_expectations</code> ise Spark/Python pipeline'ları için daha esnek. İkisi birlikte de yaygın kullanılır.</p>
     </div>
 
     <h3>🛒 Genişletilmiş Hikaye: Bir Market Zincirinin ETL Doğum Hikayesi</h3>
@@ -465,9 +878,64 @@ WHERE order_status &lt;&gt; 'returned';</pre>
           <li>Mağaza kodları (eski sistem <code>MGZ_034</code>, yeni sistem <code>0034</code>) tek formata getirilir.</li>
           <li>İade kayıtları (<code>is_refund=true</code>) negatif amount olarak normalize edilir — <em>yukarıdaki e-ticaret hatasının</em> tekrar etmemesi için.</li>
           <li>Ürün kodu, ürün → alt-kategori → kategori → departman hiyerarşisiyle zenginleştirilir.</li>
-          <li>Kampanya indirimi ("3 al 2 öde") ayrı kolona ayrılır. <em>Niye?</em> Müşteri 3 adet × 50 TL = <strong>150 TL'lik ürün</strong> aldığında kasaya <strong>100 TL</strong> girer (3'üncüsü bedava). Eğer her şey tek bir <code>tutar</code> kolonunda toplanırsa yönetim "ne kadar mal sattık" (brüt = 150) ile "kasaya ne kadar girdi" (net = 100) sorusunu ayıramaz. <code>brut_tutar</code> ve <code>indirim</code> ayrı yazılınca <em>kampanyaların gerçek maliyeti</em> de görünür hale gelir.</li>
+          <li>Kampanya indirimi ("3 al 2 öde") ayrı kolona ayrılır — kasadaki para ile raftan çıkan mal aynı sayı değildir; detay hemen altında.</li>
           <li>Boş/bozuk kayıtlar bir <em>karantina tablosuna</em> ayrılır, gece nöbetçisine uyarı gider.</li>
         </ul>
+
+        <div class="alert alert-tip" style="margin-top:0.75rem">
+          <div class="alert-title">🏷️ "3 al 2 öde" — neden tek <code>tutar</code> kolonu yetmez?</div>
+
+          <p><strong>Sahnedeki olay:</strong> Müşteri yoğurttan 3 adet alıyor. Her biri 50 TL. Kasada "3 al 2 öde" kampanyası var — yani 3. yoğurt bedava.</p>
+
+          <div class="comparison" style="margin:0.65rem 0">
+            <div class="side">
+              <div class="side-title">🛒 Raftan / stoktan</div>
+              <p style="margin:0">3 kutu çıktı</p>
+              <p style="margin:0.35rem 0 0">3 × 50 TL = <strong>150 TL'lik mal</strong> hareket etti</p>
+            </div>
+            <div class="side">
+              <div class="side-title">💵 Kasadan</div>
+              <p style="margin:0">Müşteri sadece <strong>2 yoğurt</strong> parası ödedi</p>
+              <p style="margin:0.35rem 0 0">50 + 50 = <strong>100 TL</strong> kasaya girdi</p>
+            </div>
+          </div>
+
+          <p><strong>Dört farklı soru, dört farklı cevap:</strong></p>
+          <div class="table-wrapper" style="margin:0.5rem 0">
+            <table>
+              <thead><tr><th>Yönetim sorusu</th><th>Ne ölçülür?</th><th>Bu örnekte cevap</th></tr></thead>
+              <tbody>
+                <tr><td>"Ne kadar <em>mal</em> sattık?"</td><td><code>brut_tutar</code></td><td>150 TL</td></tr>
+                <tr><td>"Kampanya bize ne kadara mal oldu?"</td><td><code>indirim</code></td><td>50 TL (bedava 3. kutu)</td></tr>
+                <tr><td>"Kasaya ne kadar para girdi?"</td><td><code>net_tutar</code></td><td>100 TL</td></tr>
+                <tr><td>"<em>Hangi</em> kampanya? Kaç satış kampanyalı?"</td><td><code>kampanya_kodu</code>, <code>kampanya_adi</code></td><td>KMP-2026-042 · Yoğurt haftası</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p>Basit kural: <code>net_tutar = brut_tutar − indirim</code> → bu örnekte 100 = 150 − 50.</p>
+
+          <p><strong>ETL'de satır nasıl yazılır?</strong> Transform adımında kasadan gelen ham kayıt ayrıştırılır. Sadece tutar kolonları yetmez — <em>hangi kampanyanın</em> devreye girdiği de yazılmalıdır; yoksa indirim toplamını görürsünüz ama "hangi kampanya patladı?" sorusuna cevap veremezsiniz:</p>
+          <div class="table-wrapper" style="margin:0.5rem 0">
+            <table>
+              <thead><tr><th>urun</th><th>adet</th><th>birim_fiyat</th><th>brut_tutar</th><th>indirim</th><th>net_tutar</th><th>kampanya_kodu</th><th>kampanya_adi</th><th>kampanya_tipi</th></tr></thead>
+              <tbody>
+                <tr><td>Yoğurt</td><td>3</td><td>50</td><td>150</td><td>50</td><td>100</td><td>KMP-2026-042</td><td>Yoğurt haftası — 3 al 2 öde</td><td>N al M öde</td></tr>
+                <tr><td>Süt</td><td>1</td><td>30</td><td>30</td><td>0</td><td>30</td><td>—</td><td>—</td><td>—</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="margin:0.35rem 0 0;font-size:0.88em;color:var(--text-muted)">İkinci satır <em>normal satış</em>: kampanya yok → <code>indirim = 0</code>, kampanya kolonları boş. Ayşe Hanım <code>WHERE kampanya_kodu = 'KMP-2026-042'</code> deyince sadece o kampanyanın satışlarını ve toplam indirim maliyetini görebilir.</p>
+
+          <p><strong>Peki ya her şey tek kolonda yazılsaydı?</strong> Kasadan gelen 100 TL'yi doğrudan <code>tutar</code> diye kaydederseniz:</p>
+          <ul style="margin:0.4rem 0">
+            <li><code>SUM(tutar)</code> → ciro doğru görünür (100 TL) ✓</li>
+            <li>Ama "dün kaç TL'lik <em>mal</em> raftan indi?" sorusuna cevap veremezsiniz — 150 mi, 100 mü?</li>
+            <li>"Kampanya bize ne kadara patladı?" sorusu da kaybolur — <code>indirim</code> kolonu yok.</li>
+            <li>"<em>Hangi</em> kampanya?" sorusu da kaybolur — <code>kampanya_kodu</code> / <code>kampanya_adi</code> yok; yoğurt kampanyası mı, süt indirimi mi ayırt edemezsiniz.</li>
+          </ul>
+          <p>Sonuç: Ayşe Hanım "kampanya işe yarıyor mu?" dediğinde, tek kolonlu veriyle <em>sadece kasayı</em> görür; hangi kampanyanın ne kadara mal olduğunu, kaç satışın kampanyalı olduğunu ayıramaz. <code>brut_tutar</code> + <code>indirim</code> + <code>net_tutar</code> + <code>kampanya_*</code> kolonları birlikte tutulunca hem stok hareketi, hem kampanya maliyeti, hem kampanya bazlı rapor aynı tablodan okunabilir — sabah 06:00'daki kasa doğrulaması da <code>net_tutar</code> toplamıyla eşleşir.</p>
+        </div>
       </li>
       <li><strong>05:30 — Load:</strong> Temizlenmiş veri data warehouse'a (Snowflake) yazılır.</li>
       <li><strong>06:00 — Doğrulama:</strong> Bir doğrulama betiği çalışır: "Mağaza X'in DW'deki toplamı, mağazadan gelen kasa kapanış raporundaki toplamla eşleşiyor mu?" Eşleşmezse alarm verir.</li>
@@ -545,6 +1013,36 @@ flowchart TB
       <p><strong>Schema-on-Write (ETL — warehouse mantığı):</strong> Veriyi <em>yazmadan önce</em> şemaya zorla uydur. Eğer gelen kayıtta <code>amount</code> yerine "abc" yazıyorsa <strong>kabul edilmez, reddedilir</strong>. Avantaj: hedefteki veri <em>her zaman</em> temiz ve sorgulanabilir. Dezavantaj: bir kolon eklemek/değiştirmek için tüm pipeline'ı revize edip belki tabloyu yeniden yazman gerek.</p>
       <p><strong>Schema-on-Read (ELT/Data Lake mantığı):</strong> Veriyi <em>geldiği gibi</em> JSON/CSV/Parquet dosyaları olarak sakla. Şema yok, doğrulama yok. Sadece <em>okuma anında</em> "şu dosyalardan <code>user_id</code> ve <code>amount</code> alanlarını al" dersin; o anda yorumlanır. Avantaj: bilmediğin/aklında olmayan veriyi de saklarsın — belki bir gün veri bilimci "şu eski log'lardaki <code>device_type</code> alanı lazım" der ve veri orada hazırdır. Dezavantaj: ham veri her türlü pisliği içerir; her sorgu kendi temizliğini yapmak zorundadır.</p>
       <p><strong>Modern pratik:</strong> ikisi birlikte. Ham veri data lake'te (schema-on-read) saklanır; oradan temizlenip warehouse'a (schema-on-write) yazılır. Bu "medallion mimarisi"nin temeli — Databricks bölümünde göreceğiz.</p>
+
+      <div class="diagram-container" style="margin-top:0.75rem">
+        <div class="diagram-box">
+          <div class="storage-viz-grid">
+            <div class="storage-viz-panel">
+              <h5>✍️ Schema-on-Write (ETL / Warehouse)</h5>
+              <div class="flow-viz-row" style="flex-direction:column;align-items:stretch">
+                <div class="flow-viz-box">Ham veri geldi</div>
+                <span class="flow-viz-arrow" style="text-align:center">↓</span>
+                <div class="flow-viz-box warn">amount="abc" → ❌ RED</div>
+                <span class="flow-viz-arrow" style="text-align:center">↓</span>
+                <div class="flow-viz-box ok">Temiz veri yazıldı ✓</div>
+              </div>
+              <p style="margin:0.5rem 0 0;font-size:0.78rem;color:var(--text-muted)">Yazmadan önce kontrol — hedef her zaman düzenli</p>
+            </div>
+            <div class="storage-viz-panel">
+              <h5>📖 Schema-on-Read (ELT / Lake)</h5>
+              <div class="flow-viz-row" style="flex-direction:column;align-items:stretch">
+                <div class="flow-viz-box ok">Ham JSON/CSV olduğu gibi saklandı</div>
+                <span class="flow-viz-arrow" style="text-align:center">↓</span>
+                <div class="flow-viz-box">Sorgu anında: "amount al"</div>
+                <span class="flow-viz-arrow" style="text-align:center">↓</span>
+                <div class="flow-viz-box warn">"abc" görülürse o satır atlanır / null</div>
+              </div>
+              <p style="margin:0.5rem 0 0;font-size:0.78rem;color:var(--text-muted)">Okurken yorumla — esnek ama her sorgu temizlik yapmalı</p>
+            </div>
+          </div>
+        </div>
+        <div class="diagram-caption">Şekil 2a: Write = yazarken sıkı; Read = okurken yorumla</div>
+      </div>
     </div>
 
     <!-- ═══════════════════════════════════════════ -->
@@ -600,7 +1098,7 @@ flowchart TB
 
     <div class="code-block" data-lang="python">
       <pre><code>import pandas as pd                          # Pandas: tablolarla çalışmanın Python standardı
-from datetime import datetime                # Audit kolonuna "ne zaman çalıştı" yazmak için
+from datetime import datetime, timezone                # Audit kolonuna "ne zaman çalıştı" yazmak için
 
 # ═══════════════════════════════
 # 1) EXTRACT — Kaynaklardan oku
@@ -652,12 +1150,13 @@ report = (df.groupby("city")                           # Şehirlere göre grupla
 #   İzmir   1               120.50     120.50
 
 # (6) Audit kolonu — "bu rapor ne zaman üretildi?"
-report["etl_run_at"] = datetime.utcnow()
+report["etl_run_at"] = datetime.now(timezone.utc)
 # Her satıra UTC zaman damgası. Geri dönüp "bu sayı hangi koşudan?" demek için kritik.
 
 # ═══════════════════════════════
 # 3) LOAD — Parquet olarak yaz
 # ═══════════════════════════════
+# Parquet yazmak/okumak için: pip install pyarrow
 report.to_parquet("warehouse/city_sales.parquet", index=False)
 # Parquet: bir sonraki bölümün konusu. CSV'den 5-10 kat küçük ve 10-100 kat hızlı okunur.
 # index=False : Pandas'ın otomatik 0,1,2... satır numarasını dosyaya YAZMA.
@@ -667,14 +1166,72 @@ print(report.head())</code></pre>
     </div>
 
     <div class="alert alert-warning">
-      <div class="alert-title">⚠️ Idempotency (Tekrar Çalıştırılabilirlik)</div>
-      <p>İyi bir ETL kodu <strong>aynı girdiyle aynı çıktıyı</strong> üretmeli ve <strong>iki kere çalıştırılırsa</strong> hedefte aynı sonuç olmalı. Bunun için genelde <em>upsert</em> kullanılır veya hedef <em>silinip yeniden yazılır</em>. Aksi halde her gece çalışan bir ETL, hedeftekileri ikiye, üçe katlar — klasik bir <strong>prod hatası</strong>.</p>
-      <p style="margin-top:0.6rem"><strong>"Prod" ne demek?</strong> Yazılımcı dünyasında üç ortam vardır: <em>development</em> (<code>dev</code>) — geliştiricinin kendi makinesi, denemeler için; <em>staging</em> (<code>stg</code>) — canlıya benzeyen test ortamı; <em>production</em> (<code>prod</code>) — <strong>gerçek kullanıcıların</strong> kullandığı canlı sistem. Bir hata sadece <code>dev</code>'de olursa kimse incinmez; ama <code>prod</code>'da olursa <em>gerçek müşterilerin gerçek paraları</em> etkilenir. "Prod hatası" = canlıda patladı = gece 03:00'te birinin telefonu çalıyor.</p>
+      <div class="alert-title">⚠️ Idempotency (Tekrar çalıştırılabilirlik)</div>
+
+      <p><strong>Önce günlük dilden:</strong> Gece 02:00'de çalışması gereken ETL, ağ kopması yüzünden 03:00'te <em>yeniden</em> tetiklenir. Soru şu: ikinci koşu, birincinin üstüne <em>aynı veriyi bir kez daha</em> mi yazar — yoksa sonuç hâlâ aynı mı kalır? İkincisi doğru davranıştır; buna <strong>idempotent</strong> denir.</p>
+
+      <p><strong>Tanım (basit):</strong> Aynı girdi + aynı kod → her koşuda aynı çıktı. Job'u 1 kez çalıştırmakla 3 kez çalıştırmak arasında fark olmamalı.</p>
+
+      <p><strong>Mini ETL örneğimizde ne olur?</strong> Yukarıdaki kod <code>city_sales.parquet</code> dosyasına şehir bazlı raporu yazıyor. Doğru sonuç:</p>
+      <div class="table-wrapper" style="margin:0.5rem 0">
+        <table>
+          <thead><tr><th>city</th><th>siparis_sayisi</th><th>toplam_ciro</th></tr></thead>
+          <tbody>
+            <tr><td>Ankara</td><td>1</td><td>340.00</td></tr>
+            <tr><td>İzmir</td><td>1</td><td>120.50</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>❌ Idempotent değilse</strong> (hedefe körü körüne <em>ekleme / append</em> yapılırsa) job ikinci kez çalışınca aynı satırlar tekrar yazılır:</p>
+      <div class="table-wrapper" style="margin:0.5rem 0">
+        <table>
+          <thead><tr><th>city</th><th>siparis_sayisi</th><th>toplam_ciro</th><th>Not</th></tr></thead>
+          <tbody>
+            <tr><td>Ankara</td><td>1</td><td>340.00</td><td>1. koşu</td></tr>
+            <tr><td>İzmir</td><td>1</td><td>120.50</td><td>1. koşu</td></tr>
+            <tr><td>Ankara</td><td>1</td><td>340.00</td><td>2. koşu — mükerrer!</td></tr>
+            <tr><td>İzmir</td><td>1</td><td>120.50</td><td>2. koşu — mükerrer!</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Dashboard'da <code>SUM(toplam_ciro)</code> artık <strong>921 TL</strong> gösterir; oysa gerçek ciro <strong>460.50 TL</strong>. Veri iki katına çıkmıştır — girdi aynı, hata tamamen yazma stratejisinden.</p>
+
+      <p><strong>✅ Idempotent yapmanın iki yaygın yolu:</strong></p>
+      <div class="comparison" style="margin:0.5rem 0">
+        <div class="side">
+          <div class="side-title">1) Sil-yeniden-yaz (full replace)</div>
+          <p style="margin:0">O günün/partisyonun eski dosyasını sil, raporu baştan yaz.</p>
+          <p style="margin:0.35rem 0 0;font-size:0.88em">Mini örnekteki <code>to_parquet(...)</code> varsayılan olarak dosyanın üstüne yazar — tek dosyalı raporda bu yöntem.</p>
+        </div>
+        <div class="side">
+          <div class="side-title">2) Upsert</div>
+          <p style="margin:0"><strong>Up</strong>date + in<strong>sert</strong>: kayıt varsa güncelle, yoksa ekle.</p>
+          <p style="margin:0.35rem 0 0;font-size:0.88em">Örn. <code>city='Ankara' AND report_date='2024-06-01'</code> zaten varsa satırı değiştir; yoksa yeni satır ekle. Veritabanına yazarken sık kullanılır.</p>
+        </div>
+      </div>
+
+      <p><strong>Ne zaman patlar?</strong> Gece job'u yarıda kesilir → sabah biri "dünkü veri eksik" deyip <em>elle tekrar çalıştırır</em>. Idempotent değilse mükerrer satır; idempotent ise sonuç değişmez. Bu yüzden prod ETL'lerinde "aynı gün için iki kez koştum" senaryosu tasarım gereği güvenli olmalıdır.</p>
+
+      <hr style="margin:1rem 0;border:none;border-top:1px dashed var(--border-color)">
+
+      <p><strong>"Prod" ne demek?</strong> Yazılım üç aşamada çalışır — restoran analojisiyle:</p>
+      <div class="table-wrapper" style="margin:0.5rem 0">
+        <table>
+          <thead><tr><th>Ortam</th><th>Kısaltma</th><th>Ne işe yarar?</th><th>Kim etkilenir?</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Development</strong></td><td><code>dev</code></td><td>Geliştiricinin kendi bilgisayarı; deneme, hata, öğrenme</td><td>Sadece geliştirici — notebook patlarsa sorun yok</td></tr>
+            <tr><td><strong>Staging</strong></td><td><code>stg</code></td><td>Canlıya benzeyen prova ortamı; son kontrol</td><td>Test verisi — gerçek müşteri yok</td></tr>
+            <tr><td><strong>Production</strong></td><td><code>prod</code></td><td>Canlı sistem; gece ETL'i, dashboard'lar, raporlar buradan beslenir</td><td><strong>Gerçek müşteriler, gerçek para, gerçek kararlar</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><code>dev</code>'de ciroyu iki katına yazsanız sadece siz görürsünüz. <code>prod</code>'da aynı hata olursa yönetim yanlış ciroya göre sipariş, kampanya ve bütçe kararı verir — "prod hatası" denince kastedilen budur: canlı sistemde patladı, gece nöbetçisinin telefonu çalıyor.</p>
     </div>
 
     <h3>📅 ETL'i Kim Tetikler? — Orchestration</h3>
 
-    <p>ETL kodu kendi başına çalışmaz; bir <strong>zamanlayıcı (scheduler)</strong> gece 02:00'de "şimdi koş" der. Endüstri standardı: <strong>Apache Airflow</strong>, <strong>Prefect</strong>, <strong>Dagster</strong>. Bu araçlar görevleri <em>DAG</em> (Directed Acyclic Graph) olarak organize eder: "önce müşteriyi çek, sonra siparişi çek, ikisi bittikten sonra birleştir, sonra rapor yaz".</p>
+    <p>ETL kodu kendi başına çalışmaz; bir <strong>zamanlayıcı (scheduler)</strong> gece 02:00'de "şimdi koş" der. Endüstri standardı: <strong><a href="https://airflow.apache.org/" target="_blank" rel="noopener">Apache Airflow</a></strong>, <strong><a href="https://www.prefect.io/" target="_blank" rel="noopener">Prefect</a></strong>, <strong><a href="https://dagster.io/" target="_blank" rel="noopener">Dagster</a></strong>. Bu araçlar görevleri <em>DAG</em> (Directed Acyclic Graph) olarak organize eder: "önce müşteriyi çek, sonra siparişi çek, ikisi bittikten sonra birleştir, sonra rapor yaz".</p>
 
     <div class="glossary">
       <div class="glossary-title">📖 DAG ve Orchestration nedir?</div>
@@ -691,7 +1248,7 @@ print(report.head())</code></pre>
 flowchart LR
     A[extract_customers] --> C[join_and_clean]
     B[extract_orders]    --> C
-    W[fetch_weather_api] --> C
+    W[extract_web_logs] --> C
     C --> D[aggregate_by_city]
     D --> E[write_parquet]
     D --> F[send_email_report]
@@ -750,6 +1307,47 @@ tutar: [120, 340, 180]</code></pre></div>
       </div>
     </div>
 
+    <p>Sorgu sadece <code>tutar</code> kolonunu istiyor. Ama diskte veri <em>nasıl paketlenmişse</em>, okuma maliyeti ona göre belirlenir. Yukarıdaki 3 satırlık tabloda toplam 640 TL — şimdi bu toplamı almak için diskten ne okunur?</p>
+
+    <div class="diagram-container">
+      <div class="diagram-box">
+        <div class="storage-viz">
+          <p style="margin:0 0 0.65rem;font-size:0.88rem;font-weight:600;text-align:center">Sorgu: <code>SELECT SUM(tutar) FROM satislar</code></p>
+          <div class="storage-viz-grid">
+            <div class="storage-viz-panel">
+              <h5>📄 Satır bazlı dosya (CSV)</h5>
+              <p style="margin:0 0 0.5rem;font-size:0.78rem">CSV'de veri <strong>satır satır</strong> durur. Disk okuyucu satırın ortasından sadece <code>tutar</code> alamaz — her seferinde <em>tüm satırı</em> okur:</p>
+              <div class="storage-disk-label">Diskten okunan (3 satırın tamamı)</div>
+              <div class="storage-file-line read-all"><span class="extra">1, Ali, Ankara, </span><span class="need">120</span> <span style="font-size:0.65rem;color:#dc2626">← satırın tamamı okundu</span></div>
+              <div class="storage-file-line read-all"><span class="extra">2, Ayşe, İzmir, </span><span class="need">340</span></div>
+              <div class="storage-file-line read-all"><span class="extra">3, Veli, Ankara, </span><span class="need">180</span></div>
+              <p style="margin:0.35rem 0 0;font-size:0.72rem;color:var(--text-muted)"><span class="need" style="padding:0 0.2rem">Yeşil</span> = ihtiyacımız olan değer · <span class="extra">Soluk</span> = toplam için gereksiz ama yine de diskten geldi</p>
+              <div class="io-meter">
+                <div class="io-meter-label"><span>Disk I/O</span><span>~100% (4 kolonun hepsi)</span></div>
+                <div class="io-meter-bar"><div class="io-meter-fill full"></div></div>
+              </div>
+            </div>
+            <div class="storage-viz-panel">
+              <h5>📊 Sütun bazlı dosya (Parquet)</h5>
+              <p style="margin:0 0 0.5rem;font-size:0.78rem">Parquet'te her kolon <strong>ayrı blok</strong> halinde durur. Sorgu sadece <code>tutar</code> bloğunu ister — diğerleri diskten hiç okunmaz:</p>
+              <div class="storage-col-stack" style="grid-template-columns:1fr">
+                <div class="storage-col-block skip"><div class="col-name">id bloğu — okunmadı</div><div class="col-values">[1, 2, 3]</div></div>
+                <div class="storage-col-block skip"><div class="col-name">isim bloğu — okunmadı</div><div class="col-values">[Ali, Ayşe, Veli]</div></div>
+                <div class="storage-col-block skip"><div class="col-name">sehir bloğu — okunmadı</div><div class="col-values">[Ankara, İzmir, Ankara]</div></div>
+                <div class="storage-col-block read"><div class="col-name">tutar bloğu ✓ — okundu</div><div class="col-values">120, 340, 180 → SUM = 640</div></div>
+              </div>
+              <div class="io-meter">
+                <div class="io-meter-label"><span>Disk I/O</span><span>~25% (4 kolondan 1'i)</span></div>
+                <div class="io-meter-bar"><div class="io-meter-fill part"></div></div>
+              </div>
+            </div>
+          </div>
+          <p style="margin:0.75rem 0 0;font-size:0.82rem;color:var(--text-muted);text-align:center">4 kolonlu küçük tabloda fark 4 kat. Gerçek hayatta 30–100 kolon olunca fark onlarca kata çıkar — Ön Bilgi'deki Şekil A'da 30 kolonlu örneği görmüştük.</p>
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil 4a: CSV satırı bölünemez → hepsini okursun; Parquet kolon seçer → sadece tutar bloğu</div>
+    </div>
+
     <div class="diagram-container">
       <div class="diagram-box">
         <div class="mermaid">
@@ -764,17 +1362,17 @@ flowchart TB
         C4["tutar ▸ [120, 340, 180]"]
     end
     Q["📥 SELECT SUM(tutar)"]
-    Q -->|"Tüm satırları tara"| ROW
-    Q -->|"Sadece tutar kolonunu oku ✅"| C4
+    Q -->|"Her satırın tamamını oku<br>(id+isim+sehir+tutar)"| ROW
+    Q -->|"Sadece tutar bloğunu oku ✅"| C4
         </div>
       </div>
-      <div class="diagram-caption">Şekil 4: Analitik sorgular için sütunsal format neden çok daha hızlı?</div>
+      <div class="diagram-caption">Şekil 4b: Özet — CSV satırı bölünemez; Parquet sadece istenen kolon bloğunu okur</div>
     </div>
 
     <div class="alert alert-tip">
       <div class="alert-title">🧠 Altın Kural</div>
       <p><strong>OLTP</strong> (Online Transaction Processing — tek tek kayıt) ⇒ <em>satır bazlı</em> (PostgreSQL, MySQL).<br>
-      <strong>OLAP</strong> (Online Analytical Processing — büyük taramalar) ⇒ <em>sütun bazlı</em> (Parquet, ClickHouse, BigQuery).</p>
+      <strong>OLAP</strong> (Online Analytical Processing — büyük taramalar) ⇒ <em>sütun bazlı</em> (Parquet, <a href="https://clickhouse.com/" target="_blank" rel="noopener">ClickHouse</a>, <a href="https://cloud.google.com/bigquery" target="_blank" rel="noopener">BigQuery</a>).</p>
     </div>
 
     <!-- ═══════════════════════════════════════════ -->
@@ -785,7 +1383,7 @@ flowchart TB
       <p>"Sütunsal saklama hızlıdır" dedik ama bu sadece bir <em>fikir</em>. Şimdi bu fikrin somut bir uygulamasına bakıyoruz: <strong>Parquet</strong>. Endüstri standardı hale gelmesinin sebebini, mimari özelliklerini ve gerçek benchmark'ları göreceğiz. Mini ETL'imizdeki <code>to_parquet()</code> satırının perde arkasında neler olduğunu şimdi anlayacağız.</p>
     </div>
 
-    <p><strong>Apache Parquet</strong>, 2013'te Twitter ve Cloudera ortaklığıyla doğmuş, açık kaynak <strong>sütun-bazlı</strong> bir dosya formatıdır. Bugün <em>Spark, Hadoop, Pandas, DuckDB, Snowflake, BigQuery</em> — neredeyse her şey okur/yazar. Big data dünyasının <em>de facto</em> dosya formatıdır.</p>
+    <p><strong><a href="https://parquet.apache.org/" target="_blank" rel="noopener">Apache Parquet</a></strong>, 2013'te Twitter ve Cloudera ortaklığıyla doğmuş, açık kaynak <strong>sütun-bazlı</strong> bir dosya formatıdır. Bugün <em><a href="https://spark.apache.org/" target="_blank" rel="noopener">Spark</a>, <a href="https://hadoop.apache.org/" target="_blank" rel="noopener">Hadoop</a>, <a href="https://pandas.pydata.org/" target="_blank" rel="noopener">Pandas</a>, <a href="https://duckdb.org/" target="_blank" rel="noopener">DuckDB</a>, <a href="https://www.snowflake.com/" target="_blank" rel="noopener">Snowflake</a>, <a href="https://cloud.google.com/bigquery" target="_blank" rel="noopener">BigQuery</a></em> — neredeyse her şey okur/yazar. Big data dünyasının <em>de facto</em> dosya formatıdır.</p>
 
     <h3>🧱 Parquet'in 4 Süper Gücü</h3>
 
@@ -899,7 +1497,23 @@ flowchart TB
       <li><strong>Min/max istatistikleri:</strong> Her row group, her kolon için minimum ve maksimum değer. Örneğin: "Row group 1 → tarih kolonu: min=2024-01-01, max=2024-03-31".</li>
     </ul>
 
-    <p>Footer dosyanın <em>sonunda</em>dır çünkü Parquet veriyi yazarken sonuna kadar istatistikleri hesaplar; en sonda hepsini özetler.</p>
+    <div class="alert alert-info">
+      <div class="alert-title">❓ Peki neden footer? Header'da olsa daha mantıklı değil mi?</div>
+      <p>İlk bakışta öyle görünür — "önce katalog, sonra veri" daha doğal gelir. Ama Parquet dosyası <strong>yazılırken</strong> footer'daki bilgilerin çoğu henüz bilinmez:</p>
+      <div class="table-wrapper" style="margin:0.5rem 0">
+        <table>
+          <thead><tr><th>Footer bilgisi</th><th>Neden yazma bitmeden bilinmez?</th></tr></thead>
+          <tbody>
+            <tr><td>Row group offset'leri</td><td>Her grup yazıldıkça "dosyada nerede bitti?" ancak o an belli olur</td></tr>
+            <tr><td>MIN / MAX istatistikleri</td><td>O row group'taki veri yazılmadan min/max hesaplanamaz</td></tr>
+            <tr><td>Toplam row group sayısı</td><td>Dosya ne kadar büyüyecek, yazmadan kestirilemez</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Parquet <strong>tek geçişte, sırayla yaz</strong> mantığıyla tasarlandı: önce row group'lar diske yazılır, en sonda katalog (footer) eklenir, dosyanın sonuna footer boyutu + <code>PAR1</code> imzası konur. Header'a koymak isteseniz ya yazma bitince geri dönüp dosyayı yamamanız gerekir (karmaşık), ya da hem başta hem sonda katalog tutmanız (gereksiz tekrar).</p>
+      <p><strong>Okuma tarafında sorun yok:</strong> Okuyucu dosyanın <em>son 8 byte</em>'ına bakar → footer kaç KB → sondan o kadar geriye gidip katalogu okur. 100 GB dosyada bile planlama için sadece birkaç KB okunur; ardından ihtiyaç duyulan row group'lara <em>atlayarak</em> gidilir. Yani katalog sonda olsa da CSV gibi baştan sona taramak gerekmez.</p>
+      <p style="margin-bottom:0"><strong>Analoji:</strong> Kitabın <em>indeksi sonda</em>dır — bölümler yazılmadan "3. bölüm kaçıncı sayfada?" listesi tam çıkmaz. Parquet'te footer = o indeks; predicate pushdown da indekse bakıp "bu bölümü okumaya gerek yok" demektir.</p>
+    </div>
 
     <div class="alert alert-tip">
       <div class="alert-title">🎯 Footer ne kazandırır? — 3 somut avantaj</div>
@@ -955,6 +1569,11 @@ flowchart TB
 
     <h3>💻 Pandas ile Parquet</h3>
 
+    <div class="alert alert-info">
+      <div class="alert-title">📦 Ön koşul</div>
+      <p>Pandas'ta Parquet okumak/yazmak için ek paket gerekir: <code>pip install pyarrow</code> (veya <code>fastparquet</code>). Kurulu değilse <code>to_parquet()</code> hata verir.</p>
+    </div>
+
     <div class="code-block" data-lang="python">
       <pre><code>import pandas as pd
 
@@ -989,10 +1608,10 @@ ciro = pd.read_parquet("buyuk_dosya.parquet",
 
     <div class="alert alert-info">
       <div class="alert-title">🔗 Önceki bölümden geçiş</div>
-      <p>Parquet ile <em>diske yazış biçimini</em> çözdük — ama bu yetmiyor. Hikayemizdeki SuperMarket'in yıllık arama log'ları 200 GB. Tek bir bilgisayar (32 GB RAM) bu dosyayı açamaz, hatta açsa bile <em>tek çekirdeğiyle</em> işlemek günlerce sürer. Çözüm? İşi <strong>onlarca makineye dağıtmak</strong>. Bu bölümde, bu dağıtma işini sihirli bir şekilde basitleştiren aracı tanıyoruz: <strong>Apache Spark</strong>. Çok önemli: Spark'ı "daha hızlı Pandas" diye düşünmeyin; <em>daha büyük</em> veriyi işleyebilen, otomatik paralel hesaplama yapan farklı bir dilim.</p>
+      <p>Parquet ile <em>diske yazış biçimini</em> çözdük — ama bu yetmiyor. Hikayemizdeki SuperMarket'in yıllık arama log'ları 200 GB. Tek bir bilgisayar (32 GB RAM) bu dosyayı açamaz, hatta açsa bile <em>tek çekirdeğiyle</em> işlemek günlerce sürer. Çözüm? İşi <strong>onlarca makineye dağıtmak</strong>. Bu bölümde, bu dağıtma işini sihirli bir şekilde basitleştiren aracı tanıyoruz: <strong><a href="https://spark.apache.org/" target="_blank" rel="noopener">Apache Spark</a></strong>. Çok önemli: Spark'ı "daha hızlı Pandas" diye düşünmeyin; <em>daha büyük</em> veriyi işleyebilen, otomatik paralel hesaplama yapan farklı bir dilim.</p>
     </div>
 
-    <p>2009'da UC Berkeley AMPLab'da doğan <strong>Apache Spark</strong>, dağıtık veri işleme için bir <em>genel amaçlı motor</em>dur. Bugün <em>Netflix, Uber, Alibaba, Apple</em> — yüzlerce büyük şirket terabayt/petabayt boyutunda veriyi günlük olarak Spark ile işler.</p>
+    <p>2009'da UC Berkeley AMPLab'da doğan <strong><a href="https://spark.apache.org/" target="_blank" rel="noopener">Apache Spark</a></strong>, dağıtık veri işleme için bir <em>genel amaçlı motor</em>dur. Bugün <em>Netflix, Uber, Alibaba, Apple</em> — yüzlerce büyük şirket terabayt/petabayt boyutunda veriyi günlük olarak Spark ile işler.</p>
 
     <h3>🤔 Spark Neden Doğdu? — Hadoop MapReduce'un Sorunu</h3>
 
@@ -1000,7 +1619,7 @@ ciro = pd.read_parquet("buyuk_dosya.parquet",
 
     <div class="alert alert-tip">
       <div class="alert-title">📚 Hadoop nedir? — Kısa bir hatırlatma</div>
-      <p><strong>Hadoop</strong>, 2006'da Yahoo'da doğan ve büyük veriyi <em>onlarca/yüzlerce ucuz bilgisayara dağıtarak</em> işlemeyi sağlayan ilk yaygın açık kaynak sistemdi. İki ana parçası vardı:</p>
+      <p><strong><a href="https://hadoop.apache.org/" target="_blank" rel="noopener">Hadoop</a></strong>, 2006'da Yahoo'da doğan ve büyük veriyi <em>onlarca/yüzlerce ucuz bilgisayara dağıtarak</em> işlemeyi sağlayan ilk yaygın açık kaynak sistemdi. İki ana parçası vardı:</p>
       <ul>
         <li><strong>HDFS</strong> (Hadoop Distributed File System): bir dosyayı parçalayıp yüzlerce makineye dağıtan dosya sistemi. Tek bir 10 TB'lık dosya, aslında 100 ayrı makinede yaşıyordu. <em>(Dağıtık dosya sistemi nedir? Hemen alttaki kutuya bakın.)</em></li>
         <li><strong>MapReduce</strong>: HDFS üzerindeki dosyaları paralel olarak <em>işleme</em> motoru. Şimdi asıl odak burası.</li>
@@ -1035,16 +1654,16 @@ ciro = pd.read_parquet("buyuk_dosya.parquet",
   Makine 2: "top çimene düştü ali güldü"
   ... (98 makine daha)
 
-╈ MAP aşaması — her makine kendi parçasını işler, hiç konuşma yok:
+→ MAP aşaması — her makine kendi parçasını işler, hiç konuşma yok:
   Makine 1 üretir: (ali,1) (topu,1) (attı,1) (ali,1) (koştu,1)
   Makine 2 üretir: (top,1) (çimene,1) (düştü,1) (ali,1) (güldü,1)
 
-╈ SHUFFLE aşaması — aynı kelime aynı makineye gitsin diye veri taşınır:
+→ SHUFFLE aşaması — aynı kelime aynı makineye gitsin diye veri taşınır:
   "ali" anahtarlı tüm çiftler → Reducer A'ya
   "top" anahtarlı tüm çiftler   → Reducer B'ye
   ... vesaire
 
-╈ REDUCE aşaması — her reducer kendi anahtar(lar)ını toplar:
+→ REDUCE aşaması — her reducer kendi anahtar(lar)ını toplar:
   Reducer A: ali → 1+1+1 = 3
   Reducer B: top → 1, topu → 1
   ...
@@ -1061,6 +1680,44 @@ ciro = pd.read_parquet("buyuk_dosya.parquet",
     <div class="alert alert-warning">
       <div class="alert-title">⚡ Neden bu kadar önemli? RAM ↔ Disk hız farkı</div>
       <p>Bir bilgisayar için RAM (Random Access Memory) ile disk (SSD/HDD) arasındaki hız farkı <strong>100 ila 10.000 kat</strong>'tır. Yani RAM'den 1 saniyede okuyabileceğinizi diskten 100 saniyede ancak okuyabilirsiniz. Her adımda diske yazmak — sonra aynı veriyi tekrar okumak — hesaplamanın %80'ini <em>boşa giden disk trafiğine</em> harcıyordu.</p>
+
+      <div class="diagram-container" style="margin-top:0.75rem">
+        <div class="diagram-box">
+          <div class="storage-viz-grid stacked">
+            <div class="storage-viz-panel">
+              <h5>🐢 MapReduce — her adımda diske yaz</h5>
+              <div class="flow-viz-col">
+                <div class="flow-viz-box">📥 Veri (HDFS)</div>
+                <span class="flow-viz-arrow">↓</span>
+                <div class="flow-viz-box">MAP</div>
+                <span class="flow-viz-arrow">↓</span>
+                <div class="flow-viz-box warn">💾 Disk — ara sonuç yazıldı</div>
+                <span class="flow-viz-arrow">↓</span>
+                <div class="flow-viz-box">REDUCE</div>
+                <span class="flow-viz-arrow">↓</span>
+                <div class="flow-viz-box warn">💾 Disk — nihai çıktı</div>
+              </div>
+              <p style="margin:0.4rem 0 0;font-size:0.75rem;color:var(--text-muted);text-align:center">50 iterasyon = 50× disk okuma/yazma 😱</p>
+            </div>
+            <div class="storage-viz-panel">
+              <h5>🐇 Spark — ara sonuç RAM'de kalır</h5>
+              <div class="flow-viz-col">
+                <div class="flow-viz-box">📥 Veri (HDFS / S3)</div>
+                <span class="flow-viz-arrow">↓</span>
+                <div class="flow-viz-box">İşlem 1</div>
+                <span class="flow-viz-arrow">↓</span>
+                <div class="flow-viz-box ok">⚡ RAM — ara sonuç bellekte</div>
+                <span class="flow-viz-arrow">↓</span>
+                <div class="flow-viz-box">İşlem 2</div>
+                <span class="flow-viz-arrow">↓</span>
+                <div class="flow-viz-box ok">⚡ RAM — sonraki adım buradan okur</div>
+              </div>
+              <p style="margin:0.4rem 0 0;font-size:0.75rem;color:var(--text-muted);text-align:center">Aynı veri tekrar tekrar RAM'den okunur — çok daha hızlı</p>
+            </div>
+          </div>
+        </div>
+        <div class="diagram-caption">Şekil 6a: MapReduce her adımda diske yazar; Spark ara sonuçları RAM'de tutar</div>
+      </div>
     </div>
 
     <p><strong>Kelime sayma</strong> gibi <em>tek adımlı</em> işler için bu sorun değildi. Ama düşünün: makine öğrenmesi algoritmaları (örneğin k-means kelimeleme veya bir sınıflandırma modelinin eğitilmesi) genelde <strong>iteratif</strong>tir, yani aynı veri üzerinde <em>defalarca</em> geçiş yapar. Her geçişe "iterasyon" denir.</p>
@@ -1105,42 +1762,65 @@ ciro = pd.read_parquet("buyuk_dosya.parquet",
         <dt>Driver</dt><dd>"Beyin". Sizin yazdığınız kodu okuyan, plan çıkaran ve görevleri dağıtan tek bir program. Tipik olarak laptop'unuzda veya bir notebook sunucusunda koşar.</dd>
         <dt>Worker Node</dt><dd>İşi yapan sunuculardan her biri. 10, 100, 1000 tane olabilir.</dd>
         <dt>Executor</dt><dd>Worker node üzerinde çalışan, RAM ve CPU'su olan bir <em>işçi süreç</em>. Bir worker'da birden fazla executor olabilir.</dd>
-        <dt>Cluster Manager</dt><dd>Hangi worker'ın boş olduğunu bilen ve görevleri ona göre dağıtan koordinatör. YARN (Hadoop dünyası), Kubernetes (modern) veya Spark'ın kendi standalone modu olabilir.</dd>
+        <dt>Cluster Manager</dt><dd>Cluster'daki makineleri yöneten <em>kaynak koordinatörü</em>. Driver'ın istediği sayıda executor'ı hangi worker'da başlatacağına karar verir. YARN, Kubernetes veya Spark Standalone olabilir. <strong>Önemli:</strong> Spark task'larını dağıtmaz — task'ları Driver gönderir.</dd>
         <dt>Task</dt><dd>Bir veri parçası (partition) üzerinde yapılacak küçük bir iş birimi. Driver "görevleri" hazırlar, executor'lar koşturur.</dd>
       </dl>
     </div>
 
     <div class="diagram-container">
-      <div class="diagram-box" style="min-height:560px">
-        <div class="mermaid" style="min-height:560px">
+      <div class="diagram-box">
+        <div class="flow-viz" style="margin-bottom:1rem">
+          <p style="margin:0 0 0.65rem;font-size:0.88rem;font-weight:600;text-align:center">Spark bir uygulamayı 4 adımda çalıştırır</p>
+          <div class="storage-viz-grid">
+            <div class="storage-viz-panel">
+              <h5>① Driver kodu okur</h5>
+              <p style="margin:0;font-size:0.78rem">PySpark kodunuz laptop'ta çalışır. <code>SparkSession</code> = Driver. Henüz cluster'da iş yok — sadece plan tutuluyor.</p>
+            </div>
+            <div class="storage-viz-panel">
+              <h5>② Cluster Manager'dan kaynak iste</h5>
+              <p style="margin:0;font-size:0.78rem">Driver der ki: <em>"4 executor, her birine 4 GB RAM ver."</em> CM makine ayırır; veri işlemez.</p>
+            </div>
+            <div class="storage-viz-panel">
+              <h5>③ Executor'lar başlar</h5>
+              <p style="margin:0;font-size:0.78rem">CM, worker node'larda executor süreçlerini açar. Executor'lar Driver'ın adresini öğrenir.</p>
+            </div>
+            <div class="storage-viz-panel">
+              <h5>④ Driver task gönderir</h5>
+              <p style="margin:0;font-size:0.78rem">Action gelince Driver veriyi partition'lara böler, task'ları executor'lara <strong>doğrudan</strong> yollar. Sonuçlar Driver'a döner.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mermaid">
 flowchart TB
-    U["👨‍💻 Kullanıcı kodu<br>(PySpark / Scala)"]
-    D["🧠 Driver Program<br>SparkSession + DAG planlayıcı"]
-    CM["📋 Cluster Manager<br>(YARN / Kubernetes / Standalone)"]
-    subgraph W1["💻 Worker Node 1"]
-        E1["Executor 1<br>RAM + CPU"]
-        E2["Executor 2"]
-    end
-    subgraph W2["💻 Worker Node 2"]
-        E3["Executor 3"]
-        E4["Executor 4"]
+    U["👨‍💻 PySpark kodu<br>(laptop / notebook)"]
+    D["🧠 Driver<br>plan + task dağıtımı"]
+    CM["📋 Cluster Manager<br>sadece kaynak ayırır"]
+    subgraph W["💻 Worker node'lar"]
+        EX["Executor'lar<br>RAM + CPU ile task koşturur"]
     end
     U --> D
-    D ==>|"(1) kaynak iste<br>kaç executor, ne kadar RAM?"| CM
-    CM ==>|"(2) executor başlat"| W1
-    CM ==>|"(2) executor başlat"| W2
-    CM -.->|"(3) executor listesini<br>Driver'a bildir"| D
-    D -.->|"(4) task gönder (doğrudan)"| E1
-    D -.->|"(4) task gönder"| E2
-    D -.->|"(4) task gönder"| E3
-    D -.->|"(4) task gönder"| E4
-    E1 -.->|"sonuç"| D
-    E2 -.->|"sonuç"| D
-    E3 -.->|"sonuç"| D
-    E4 -.->|"sonuç"| D
+    D ==>|"kaynak iste"| CM
+    CM ==>|"executor başlat"| EX
+    EX -.->|"Driver'a kaydol"| D
+    D -.->|"task gönder"| EX
+    EX -.->|"sonuç"| D
         </div>
       </div>
-      <div class="diagram-caption">Şekil 6: Driver önce Cluster Manager'dan kaynak ister (kalın oklar = kontrol/kaynak), executor'lar başlaydıktan sonra task'ları doğrudan executor'lara gönderir (kesikli oklar = iş akışı)</div>
+      <div class="diagram-caption">Şekil 6: Kalın oklar = kaynak/kontrol (CM devreye girer) · Kesikli oklar = veri işi (Driver ↔ Executor, CM araya girmez)</div>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔍 Şekil 6'yı adım adım okuyalım</div>
+      <p><strong>Karıştırılan nokta:</strong> Cluster Manager task dağıtmaz. O sadece "kaç executor, ne kadar RAM?" sorusuna cevap verir — tıpkı bir otelin resepsiyonunun size oda tahsis etmesi gibi. Odada ne yapacağınıza siz (Driver) karar verirsiniz.</p>
+      <ol>
+        <li><strong>Driver başlar:</strong> <code>SparkSession.builder…getOrCreate()</code> çalıştığında Driver programı ayağa kalkar. Kodunuz burada koşar; transformation'lar henüz cluster'a gitmez.</li>
+        <li><strong>Kaynak isteği:</strong> Driver, Cluster Manager'a (YARN / Kubernetes / Standalone) uygulama için executor sayısı ve bellek miktarı bildirir.</li>
+        <li><strong>Executor'lar açılır:</strong> CM boş worker node'larda executor JVM süreçlerini başlatır. Executor'lar Driver'a kaydolur — bundan sonra Driver onlarla doğrudan konuşabilir.</li>
+        <li><strong>Task koşumu:</strong> Bir <em>action</em> (<code>.count()</code>, <code>.show()</code>…) tetiklenince Driver veriyi partition'lara böler, her partition için task üretir ve executor'lara gönderir. Executor hesabı yapar, sonucu Driver'a yollar. CM bu aşamada devreye girmez.</li>
+      </ol>
+      <p><strong>Örnek:</strong> 1 TB Parquet dosyası 200 partition'a bölünmüş olsun, 4 executor'unuz var. Driver ~200 task oluşturur; executor'lar bunları sırayla alıp işler — hepsi bitince Driver sonucu birleştirir. Eski diyagramda 4 ayrı executor oku vardı; mantık aynı, sadece task sayısı partition sayısına göre artar.</p>
+      <p><strong>Worker vs Executor:</strong> Worker = fiziksel/sunucu makine. Executor = o makinede çalışan Spark işçi süreci. Bir worker'da birden fazla executor olabilir.</p>
+      <p><strong>Görsel sadeleştirme ≠ yanlış anlatım:</strong> Diyagramda executor'ları tek kutu yaptık, 4 ayrı ok çizmedik — çünkü hepsi aynı rolü oynar. Spark'ın içindeki tüm parçaları (DAGScheduler, TaskScheduler, BlockManager, shuffle, cache…) göstermiyoruz; ama <em>kim kime ne gönderir</em> sorusunun cevabı doğru: CM kaynak ayırır, Driver task dağıtır, executor işler. İleride lazy evaluation ve shuffle bölümlerinde işin geri kalanını göreceksiniz.</p>
     </div>
 
     <h3>🧩 Spark'ın Bileşenleri</h3>
@@ -1176,7 +1856,7 @@ flowchart TB
       <p>Spark'ın <em>mimarisini</em> gördük: Driver, Executor, Cluster Manager. Şimdi büyüleyici kısma geliyoruz — tüm bu karmaşıklığa <strong>Python'dan</strong> nasıl konuşuruz? Önemli sürpriz: <em>Pandas'taki kodun neredeyse aynen çalışan haline.</em> 3. Bölümde Pandas ile yazdığımız mini ETL'i şimdi PySpark'a çevireceğiz; aynı iş, aynı adımlar, ama artık 1 GB değil 1 TB veride bile çalışabilir.</p>
     </div>
 
-    <p><strong>PySpark</strong>, Spark'ın Python API'sidir. Pandas'ı biliyorsanız %80'inden zaten haberdarsınız — fark, kod aynı görünse de <em>arka planda yüzlerce makinede</em> çalışıyor olmasıdır.</p>
+    <p><strong><a href="https://spark.apache.org/docs/latest/api/python/index.html" target="_blank" rel="noopener">PySpark</a></strong>, Spark'ın Python API'sidir. Pandas'ı biliyorsanız %80'inden zaten haberdarsınız — fark, kod aynı görünse de <em>arka planda yüzlerce makinede</em> çalışıyor olmasıdır.</p>
 
     <h3>🚀 Hello, PySpark</h3>
 
@@ -1251,7 +1931,7 @@ sonuc.show()</code></pre></div>
     <div class="alert alert-tip">
       <div class="alert-title">🍳 Günlük hayattan benzetme</div>
       <p>Düşünün ki bir yemek tarifiniz var: <em>"500 g soğanı 2 mm halkalar halinde doğra, geniş bir tavada 50 g tereyağını erit, soğanları 30 dakika kavur, sonra 1 kg dana kıymayı ekle, 1 yemek kaşığı tuz at… ve sonra yemek tamamen pişince bütün yemeğin yarısını çöpe at."</em></p>
-      <p><strong>Aceleci (eager) yaklaşım — Pandas:</strong> Tarifi satır satır okur, her adımı <em>hemen</em> yaparsın. 500 g soğanı doğrarsın (gözlerin yaşarır), 30 dakika kavurursun, 1 kg kıymayı atarsın... sonra son satırı okuyunca "yarısını çöpe at" dersin. 250 g soğan, 25 g tereyağ, 500 g kıyma, 15 dakika işçilik <em>boşa gitmiş</em>tir. Pandas tam böyle: her satırda hemen çalışır, ileride ne yapacağını bilmez.</p></p>
+      <p><strong>Aceleci (eager) yaklaşım — Pandas:</strong> Tarifi satır satır okur, her adımı <em>hemen</em> yaparsın. 500 g soğanı doğrarsın (gözlerin yaşarır), 30 dakika kavurursun, 1 kg kıymayı atarsın... sonra son satırı okuyunca "yarısını çöpe at" dersin. 250 g soğan, 25 g tereyağ, 500 g kıyma, 15 dakika işçilik <em>boşa gitmiş</em>tir. Pandas tam böyle: her satırda hemen çalışır, ileride ne yapacağını bilmez.</p>
       <p><strong>Tembel (lazy) yaklaşım — Spark:</strong> Önce <em>tüm tarifi</em> baştan sona okursun. En sondaki "yarısını çöpe at"ı görür ve "Eğer en sonda yarısını atacaksam, en başta 250 g soğan, 25 g tereyağ, 500 g kıyma ile başlayayım" dersin. Yarı zaman, yarı malzeme.</p>
       <p>Spark'ın yaptığı şey tam olarak bu: <em>action</em> tetiklenene kadar ("yemek pişmiş kabul edilene kadar") hiçbir transformation çalışmaz; Catalyst Optimizer tüm tarifi görür, sonu görür, geriye dönüp <em>en az işle</em> sonuca nasıl varılacağını planlar. <strong>Somut Spark örneği:</strong> <code>df.read.parquet("100GB").filter("city='İstanbul'").show(10)</code> dersen, aceleci olsaydı 100 GB'ı okuyup sonra filtreleyip sonra ilk 10'unu gösterirdi. Tembel olduğu için: <em>show(10)</em>'u görür, Parquet'in predicate pushdown'ını kullanıp sadece İstanbul'lu row group'ları açar, oradan sadece 10 satır okuyana kadar iş yapar ve durur. 100 GB değil belki 20 MB okumuş olur.</p>
     </div>
@@ -1274,7 +1954,20 @@ grouped.show()    # 📢 ACTION — İşte şimdi her şey çalışır:
 
     <div class="diagram-container">
       <div class="diagram-box">
-        <div class="mermaid">
+        <div class="flow-viz">
+          <p style="margin:0 0 0.5rem;font-size:0.85rem;font-weight:600;text-align:center">Lazy evaluation: action gelene kadar sadece plan</p>
+          <div class="flow-viz-row" style="justify-content:center">
+            <div class="flow-viz-box muted">read</div>
+            <span class="flow-viz-arrow">→</span>
+            <div class="flow-viz-box muted">filter</div>
+            <span class="flow-viz-arrow">→</span>
+            <div class="flow-viz-box muted">groupBy</div>
+            <span class="flow-viz-arrow">→</span>
+            <div class="flow-viz-box highlight">show() ACTION</div>
+          </div>
+          <p style="margin:0.5rem 0 0;font-size:0.78rem;color:var(--text-muted);text-align:center">Sol üç kutu henüz çalışmadı — sadece tarif. <code>show()</code> gelince Catalyst optimize edip cluster'da koşturur.</p>
+        </div>
+        <div class="mermaid" style="margin-top:1rem">
 flowchart LR
     R["spark.read.csv()"] --> T1["filter(amount > 100)"]
     T1 --> T2["groupBy(city)"]
@@ -1307,7 +2000,33 @@ flowchart LR
 
     <p>Ama bazı işlemler farklıdır: <code>groupBy("sehir")</code> veya <code>join</code> gibi işlemler için <strong>aynı anahtarlı tüm satırların aynı makinede</strong> bulunması gerekir. Çünkü "Istanbul'un toplam tutarı"nı hesaplayacak makinenin, Istanbul'a ait tüm satırlara erişmesi lazımdır. Halbuki "Istanbul" satırları bin partition'a, dolayısıyla onlarca farklı makineye dağılmış olabilir.</p>
 
-    <p>İşte bu durumda Spark <strong>shuffle</strong> yapar: tüm satırları ağ üzerinden taşıyıp, anahtara göre yeniden gruplar. Şöyle görselleştirelim:</p>
+    <p>İşte bu durumda Spark <strong>shuffle</strong> yapar: tüm satırları ağ üzerinden taşıyıp, anahtara göre yeniden gruplar.</p>
+
+    <div class="diagram-container">
+      <div class="diagram-box">
+        <div class="flow-viz">
+          <p style="margin:0 0 0.5rem;font-size:0.85rem;font-weight:600">groupBy("sehir") öncesi → shuffle sonrası</p>
+          <div class="storage-viz-grid">
+            <div class="storage-viz-panel">
+              <h5>Önce (karışık dağılmış)</h5>
+              <div class="flow-viz-box" style="margin:3px 0">Makine A: İst 50, Ank 30, İzm 20</div>
+              <div class="flow-viz-box" style="margin:3px 0">Makine B: İst 70, Bursa 40, Ank 60</div>
+              <div class="flow-viz-box" style="margin:3px 0">Makine C: İzm 80, İst 90, Bursa 25</div>
+            </div>
+            <div class="storage-viz-panel">
+              <h5>Sonra (şehir başına toplandı)</h5>
+              <div class="flow-viz-box ok" style="margin:3px 0">Makine A: tüm İstanbul satırları</div>
+              <div class="flow-viz-box ok" style="margin:3px 0">Makine B: tüm Ankara satırları</div>
+              <div class="flow-viz-box ok" style="margin:3px 0">Makine C: İzmir + Bursa</div>
+            </div>
+          </div>
+          <p style="margin:0.5rem 0 0;font-size:0.78rem;color:var(--text-muted)">Veri ağ üzerinden taşınır — pahalı adım. Gereksiz shuffle'dan kaçınmak Spark optimizasyonunun kalbidir.</p>
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil 7a: Shuffle = aynı anahtarlı satırları aynı makinede toplamak</div>
+    </div>
+
+    <p>Metin tabanlı detay:</p>
 
     <div class="code-block" data-lang="text">
       <pre><code>SHUFFLE ÖNCESİ (satırlar rastgele 4 makineye dağılmış):
@@ -1316,8 +2035,8 @@ flowchart LR
   Makine C: [Izmir 80,    Istanbul 90, Bursa 25]
   Makine D: [Ankara 15,   Izmir 35,  Istanbul 10]
 
-╈ groupBy("sehir").sum() işlemi tetiklenir
-╈ SHUFFLE: ağ üzerinden veri taşınır ki aynı şehir aynı makinede toplansın
+→ groupBy("sehir").sum() işlemi tetiklenir
+→ SHUFFLE: ağ üzerinden veri taşınır ki aynı şehir aynı makinede toplansın
 
 SHUFFLE SONRASI (şehre göre yeniden gruplanmış):
   Makine A: [Istanbul 50, 70, 90, 10]   → sum = 220
@@ -1416,14 +2135,14 @@ flowchart TD
 
     <div class="card-grid">
       <div class="card">
-        <div class="card-title">🐻 Polars</div>
+        <div class="card-title">🐻 <a href="https://pola.rs/" target="_blank" rel="noopener">Polars</a></div>
         <div class="card-desc">
           <p>Rust ile yazılmış, multi-core kullanan, lazy evaluation destekli modern DataFrame kütüphanesi. Pandas API'sine çok benzer ama 5–30 kat hızlı. 50 GB CSV'yi tek bir makinede rahatlıkla işler. Son 2 yılda hızla yayıldı.</p>
           <p><em>Ne zaman?</em> Pandas yetmiyor ama Spark fazla geliyorsa.</p>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">🦆 DuckDB</div>
+        <div class="card-title">🦆 <a href="https://duckdb.org/" target="_blank" rel="noopener">DuckDB</a></div>
         <div class="card-desc">
           <p>"SQLite'ın analitik kardeşi." Tek bir <code>pip install</code> ile gelir, sunucu yok, kurulum yok. Doğrudan Parquet/CSV dosyaları üzerinde <em>SQL</em> çalıştırır ve şaşırtıcı hızlıdır. <code>SELECT * FROM 'data.parquet' WHERE …</code> kadar basit.</p>
           <p><em>Ne zaman?</em> Yerel/notebook analizi, ad-hoc sorgular, Pandas yerine SQL tercih edenler.</p>
@@ -1435,28 +2154,28 @@ flowchart TD
 
     <div class="card-grid">
       <div class="card">
-        <div class="card-title">🐍⚗️ Dask</div>
+        <div class="card-title">🐍⚗️ <a href="https://www.dask.org/" target="_blank" rel="noopener">Dask</a></div>
         <div class="card-desc">
           <p>"Pandas + NumPy + scikit-learn'ü dağıtık yapalım" felsefesiyle doğdu. API tamamen Pandas'a benzer; öğrenme eğrisi az. Spark'a göre kurulumu daha hafif, ama ekosistemi ve performansı daha küçük ölçeklerde.</p>
           <p><em>Ne zaman?</em> Pandas/scikit ekibi varsa ve cluster'ı hafif tutmak istiyorsanız.</p>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">☀️ Ray</div>
+        <div class="card-title">☀️ <a href="https://www.ray.io/" target="_blank" rel="noopener">Ray</a></div>
         <div class="card-desc">
           <p>Berkeley çıkışlı (Spark gibi), ama odak noktası ML/AI iş yükleri. Özellikle <strong>distributed model training</strong> ve <strong>reinforcement learning</strong>'de güçlü. ChatGPT altındaki OpenAI altyapısının bir parçası olarak ün kazandı.</p>
           <p><em>Ne zaman?</em> Dağıtık Python ML training, hyperparameter tuning.</p>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">🌊 Apache Flink</div>
+        <div class="card-title">🌊 <a href="https://flink.apache.org/" target="_blank" rel="noopener">Apache Flink</a></div>
         <div class="card-desc">
           <p>"Streaming'in kralı." Spark'ın batch güçlü olduğu yerde Flink, gerçek anlamda olay bazlı (event-driven) streaming için tasarlandı. Düşük gecikme (millisecond) gerektiren senaryolarda Spark'tan iyidir. Detayını Hafta 4'te göreceğiz.</p>
           <p><em>Ne zaman?</em> Gerçek zamanlı dolandırıcılık tespiti, IoT, finans tickerları.</p>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">🎶 Apache Beam</div>
+        <div class="card-title">🎶 <a href="https://beam.apache.org/" target="_blank" rel="noopener">Apache Beam</a></div>
         <div class="card-desc">
           <p>Bir <em>API</em>'dir, bir motor değildir. "Tek kod yaz, Spark'ta veya Flink'te veya Google Dataflow'da çalışsın." Google'ın çıkardığı portable pipeline soyutlaması.</p>
           <p><em>Ne zaman?</em> Çok motorda çalışması gereken büyük kurumsal pipeline'lar.</p>
@@ -1472,12 +2191,12 @@ flowchart TD
       <table>
         <thead><tr><th>Ürün</th><th>Sağlayıcı</th><th>Kısa not</th></tr></thead>
         <tbody>
-          <tr><td><strong>Snowflake</strong></td><td>Bağımsız (bulut)</td><td>Bulut DW pazar lideri. Storage ve compute ayrı; istediğin kadar warehouse açıp kapatabilirsin.</td></tr>
-          <tr><td><strong>BigQuery</strong></td><td>Google Cloud</td><td>Sunucusuz; sorgu başına ödeme. Petabyte ölçeğine kadar saniyeler içinde SQL.</td></tr>
-          <tr><td><strong>Redshift</strong></td><td>AWS</td><td>Eski jenerasyon ama AWS'de yaygın. PostgreSQL uyumlu.</td></tr>
-          <tr><td><strong>Synapse</strong></td><td>Microsoft Azure</td><td>Microsoft dünyasında Snowflake/BigQuery muadili.</td></tr>
-          <tr><td><strong>Trino / Presto</strong></td><td>Açık kaynak</td><td>S3/HDFS/Parquet üzerinde doğrudan SQL çalıştırır. Facebook'tan çıktı.</td></tr>
-          <tr><td><strong>Apache Hive</strong></td><td>Açık kaynak</td><td>SQL-on-Hadoop'un atası. Hala kurumsal sistemlerde çokca rastlanır.</td></tr>
+          <tr><td><strong><a href="https://www.snowflake.com/" target="_blank" rel="noopener">Snowflake</a></strong></td><td>Bağımsız (bulut)</td><td>Bulut DW pazar lideri. Storage ve compute ayrı; istediğin kadar warehouse açıp kapatabilirsin.</td></tr>
+          <tr><td><strong><a href="https://cloud.google.com/bigquery" target="_blank" rel="noopener">BigQuery</a></strong></td><td>Google Cloud</td><td>Sunucusuz; sorgu başına ödeme. Petabyte ölçeğine kadar saniyeler içinde SQL.</td></tr>
+          <tr><td><strong><a href="https://aws.amazon.com/redshift/" target="_blank" rel="noopener">Redshift</a></strong></td><td>AWS</td><td>Eski jenerasyon ama AWS'de yaygın. PostgreSQL uyumlu.</td></tr>
+          <tr><td><strong><a href="https://azure.microsoft.com/en-us/products/synapse-analytics" target="_blank" rel="noopener">Synapse</a></strong></td><td>Microsoft Azure</td><td>Microsoft dünyasında Snowflake/BigQuery muadili.</td></tr>
+          <tr><td><strong><a href="https://trino.io/" target="_blank" rel="noopener">Trino</a></strong> / <a href="https://prestodb.io/" target="_blank" rel="noopener">Presto</a></td><td>Açık kaynak</td><td>S3/HDFS/Parquet üzerinde doğrudan SQL çalıştırır. Facebook'tan çıktı.</td></tr>
+          <tr><td><strong><a href="https://hive.apache.org/" target="_blank" rel="noopener">Apache Hive</a></strong></td><td>Açık kaynak</td><td>SQL-on-Hadoop'un atası. Hala kurumsal sistemlerde çokca rastlanır.</td></tr>
         </tbody>
       </table>
     </div>
@@ -1488,7 +2207,7 @@ flowchart TD
 
     <div class="comparison">
       <div class="side">
-        <h4>🌿 scikit-learn (sklearn)</h4>
+        <h4>🌿 <a href="https://scikit-learn.org/stable/" target="_blank" rel="noopener">scikit-learn</a> (sklearn)</h4>
         <ul>
           <li>Python ML dünyasının <strong>standart karşılaştırma noktası</strong>.</li>
           <li>Lineer regresyon, lojistik regresyon, random forest, k-means, PCA, SVM… <em>klasik ML'in tümü</em> burada.</li>
@@ -1499,7 +2218,7 @@ flowchart TD
         <p><em>Hafta 4'ün anonimleştirme örneğinde scikit-learn'ü kullanacağız. Ama bu, kütüphanenin tamamının çok küçük bir parçası.</em></p>
       </div>
       <div class="side">
-        <h4>⚡ Spark MLlib</h4>
+        <h4>⚡ <a href="https://spark.apache.org/mllib/" target="_blank" rel="noopener">Spark MLlib</a></h4>
         <ul>
           <li>Spark'ın içindeki ML kütüphanesi; ayrı kurulum yok.</li>
           <li>scikit-learn'deki algoritmaların <strong>dağıtık versiyonları</strong>: <code>LogisticRegression</code>, <code>RandomForestClassifier</code>, <code>KMeans</code>, <code>ALS</code> (öneri sistemi)…</li>
@@ -1514,25 +2233,25 @@ flowchart TD
 
     <div class="card-grid">
       <div class="card">
-        <div class="card-title">🌲 XGBoost / LightGBM / CatBoost</div>
+        <div class="card-title">🌲 <a href="https://xgboost.readthedocs.io/" target="_blank" rel="noopener">XGBoost</a> / <a href="https://lightgbm.readthedocs.io/" target="_blank" rel="noopener">LightGBM</a> / <a href="https://catboost.ai/" target="_blank" rel="noopener">CatBoost</a></div>
         <div class="card-desc">
           <p><strong>Gradient boosting</strong> (sıralı ağaçlar) ailesinin güncel yıldızları. Tabular veride (satır-sütun) <em>scikit-learn'den çoğunlukla daha doğru</em> sonuç verir. Kaggle yarışmalarının %80'i bunlardan biriyle kazanılır. scikit-learn ile aynı API'ye sahip; <code>.fit()</code>/<code>.predict()</code>.</p>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">🔥 PyTorch / TensorFlow</div>
+        <div class="card-title">🔥 <a href="https://pytorch.org/" target="_blank" rel="noopener">PyTorch</a> / <a href="https://www.tensorflow.org/" target="_blank" rel="noopener">TensorFlow</a></div>
         <div class="card-desc">
           <p><strong>Derin öğrenme</strong> motorları. Görüntü, ses, dil modelleri (LLM) bunlarla yazılır. GPU/TPU üzerinde çalışır. Klasik tabular veriden çok, ham veri (piksel, ses dalgası, metin) için tercih edilir. Bizim kapsamımız dışında ama bilmek önemli.</p>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">📈 statsmodels</div>
+        <div class="card-title">📈 <a href="https://www.statsmodels.org/" target="_blank" rel="noopener">statsmodels</a></div>
         <div class="card-desc">
           <p>scikit-learn istatistik testlerinde zayıftır. Gerçek <em>istatistiksel çıkarım</em> (p-değeri, konfidans aralığı, ANOVA) için akademik standart kabul edilir. Ekonomi, biyoistatistik gibi alanlarda yaygın.</p>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">💠 Dask-ML / Ray Train</div>
+        <div class="card-title">💠 <a href="https://ml.dask.org/" target="_blank" rel="noopener">Dask-ML</a> / <a href="https://docs.ray.io/en/latest/train/train.html" target="_blank" rel="noopener">Ray Train</a></div>
         <div class="card-desc">
           <p>"scikit-learn modellerini dağıtık yapalım" deneyimleri. Mevcut scikit kodu küçük değişikliklerle bir cluster'a yayılabilir. Spark MLlib'e geçmeden bir ara basamak.</p>
         </div>
@@ -1600,10 +2319,10 @@ olasilik = model.predict_proba(yeni_musteriler)  # her sınıfın olasılığı 
 
     <div class="alert alert-info">
       <div class="alert-title">🔗 Önceki bölümden geçiş</div>
-      <p>PySpark'ı gördük ve güzel çalışıyor. Ama bir sorun var: <em>Spark cluster'ı kim kuracak?</em> 50 sunucuyu kim yönetecek, kim güncelleyecek, kim sorun çıktığında gece 03:00'te kalkacak? Büyük şirketlerin koca DevOps ekipleri var; ama 10 kişilik bir startup bunu kaldıramaz. İşte <strong>Databricks</strong> bu boşluğu doldurmak için doğdu. Hikayemizin son adresine geldik: "Spark'ı kullanmak istiyorum ama yönetmek istemiyorum" diyenlerin platformu. Ayrıca veri dünyasının son yıllardaki en önemli kavramını burada tanıyacağız: <strong>Lakehouse</strong> — data warehouse ile data lake'in evliliği.</p>
+      <p>PySpark'ı gördük ve güzel çalışıyor. Ama bir sorun var: <em>Spark cluster'ı kim kuracak?</em> 50 sunucuyu kim yönetecek, kim güncelleyecek, kim sorun çıktığında gece 03:00'te kalkacak? Büyük şirketlerin koca DevOps ekipleri var; ama 10 kişilik bir startup bunu kaldıramaz. İşte <strong><a href="https://www.databricks.com/" target="_blank" rel="noopener">Databricks</a></strong> bu boşluğu doldurmak için doğdu. Hikayemizin son adresine geldik: "Spark'ı kullanmak istiyorum ama yönetmek istemiyorum" diyenlerin platformu. Ayrıca veri dünyasının son yıllardaki en önemli kavramını burada tanıyacağız: <strong>Lakehouse</strong> — data warehouse ile data lake'in evliliği.</p>
     </div>
 
-    <p>Spark'ı kuran ekip (Matei Zaharia ve arkadaşları) 2013'te bir şirket kurdu: <strong>Databricks</strong>. Bugün <em>120+ milyar dolar değerlemeli</em> bu şirket, Spark'ı bulutta <em>yönetilen bir hizmet</em> olarak sunar — artı çok daha fazlasını.</p>
+    <p>Spark'ı kuran ekip (Matei Zaharia ve arkadaşları) 2013'te bir şirket kurdu: <strong><a href="https://www.databricks.com/" target="_blank" rel="noopener">Databricks</a></strong>. Bugün <em>130 milyar dolar civarında değerlemeli</em> bu şirket, Spark'ı bulutta <em>yönetilen bir hizmet</em> olarak sunar — artı çok daha fazlasını.</p>
 
     <h3>🏛️ Geleneksel İki Dünya: Data Warehouse vs Data Lake</h3>
 
@@ -1614,7 +2333,7 @@ olasilik = model.predict_proba(yeni_musteriler)  # her sınıfın olasılığı 
         <div class="side-title">🏛️ Data Warehouse</div>
         <ul>
           <li>Yapılandırılmış veri (tablolar)</li>
-          <li>Güçlü SQL, ACID transactions</li>
+          <li>Güçlü SQL, <strong>ACID</strong> transactions <span style="font-size:0.82rem;color:var(--text-muted)">(paket halinde güvenli yazma — Delta Lake bölümünde detaylı anlatılacak)</span></li>
           <li>BI ve raporlama için ideal</li>
           <li>❌ Pahalı, esnek değil, ML zor</li>
           <li>Örnek: Teradata, Snowflake</li>
@@ -1626,7 +2345,7 @@ olasilik = model.predict_proba(yeni_musteriler)  # her sınıfın olasılığı 
           <li>Her formatta ham veri (CSV, JSON, görsel, video)</li>
           <li>Ucuz nesne depolama (S3, ADLS)</li>
           <li>ML ve veri bilimi için esnek</li>
-          <li>❌ ACID yok, "data swamp"a dönüşür</li>
+          <li>❌ ACID yok <span style="font-size:0.82rem;color:var(--text-muted)">(yarım yazılmış dosya, eşzamanlı yazma çakışması riski)</span>, "data swamp"a dönüşür</li>
           <li>Örnek: AWS S3 + Hadoop</li>
         </ul>
       </div>
@@ -1634,7 +2353,7 @@ olasilik = model.predict_proba(yeni_musteriler)  # her sınıfın olasılığı 
 
     <h3>🏞️ Lakehouse — İki Dünyanın Birleşimi</h3>
 
-    <p><strong>Lakehouse</strong> mimarisi, data lake'in ucuzluk ve esnekliğini, data warehouse'un güvenilirliği (ACID, şema, BI desteği) ile birleştirir. Bunu mümkün kılan teknoloji: <strong>Delta Lake</strong> (Databricks tarafından açık kaynak yapılmıştır — Parquet üzerine transaction log ekler).</p>
+    <p><strong>Lakehouse</strong> mimarisi, data lake'in ucuzluk ve esnekliğini, data warehouse'un güvenilirliği (ACID, şema, BI desteği) ile birleştirir. Bunu mümkün kılan teknoloji: <strong><a href="https://delta.io/" target="_blank" rel="noopener">Delta Lake</a></strong> (<a href="https://www.databricks.com/" target="_blank" rel="noopener">Databricks</a> tarafından açık kaynak yapılmıştır — Parquet üzerine transaction log ekler).</p>
 
     <div class="diagram-container">
       <div class="diagram-box">
@@ -1659,8 +2378,8 @@ flowchart TB
     </div>
 
     <div class="alert alert-info">
-      <div class="alert-title">🔑 ACID — Kısa hatırlatma</div>
-      <p>Ayırt edici özellik biraz aşağıda geliyor: Delta Lake, Parquet'e <strong>ACID garantileri</strong> ekler. ACID dediğimiz şey klasik veritabanlarının (PostgreSQL vb.) on yıllardır sahip olduğu dört garantidir: <em>işlem ya tamamen olur ya hiç (Atomicity), kurallar bozulmaz (Consistency), eş zamanlı işlemler birbirine karışmaz (Isolation), onaylandıysa kalıcıdır (Durability)</em>. Bugüne kadar bu garantiler data lake'lerde <strong>yoktu</strong> — Delta'nın büyük devrimi tam buradadır. Detaylı açıklamayı şimdi göreceğiz.</p>
+      <div class="alert-title">🔑 ACID — Bu kelimeyi duyacaksınız</div>
+      <p>Data warehouse listesinde "ACID var" yazar, data lake listesinde "ACID yok" denir. <strong>ACID</strong>, bir veritabanının veya Delta Lake gibi modern bir tablo formatının size verdiği <em>dört güven sözü</em>dür. Aşağıda Delta Lake bölümünde her harfi somut örnekle açıklayacağız — önce kavramı netleştirelim.</p>
     </div>
 
     <h3>🥉🥈🥇 Medallion Mimarisi (Bronze / Silver / Gold)</h3>
@@ -1686,6 +2405,19 @@ flowchart TB
     </div>
 
     <div class="diagram-container">
+      <div class="diagram-box">
+        <div class="layer-stack">
+          <div class="layer-stack-item layer-gold">🥇 GOLD — KPI, dashboard, ML feature<br><small>"Şehir bazlı günlük ciro" gibi hazır tablolar</small></div>
+          <div style="text-align:center;color:var(--text-muted);font-size:0.9rem">↑ temizle, birleştir</div>
+          <div class="layer-stack-item layer-silver">🥈 SILVER — temiz, güvenilir şema<br><small>tip düzeltme, JOIN, anonimleştirme</small></div>
+          <div style="text-align:center;color:var(--text-muted);font-size:0.9rem">↑ olduğu gibi sakla</div>
+          <div class="layer-stack-item layer-bronze">🥉 BRONZE — ham veri<br><small>Kafka, API, dosya… ne geldiyse aynen</small></div>
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil 8a: Medallion katmanları — alttan üste veri olgunlaşır</div>
+    </div>
+
+    <div class="diagram-container">
       <div class="diagram-box" style="min-height:560px">
         <div class="mermaid" style="min-height:560px">
 flowchart LR
@@ -1703,17 +2435,133 @@ flowchart LR
 
     <p>Delta Lake dosya formatı aslında <strong>Parquet</strong>'tir. Üstüne <code>_delta_log/</code> klasöründe JSON transaction log eklenir. Bu log sayesinde Parquet üzerinde <strong>ACID</strong> elde edilir.</p>
 
-    <div class="glossary">
-      <div class="glossary-title">📖 ACID nedir?</div>
-      <p style="margin:0 0 0.5rem">Veritabanlarının 1970'lerden beri sahip olduğu 4 garanti. "Bankamatik para çekerken yarım kalan işlem" sorunu yaşamamamızı sağlar.</p>
-      <dl>
-        <dt>A — Atomicity (Atomiklik)</dt><dd>Bir işlem ya <strong>tamamen</strong> olur ya da <strong>hiç</strong> olmaz. Yarısı yapılıp yarısı yapılamamış işlem yoktur.</dd>
-        <dt>C — Consistency (Tutarlılık)</dt><dd>İşlem sonrası veritabanı yine geçerli bir durumda olur (kurallar bozulmaz).</dd>
-        <dt>I — Isolation (İzolasyon)</dt><dd>Aynı anda çalışan iki işlem birbirine karışmaz. Sen para yatırırken başkası senin hesabından çekmeye çalışsa ikisi sıraya girer.</dd>
-        <dt>D — Durability (Kalıcılık)</dt><dd>İşlem onaylandıysa elektrik kesilse bile veri kaybolmaz.</dd>
-      </dl>
-      <p style="margin:0.5rem 0 0">Parquet'in tek başına bu garantileri yok; Delta Lake bunu Parquet üstüne ekliyor.</p>
+    <div class="diagram-container">
+      <div class="diagram-box">
+        <div class="flow-viz">
+          <p style="margin:0 0 0.5rem;font-size:0.85rem;font-weight:600;text-align:center">Delta = Parquet dosyaları + transaction log (defter)</p>
+          <div class="storage-viz-grid">
+            <div class="storage-viz-panel">
+              <h5>📁 Parquet dosyaları (değişmez bloklar)</h5>
+              <div class="flow-viz-row" style="flex-direction:column;align-items:stretch">
+                <div class="flow-viz-box muted">part-0001.parquet ✓</div>
+                <div class="flow-viz-box warn">part-0002.parquet ✗ (eski — artık geçersiz)</div>
+                <div class="flow-viz-box ok">part-0002-v2.parquet ✓ (yeni)</div>
+              </div>
+            </div>
+            <div class="storage-viz-panel">
+              <h5>📜 _delta_log/ (hangi dosya geçerli?)</h5>
+              <div class="flow-viz-row" style="flex-direction:column;align-items:stretch;font-size:0.72rem">
+                <div class="flow-viz-box">v1: add part-0001, part-0002</div>
+                <div class="flow-viz-box highlight">v2: remove part-0002 → add part-0002-v2</div>
+              </div>
+              <p style="margin:0.5rem 0 0;font-size:0.75rem;color:var(--text-muted)">Okuyan sistem log'a bakar: "v2'de geçerli dosyalar bunlar" — yarım yazılmış dosya görülmez.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="diagram-caption">Şekil 10: Delta Lake — Parquet immutable kalır; log hangi dosyanın "aktif" olduğunu söyler</div>
     </div>
+
+    <div class="glossary">
+      <div class="glossary-title">📖 ACID nedir? — Sıfırdan anlatalım</div>
+
+      <p><strong>ACID</strong>, İngilizce dört kelimenin baş harfi: <em>Atomicity, Consistency, Isolation, Durability</em>. Türkçede genelde tek tek çevrilir ama asıl mesele şudur: <strong>birden fazla adımdan oluşan bir veri işlemini güvenle yapabilmek</strong>.</p>
+
+      <p>Bunu anlamak için önce <strong>transaction (işlem / transaction)</strong> kelimesini netleştirelim:</p>
+      <p>Bir <em>transaction</em>, veritabanında <strong>tek bir paket</strong> halinde çalışan işlemdir. Paketin içinde bir veya birden fazla adım olabilir — önemli olan, sistem bu adımları <em>tek bir bütün</em> gibi ele alır.</p>
+
+      <div class="code-block" data-lang="text" style="margin:0.75rem 0">
+        <pre><code>Örnek transaction — "Ali, Veli'ye 100 TL göndersin":
+  1) Ali'nin bakiyesinden 100 TL düş
+  2) Veli'nin bakiyesine 100 TL ekle
+  3) "Ali → Veli, 100 TL" kaydını log'a yaz
+
+Bu üç adım birlikte ya başarılı olmalı ya da hiçbiri uygulanmamalı.
+İkinci adım çalışıp birinci adım çalışmazsa para kaybolur — felaket.</code></pre>
+      </div>
+
+      <p><strong>ACID</strong>, işte bu paket işlemler için verilen dört garantidir. Klasik veritabanları (PostgreSQL, MySQL, Oracle…) yıllardır bunu sağlar. Ham data lake (sadece S3'e Parquet atmak) ise <strong>sağlamazdı</strong> — Delta Lake'in devrimi burada.</p>
+    </div>
+
+    <div class="alert alert-tip">
+      <div class="alert-title">🏧 Neden önemli? — Bankamatik örneği</div>
+      <p>ATM'den 100 TL çektiğinizi düşünün. Arka planda sistem şunları yapar: kasadan 100 TL say, hesabınızdan 100 düş, makbuz kaydı oluştur. Elektrik tam bu sırada kesilirse ne olmalı?</p>
+      <ul>
+        <li><strong>ACID'li sistem:</strong> "İşlem tamamlanmadı" der, hiçbir adım kalıcı olmaz — ne para eksilir ne kasa sayımı bozulur.</li>
+        <li><strong>ACID'siz sistem:</strong> Hesaptan 100 düşmüş olabilir ama kasadan para çıkmamış olabilir — veya tam tersi. Veri tutarsız kalır.</li>
+      </ul>
+      <p>Büyük veri tarafında da aynı mantık geçerli: gece çalışan ETL yarıda kesilirse tablonun yarısı eski yarısı yeni mi kaldı? İki ETL aynı anda aynı tabloya yazarsa dosyalar birbirine karışır mı? ACID bu tür sorulara cevap verir.</p>
+    </div>
+
+    <h4 style="margin-top:1.25rem">🔤 Dört harf, dört garanti</h4>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">⚛️</div>
+        <div class="card-title">A — Atomicity (Atomiklik)</div>
+        <div class="card-desc">
+          <p><strong>Ne demek?</strong> "Atomik" = bölünemez. Transaction ya <strong>tamamen</strong> başarılı olur ya da hiçbir iz bırakmadan <strong>geri alınır</strong> (rollback).</p>
+          <p><strong>Günlük hayat:</strong> Ali→Veli 100 TL transferinde <em>iki adım da</em> gerçekleşmeli: Ali'den 100 düşer <strong>ve</strong> Veli'ye 100 eklenir. Atomiklik sayesinde felaket senaryosu engellenir: Ali'den para düşüp Veli'ye hiç gitmemesi — ya da tam tersi. Ya <strong>ikisi birden</strong> olur ya da <strong>hiçbiri</strong> olmaz.</p>
+          <p><strong>Data lake'de:</strong> ETL 10 dosyayı güncellerken 7. dosyada çökerse, ACID'li sistem (Delta) eski haline döner — okuyan biri "yarım güncellenmiş" tablo görmez.</p>
+          <p><strong>ACID'siz lake:</strong> Yeni Parquet dosyası yazılmış, eskisi silinmemiş veya log güncellenmemiş olabilir — tablo bozuk görünür.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📐</div>
+        <div class="card-title">C — Consistency (Tutarlılık)</div>
+        <div class="card-desc">
+          <p><strong>Ne demek?</strong> Transaction bittikten sonra veri, tanımladığınız <strong>kurallara uygun</strong> kalır. Veritabanı "mantıksız" bir duruma düşmez.</p>
+          <p><strong>Günlük hayat:</strong> Bakiye asla eksi olamaz (<code>CHECK balance >= 0</code>), sipariş numarası tekrarlanamaz (<code>UNIQUE</code>), silinen müşteriye fatura kesilemez (<code>FOREIGN KEY</code>).</p>
+          <p><strong>Data lake'de:</strong> "Her satırda <code>order_id</code> dolu olmalı", "tutar negatif olamaz" gibi kurallar transaction sonrası da geçerlidir.</p>
+          <p><strong>Not:</strong> Consistency bazen "herkes aynı veriyi görür" sanılır — asıl anlamı <em>kuralların bozulmaması</em>dır. (Anlık görünürlük Isolation ile ilgilidir.)</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🚪</div>
+        <div class="card-title">I — Isolation (İzolasyon)</div>
+        <div class="card-desc">
+          <p><strong>Ne demek?</strong> Aynı anda çalışan transaction'lar birbirinin işini <strong>görmez / bozmaz</strong>. Sanki her biri tek başına çalışıyormuş gibi davranır.</p>
+          <p><strong>Günlük hayat:</strong> Siz bakiyenizi okurken (500 TL) başka biri para çekse, siz hâlâ eski bakiyeyi görürsünüz; işiniz bitince güncel bakiye gelir. İki kişi aynı anda son 100 TL'yi çekemez — biri bekler veya hata alır.</p>
+          <p><strong>Data lake'de:</strong> Gece ETL tabloyu güncellerken sabah raporu eski veya karışık veri okumaz. İki Spark job aynı Delta tabloya yazarsa çakışma kontrollü yönetilir.</p>
+          <p><strong>ACID'siz lake:</strong> Biri dosyayı okurken diğeri yarım yazmış olabilir — "kirli okuma" (dirty read).</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">💾</div>
+        <div class="card-title">D — Durability (Kalıcılık)</div>
+        <div class="card-desc">
+          <p><strong>Ne demek?</strong> Transaction bir kez <strong>onaylandı</strong> (commit) derse, sistem çökse bile sonuç kaybolmaz.</p>
+          <p><strong>Günlük hayat:</strong> ATM "işleminiz tamamlandı" dedikten sonra elektrik kesilse bile 100 TL çekiminiz geçerlidir — kayıt diske/replikaya yazılmıştır.</p>
+          <p><strong>Data lake'de:</strong> Delta, yeni Parquet dosyalarını ve transaction log kaydını diske yazdıktan sonra "yazma başarılı" der. Sunucu anında çökse bile bir sonraki okuma tutarlı sürümü görür.</p>
+          <p><strong>ACID'siz lake:</strong> "Yazdım" denmiş ama dosya henüz diske flush olmamış olabilir — çökünce veri kaybolur.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-warning">
+      <div class="alert-title">🌊 Peki data lake'de ACID neden yoktu?</div>
+      <p>Klasik data lake = ucuz depolama (S3, ADLS) + üzerine Parquet/JSON dosyaları. Parquet dosyaları <strong>immutable</strong> (değiştirilemez): güncelleme = yeni dosya yaz, eskisini sil. İki job aynı anda yazarsa:</p>
+      <ul>
+        <li>Biri yarım dosya bırakabilir (Atomicity yok)</li>
+        <li>Okuyan biri eski + yeni karışık dosyaları görebilir (Isolation yok)</li>
+        <li>"Commit" dedikten sonra dosya kaybolabilir — replikasyon yoksa (Durability zayıf)</li>
+      </ul>
+      <p>Bu yüzden lake'ler ML için esnek ama finansal rapor / günlük <strong>KPI</strong> (<em>Key Performance Indicator</em> — iş performansını ölçen gösterge; örn. günlük ciro, aktif kullanıcı, sepet terk oranı) için "güvenilir tek gerçek kaynak" olmakta zorlanırdı. <strong>Delta Lake</strong>, Parquet'in üstüne <code>_delta_log/</code> transaction defteri ekleyerek bu dört garantiyi lake'e taşır — buna <em>lakehouse</em> denmesinin ana sebeplerinden biri budur (Şekil 10'a bakın).</p>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Harfi</th><th>Türkçe</th><th>Bir cümleyle</th><th>Delta Lake'de</th></tr></thead>
+        <tbody>
+          <tr><td><strong>A</strong></td><td>Atomiklik</td><td>Ya hep ya hiç — yarım işlem kalmaz</td><td>Log + dosya yazımı tek transaction</td></tr>
+          <tr><td><strong>C</strong></td><td>Tutarlılık</td><td>İşlem sonrası kurallar bozulmaz</td><td>Şema / constraint kontrolleri</td></tr>
+          <tr><td><strong>I</strong></td><td>İzolasyon</td><td>Eşzamanlı işler birbirine karışmaz</td><td>Optimistic concurrency, snapshot okuma</td></tr>
+          <tr><td><strong>D</strong></td><td>Kalıcılık</td><td>Onaylandıysa çökse de kalır</td><td>Log ve dosyalar object storage'a yazılır</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="margin-top:0.75rem;font-size:0.9rem;color:var(--text-muted)">Bu derste her ACID detayını ezberlemeniz gerekmez. Hatırlamanız gereken: <strong>warehouse = bu garantiler var · ham lake = yoktu · Delta Lake = lake'e ACID getirdi.</strong> Finans, sipariş, stok gibi "yanlış sayı felaket" tablolarında ACID kritiktir.</p>
 
     <div class="card-grid">
       <div class="card">
@@ -1800,11 +2648,15 @@ WHEN NOT MATCHED THEN INSERT *;      -- eşleşmedi → yeni satır olarak ekle<
     <div class="alert alert-tip">
       <div class="alert-title">📚 Daha Fazla Okuma (Opsiyonel)</div>
       <ul>
-        <li><a href="https://spark.apache.org/docs/latest/quick-start.html" target="_blank">Apache Spark — Quick Start</a></li>
-        <li><a href="https://parquet.apache.org/docs/file-format/" target="_blank">Parquet File Format</a></li>
-        <li><a href="https://docs.delta.io/latest/quick-start.html" target="_blank">Delta Lake — Quickstart</a></li>
-        <li><a href="https://www.databricks.com/glossary/medallion-architecture" target="_blank">Databricks Medallion Architecture</a></li>
-        <li><a href="https://jakevdp.github.io/PythonDataScienceHandbook/" target="_blank">Python Data Science Handbook — Pandas &amp; Matplotlib (okuma ödevi)</a></li>
+        <li><a href="https://spark.apache.org/docs/latest/quick-start.html" target="_blank" rel="noopener">Apache Spark — Quick Start</a></li>
+        <li><a href="https://parquet.apache.org/docs/file-format/" target="_blank" rel="noopener">Parquet File Format</a></li>
+        <li><a href="https://docs.delta.io/latest/quick-start.html" target="_blank" rel="noopener">Delta Lake — Quickstart</a></li>
+        <li><a href="https://www.databricks.com/glossary/medallion-architecture" target="_blank" rel="noopener">Databricks Medallion Architecture</a></li>
+        <li><a href="https://airflow.apache.org/docs/" target="_blank" rel="noopener">Apache Airflow — Documentation</a></li>
+        <li><a href="https://pola.rs/" target="_blank" rel="noopener">Polars</a> · <a href="https://duckdb.org/" target="_blank" rel="noopener">DuckDB</a> · <a href="https://www.dask.org/" target="_blank" rel="noopener">Dask</a></li>
+        <li><a href="https://flink.apache.org/" target="_blank" rel="noopener">Apache Flink</a> · <a href="https://trino.io/" target="_blank" rel="noopener">Trino</a></li>
+        <li><a href="https://scikit-learn.org/stable/" target="_blank" rel="noopener">scikit-learn</a> · <a href="https://xgboost.readthedocs.io/" target="_blank" rel="noopener">XGBoost</a></li>
+        <li><a href="https://jakevdp.github.io/PythonDataScienceHandbook/" target="_blank" rel="noopener">Python Data Science Handbook — Pandas &amp; Matplotlib (okuma ödevi)</a></li>
       </ul>
     </div>
 

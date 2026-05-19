@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2.6 Karşılaştırma, Maskeler ve Boolean Mantık — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="02-numpy" data-section="06-boolean-masks" data-preload-numpy="true">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.06-boolean-arrays-and-masks.html" target="_blank" rel="noopener">06 Comparisons, Masks, and Boolean Logic</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+    
+<h1>2.6 Karşılaştırma, Maskeler ve Boolean Mantık</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/02.06-boolean-arrays-and-masks.html" target="_blank" rel="noopener">06 Comparisons, Masks, and Boolean Logic</a></em></p>
+
+    <p>Bu bölüm, NumPy dizilerindeki değerleri incelemek ve değiştirmek için Boolean maskelerin kullanımını ele alır. Maskeleme, belirli bir ölçüte göre değerleri çıkarmak, değiştirmek veya saymak istediğinizde devreye girer. NumPy'da Boolean maskeleme genellikle bu tür görevler için en verimli yoldur.</p>
+
+    <h2 id="ornek-yagmurlu-gunler">Örnek: Yağmurlu Günleri Saymak</h2>
+
+    <p>Bir yıl boyunca günlük yağış miktarını temsil eden bir veri dizisi düşünün. Orijinal kitapta 2015 yılı Seattle günlük yağış istatistikleri Pandas ile yüklenir (<a href="../03-pandas/index.html">Bölüm 3 — Pandas</a>). Pyodide ortamında aynı veri kümesini gömülü olarak kullanıyoruz — kaynak: <a href="https://github.com/vega/vega-datasets" target="_blank" rel="noopener">vega-datasets</a> <code>seattle-weather</code>, 2015 <code>precipitation</code> (mm).</p>
+    <div class="code-block" data-lang="python" data-filename="seattle_rainfall.py">
+      <pre><code>import numpy as np
+
+# Seattle 2015 günlük yağış (mm) — kitaptaki veri kümesi (gömülü)
+rainfall_mm = np.array([0.0, 1.5, 0.0, 10.2, 8.1, 0.0, 0.0, 0.0, 0.3, 5.8, 1.5, 0.0, 0.0, 0.0, 9.7, 0.0, 26.2, 21.3, 0.5, 0.0, 0.0, 0.8, 5.8, 0.5, 0.0, 0.0, 0.8, 0.0, 0.0, 0.0, 0.0, 1.5, 7.4, 1.3, 8.4, 26.2, 17.3, 23.6, 3.6, 6.1, 0.3, 0.0, 1.0, 0.0, 0.3, 0.0, 0.0, 0.0, 0.0, 4.6, 0.8, 0.0, 0.0, 0.0, 0.0, 4.1, 9.4, 18.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.8, 2.5, 0.0, 2.0, 17.0, 55.9, 1.0, 0.8, 0.0, 0.0, 4.1, 3.8, 1.0, 8.1, 7.6, 5.1, 0.0, 1.0, 0.0, 0.0, 1.8, 1.0, 5.1, 0.0, 1.5, 0.0, 0.0, 1.0, 0.5, 0.0, 0.0, 10.9, 0.0, 0.0, 14.0, 3.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 5.6, 0.0, 3.0, 3.3, 1.3, 0.0, 0.3, 1.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 6.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4.3, 4.1, 0.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4.6, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 7.6, 0.0, 30.5, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 32.5, 10.2, 0.0, 5.8, 0.0, 0.0, 0.0, 0.3, 5.3, 0.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 1.0, 1.8, 0.0, 0.0, 4.1, 0.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 9.9, 0.0, 0.3, 28.7, 0.0, 4.6, 1.3, 0.0, 0.0, 0.0, 0.3, 3.8, 0.3, 0.0, 0.0, 0.0, 0.0, 0.0, 8.9, 6.9, 0.0, 3.3, 1.8, 19.3, 33.0, 26.2, 0.3, 0.8, 0.0, 1.3, 0.0, 12.7, 6.6, 3.3, 1.3, 1.5, 9.9, 33.5, 47.2, 22.4, 2.0, 29.5, 1.5, 2.0, 0.0, 0.0, 0.0, 3.0, 7.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 12.2, 2.5, 12.7, 2.0, 15.7, 11.2, 27.4, 54.1, 13.5, 9.4, 0.3, 16.0, 1.3, 0.0, 1.5, 3.6, 21.8, 18.5, 0.0, 4.3, 27.4, 4.6, 6.1, 2.5, 5.8, 0.0, 8.6, 1.5, 0.0, 0.0, 0.0])
+len(rainfall_mm)</code></pre>
+    </div>
+
+    <p>Dizi 365 değer içerir: 1 Ocak – 31 Aralık 2015 arası günlük yağış (milimetre).</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu — histogram</div>
+      <p>Kitap bu verinin histogramını Matplotlib ile çizer (Bölüm 4). Çoğu gün yağış sıfıra yakındır — Seattle'ın yağmurlu ününe rağmen 2015'te ölçülen yağışın büyük kısmı düşük değerlerdedir. Histogram soruları (kaç yağmurlu gün? ortalama ne?) maskeleme ile çok daha verimli yanıtlanır.</p>
+    </div>
+
+    <p>Döngüyle tek tek saymak yerine NumPy karşılaştırma ufunc'ları ve maskeleme kullanacağız (<a href="03-computation-ufuncs.html">2.3 UFuncs</a>).</p>
+
+    <h2 id="karsilastirma-ufunc">Karşılaştırma Operatörleri Ufunc Olarak</h2>
+
+    <p><code>+</code>, <code>-</code>, <code>*</code>, <code>/</code> gibi aritmetik operatörler eleman eleman çalışır. NumPy <code>&lt;</code>, <code>&gt;</code> gibi karşılaştırma operatörlerini de ufunc olarak uygular; sonuç her zaman Boolean tipli bir dizidir. Altı standart karşılaştırma operatörü mevcuttur:</p>
+    <div class="code-block" data-lang="python" data-filename="comp_x.py">
+      <pre><code>x = np.array([1, 2, 3, 4, 5])</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="comp_lt.py">
+      <pre><code>x < 3   # küçüktür</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="comp_gt.py">
+      <pre><code>x > 3   # büyüktür</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="comp_le.py">
+      <pre><code>x <= 3  # küçük eşit</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="comp_ge.py">
+      <pre><code>x >= 3  # büyük eşit</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="comp_ne.py">
+      <pre><code>x != 3  # eşit değil</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="comp_eq.py">
+      <pre><code>x == 3  # eşit</code></pre>
+    </div>
+
+    <p>İki dizi arasında eleman eleman karşılaştırma ve bileşik ifadeler de mümkündür:</p>
+    <div class="code-block" data-lang="python" data-filename="comp_compound.py">
+      <pre><code>(2 * x) == (x ** 2)</code></pre>
+    </div>
+
+    <p>Karşılaştırma operatörleri NumPy'da ufunc olarak uygulanır; <code>x &lt; 3</code> yazdığınızda dahili olarak <code>np.less(x, 3)</code> kullanılır. Özet tablo:</p>
+
+    <div class="table-wrapper">
+      <table class="vocab-table">
+        <thead><tr><th>Operatör</th><th>Eşdeğer ufunc</th><th>Operatör</th><th>Eşdeğer ufunc</th></tr></thead>
+        <tbody>
+          <tr><td><code>==</code></td><td><code>np.equal</code></td><td><code>!=</code></td><td><code>np.not_equal</code></td></tr>
+          <tr><td><code>&lt;</code></td><td><code>np.less</code></td><td><code>&lt;=</code></td><td><code>np.less_equal</code></td></tr>
+          <tr><td><code>&gt;</code></td><td><code>np.greater</code></td><td><code>&gt;=</code></td><td><code>np.greater_equal</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Aritmetik ufunc'lar gibi bunlar da her boyut ve şekildeki dizilerde çalışır. İki boyutlu örnek:</p>
+    <div class="code-block" data-lang="python" data-filename="comp_2d_x.py">
+      <pre><code>rng = np.random.default_rng(seed=1701)
+x = rng.integers(10, size=(3, 4))
+x</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="comp_2d_result.py">
+      <pre><code>x < 6</code></pre>
+    </div>
+
+    <p>Her durumda sonuç Boolean dizidir; NumPy bu sonuçlarla çalışmak için bir dizi kalıp sunar.</p>
+
+    <h2 id="boolean-diziler">Boolean Dizilerle Çalışmak</h2>
+
+    <p>Boolean dizi verildiğinde birçok yararlı işlem yapılabilir. Yukarıdaki iki boyutlu <code>x</code> ile devam edelim:</p>
+    <div class="code-block" data-lang="python" data-filename="print_x.py">
+      <pre><code>print(x)</code></pre>
+    </div>
+
+    <h3 id="sayma">Girdi Sayma</h3>
+
+    <p>Boolean dizideki <code>True</code> sayısını saymak için <code>np.count_nonzero</code> kullanılır:</p>
+    <div class="code-block" data-lang="python" data-filename="count_nonzero.py">
+      <pre><code># 6'dan küçük kaç değer?
+np.count_nonzero(x < 6)</code></pre>
+    </div>
+
+    <p>Alternatif: <code>np.sum</code> — <code>False</code> → 0, <code>True</code> → 1:</p>
+    <div class="code-block" data-lang="python" data-filename="sum_bool.py">
+      <pre><code>np.sum(x < 6)</code></pre>
+    </div>
+
+    <p><code>np.sum</code>'un avantajı, diğer agregasyon fonksiyonları gibi satır veya sütunlar boyunca da toplanabilmesidir:</p>
+    <div class="code-block" data-lang="python" data-filename="sum_axis.py">
+      <pre><code># Her satırda 6'dan küçük kaç değer?
+np.sum(x < 6, axis=1)</code></pre>
+    </div>
+
+    <p>Herhangi bir veya tüm değerlerin <code>True</code> olup olmadığını hızlıca kontrol etmek için <code>np.any</code> veya <code>np.all</code>:</p>
+    <div class="code-block" data-lang="python" data-filename="any_gt8.py">
+      <pre><code>np.any(x > 8)    # 8'den büyük var mı?</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="any_lt0.py">
+      <pre><code>np.any(x < 0)     # sıfırdan küçük var mı?</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="all_lt10.py">
+      <pre><code>np.all(x < 10)    # hepsi 10'dan küçük mü?</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="all_eq6.py">
+      <pre><code>np.all(x == 6)    # hepsi 6'ya eşit mi?</code></pre>
+    </div>
+
+    <p><code>np.all</code> ve <code>np.any</code> belirli eksenler boyunca da kullanılabilir:</p>
+    <div class="code-block" data-lang="python" data-filename="all_axis.py">
+      <pre><code># Her satırdaki tüm değerler 8'den küçük mü?
+np.all(x < 8, axis=1)</code></pre>
+    </div>
+
+    <div class="alert alert-warning handbook-addon">
+      <div class="alert-title">⚠️ Ders notu — Python vs NumPy</div>
+      <p>Python'un yerleşik <code>sum</code>, <code>any</code>, <code>all</code> fonksiyonları vardır (<a href="04-aggregates.html">2.4 Agregasyonlar</a>). Çok boyutlu dizilerde farklı sözdizimi kullanırlar ve beklenmeyen sonuç verebilirler. Bu örneklerde <code>np.sum</code>, <code>np.any</code>, <code>np.all</code> kullanın!</p>
+    </div>
+
+    <h3 id="boolean-operators">Boolean Operatörleri</h3>
+
+    <p>20 mm'den az veya 10 mm'den fazla yağmurlu günleri saymak kolay; peki 10 mm ile 20 mm <em>arasında</em> kaç gün var? Python'un <strong>bit düzeyi mantık operatörleri</strong> <code>&amp;</code>, <code>|</code>, <code>^</code>, <code>~</code> kullanılır. NumPy bunları (genelde Boolean) diziler üzerinde eleman eleman ufunc olarak aşırı yükler:</p>
+    <div class="code-block" data-lang="python" data-filename="rain_range.py">
+      <pre><code>np.sum((rainfall_mm > 10) & (rainfall_mm < 20))</code></pre>
+    </div>
+
+    <p>2015'te 10–20 mm arası yağışlı 16 gün vardır. Parantezler önemlidir — parantez olmadan operatör önceliği hatası oluşur:</p>
+    <div class="code-block" data-lang="python" data-filename="rain_precedence.py" data-readonly="true">
+      <pre><code># HATALI — parantez yok:
+# rainfall_mm > (10 & rainfall_mm) < 20</code></pre>
+    </div>
+
+    <p>De Morgan kurallarıyla aynı sonuç farklı biçimde:</p>
+    <div class="code-block" data-lang="python" data-filename="de_morgan.py">
+      <pre><code>np.sum(~((rainfall_mm <= 10) | (rainfall_mm >= 20)))</code></pre>
+    </div>
+
+    <p>Karşılaştırma ve Boolean operatörlerini birleştirmek geniş bir verimli mantıksal işlem yelpazesi sağlar. Bit düzeyi Boolean operatörleri tablosu:</p>
+
+    <div class="table-wrapper">
+      <table class="vocab-table">
+        <thead><tr><th>Operatör</th><th>Eşdeğer ufunc</th><th>Operatör</th><th>Eşdeğer ufunc</th></tr></thead>
+        <tbody>
+          <tr><td><code>&amp;</code></td><td><code>np.bitwise_and</code></td><td><code>|</code></td><td><code>np.bitwise_or</code></td></tr>
+          <tr><td><code>^</code></td><td><code>np.bitwise_xor</code></td><td><code>~</code></td><td><code>np.bitwise_not</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Hava durumu verisiyle maskeleme + agregasyon örnekleri:</p>
+    <div class="code-block" data-lang="python" data-filename="rain_stats.py">
+      <pre><code>print("Yağışsız gün sayısı:     ", np.sum(rainfall_mm == 0))
+print("Yağışlı gün sayısı:      ", np.sum(rainfall_mm != 0))
+print("10 mm üzeri günler:      ", np.sum(rainfall_mm > 10))
+print("Yağmurlu ama < 5 mm:     ", np.sum((rainfall_mm > 0) & (rainfall_mm < 5)))</code></pre>
+    </div>
+
+    <h2 id="maskeler">Boolean Diziler Maske Olarak</h2>
+
+    <p>Boolean diziler üzerinde doğrudan agregasyon yerine, daha güçlü kalıp: Boolean diziyi <strong>maske</strong> olarak kullanıp verinin alt kümelerini seçmek. <code>x</code> dizisine dönelim:</p>
+    <div class="code-block" data-lang="python" data-filename="x_again.py">
+      <pre><code>x</code></pre>
+    </div>
+
+    <p>5'ten küçük tüm değerleri isteyelim:</p>
+    <div class="code-block" data-lang="python" data-filename="mask_lt5.py">
+      <pre><code>x < 5</code></pre>
+    </div>
+
+    <p>Bu Boolean dizi üzerinde indeksleyerek değerleri <em>seçmek</em> — <strong>maskeleme</strong>:</p>
+    <div class="code-block" data-lang="python" data-filename="mask_select.py">
+      <pre><code>x[x < 5]</code></pre>
+    </div>
+
+    <p>Dönen tek boyutlu dizi, maskenin <code>True</code> olduğu konumlardaki tüm değerleri içerir.</p>
+
+    <p>Seattle yağış verisiyle istatistikler:</p>
+    <div class="code-block" data-lang="python" data-filename="seattle_masks.py">
+      <pre><code># Yağmurlu günler maskesi
+rainy = (rainfall_mm > 0)
+
+# Yaz günleri (21 Haziran = 172. gün)
+days = np.arange(365)
+summer = (days > 172) & (days < 262)
+
+print("2015 yağmurlu günlerde medyan yağış (mm):   ",
+      np.median(rainfall_mm[rainy]))
+print("2015 yaz günlerinde medyan yağış (mm):      ",
+      np.median(rainfall_mm[summer]))
+print("2015 yaz günlerinde maksimum yağış (mm):    ",
+      np.max(rainfall_mm[summer]))
+print("Yaz dışı yağmurlu günlerde medyan (mm):     ",
+      np.median(rainfall_mm[rainy & ~summer]))</code></pre>
+    </div>
+
+    <h2 id="and-or-vs">and/or Anahtar Kelimeleri vs &amp;/| Operatörleri</h2>
+
+    <p>Sık karıştırılan nokta: <code>and</code>/<code>or</code> ile <code>&amp;</code>/<code>|</code> farkı. <code>and</code>/<code>or</code> nesnenin <em>bütünü</em> üzerinde çalışır; <code>&amp;</code>/<code>|</code> nesnenin <em>elemanları</em> üzerinde.</p>
+
+    <p>Python'da sıfır olmayan tamsayılar <code>True</code> sayılır:</p>
+    <div class="code-block" data-lang="python" data-filename="bool_int.py">
+      <pre><code>bool(42), bool(0)</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="and_int.py">
+      <pre><code>bool(42 and 0)</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="or_int.py">
+      <pre><code>bool(42 or 0)</code></pre>
+    </div>
+
+    <p>Tamsayılarda <code>&amp;</code>/<code>|</code> bit düzeyinde çalışır:</p>
+    <div class="code-block" data-lang="python" data-filename="bin42.py">
+      <pre><code>bin(42)</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="bin59.py">
+      <pre><code>bin(59)</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="bin_and.py">
+      <pre><code>bin(42 & 59)</code></pre>
+    </div>
+    <div class="code-block" data-lang="python" data-filename="bin_or.py">
+      <pre><code>bin(42 | 59)</code></pre>
+    </div>
+
+    <p>Boolean NumPy dizisinde <code>1 = True</code>, <code>0 = False</code> gibi düşünülür:</p>
+    <div class="code-block" data-lang="python" data-filename="bool_arrays_or.py">
+      <pre><code>A = np.array([1, 0, 1, 0, 1, 0], dtype=bool)
+B = np.array([1, 1, 1, 0, 1, 1], dtype=bool)
+A | B</code></pre>
+    </div>
+
+    <p>Ama dizilerde <code>or</code> kullanırsanız tüm dizinin truth value'su tanımsızdır — hata:</p>
+    <div class="code-block" data-lang="python" data-filename="array_or_error.py" data-readonly="true">
+      <pre><code># A or B  # ValueError: truth value of array is ambiguous</code></pre>
+    </div>
+
+    <p>Boolean ifadelerde <code>|</code> veya <code>&amp;</code> kullanın:</p>
+    <div class="code-block" data-lang="python" data-filename="range_mask.py">
+      <pre><code>x = np.arange(10)
+(x > 4) & (x < 8)</code></pre>
+    </div>
+
+    <p><code>and</code>/<code>or</code> ile denerseniz aynı <code>ValueError</code> oluşur:</p>
+    <div class="code-block" data-lang="python" data-filename="and_error.py" data-readonly="true">
+      <pre><code># (x > 4) and (x < 8)  # ValueError!</code></pre>
+    </div>
+
+    <p><strong>Özet:</strong> <code>and</code>/<code>or</code> tek Boolean değerlendirme; <code>&amp;</code>/<code>|</code> eleman eleman değerlendirme. Boolean NumPy dizilerinde neredeyse her zaman ikincisi istenen davranıştır.</p>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin</div>
+      <p>1–100 arası dizide 3'e ve 5'e tam bölünen sayıları maske ile seçin.</p>
+    <div class="code-block" data-lang="python" data-filename="deneme_bolunebilir.py">
+      <pre><code>import numpy as np
+x = np.arange(1, 101)
+mask = (x % 3 == 0) & (x % 5 == 0)
+print(x[mask])</code></pre>
+    </div>
+
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="07-fancy-indexing.html">2.7 Fancy Indexing →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python + NumPy yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>

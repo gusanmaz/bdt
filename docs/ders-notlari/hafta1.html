@@ -16,12 +16,8 @@
 
 <!-- ═══════════ TOP NAV ═══════════ -->
 <header class="top-nav">
-  <a href="#" class="nav-brand">📊 Büyük Veri Teknolojileri</a>
+  <a href="hafta1.html" class="nav-brand">📊 Büyük Veri Teknolojileri</a>
   <div class="nav-links">
-    <a href="hafta1.html" class="active">Dağıtık Sistemler & Python</a>
-    <a href="hafta2.html">Veri Modelleme & Pandas</a>
-    <a href="hafta3.html">ETL & PySpark</a>
-    <a href="hafta4.html">Streaming & Güvenlik</a>
     <a href="uygulamalar2.html">🧪 Uygulamalar</a>
     <a href="odev1.html">📝 Ödev 1</a>
     <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
@@ -51,6 +47,9 @@
       <a href="hafta2.html">📗 Veri Modelleme & Pandas</a>
       <a href="hafta3.html">📙 ETL & PySpark</a>
       <a href="hafta4.html">📕 Streaming & Güvenlik</a>
+      <a href="hafta5.html">🧪 Kod Atölyesi</a>
+      <a href="hafta6.html">📊 Analiz & ML</a>
+      <a href="../pds-handbook/index.html" target="_blank" rel="noopener">📚 PDS Handbook</a>
       <a href="uygulamalar2.html">🧪 Uygulamalar</a>
       <a href="odev1.html">📝 Ödev 1</a>
     </div>
@@ -1075,6 +1074,16 @@ for kelime, sayi in sirali:
 
     <p>Şimdi aynı işlemi MapReduce mantığıyla yapalım. Bu yaklaşımda veriyi parçalara bölüp, <strong>her parçayı ayrı ayrı</strong> işleyeceğiz.</p>
 
+    <figure class="chart-gallery-figure">
+      <img src="images/hafta1_mapreduce_akisi.png" alt="MapReduce akışı: Split, Map, Shuffle, Reduce" width="820" loading="lazy">
+      <figcaption>Şekil: Word Count örneğinde MapReduce adımları — gerçek Hadoop'ta her kutu farklı bir düğümde (node) çalışabilir.</figcaption>
+    </figure>
+
+    <div class="alert alert-info">
+      <div class="alert-title">💡 reduce() ile liste birleştirme</div>
+      <p>Word Count örneğinde <code>reduce(lambda a, b: a + b, map_sonuclari)</code> satırı, her satırdan gelen <code>(kelime, 1)</code> listelerini <strong>tek bir düz listeye</strong> birleştirir. Bu adım Hadoop'taki <strong>Shuffle</strong> aşamasının basitleştirilmiş karşılığıdır — aynı kelimelerin gruplanması bir sonraki reduce adımında yapılır.</p>
+    </div>
+
     <div class="code-block" data-lang="python">
       <pre><code>from functools import reduce
 
@@ -1343,11 +1352,20 @@ graph TB
       </ol>
     </div>
 
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki bölüm</div>
+      <p>👉 <a href="hafta2.html" style="color: var(--accent); font-weight: 700;">📗 Bölüm 2: Veri Modelleme, Dosya Formatları ve Pandas →</a></p>
+      <p style="margin-top:0.5rem;font-size:0.92em;">Python temellerini pekiştirmek için ayrıca <a href="../pds-handbook/chapters/01-ipython/index.html" target="_blank" rel="noopener">PDS Handbook — IPython</a> ve <a href="../pds-handbook/chapters/02-numpy/index.html" target="_blank" rel="noopener">NumPy</a> bölümlerine bakabilirsiniz.</p>
+    </div>
+
   </main>
 </div>
 
 <!-- ═══════════ FOOTER ═══════════ -->
 <footer class="page-footer">
+  <div class="footer-nav">
+    <a href="hafta2.html">Bölüm 2: Veri Modelleme & Pandas →</a>
+  </div>
   <p class="footer-text">Büyük Veri Teknolojileri Ders Notları — 2025-2026 Bahar Dönemi</p>
 </footer>
 

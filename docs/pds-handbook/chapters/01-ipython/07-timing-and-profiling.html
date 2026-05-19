@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1.7 Profil ve Zamanlama — PDS Handbook (TR)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body class="pds-handbook-site" data-depth="2" data-chapter="01-ipython" data-section="07-timing-and-profiling">
+
+<header class="top-nav">
+  <a href="../../index.html" class="nav-brand">📚 PDS Handbook (TR)</a>
+  <div class="nav-links">
+    <a href="#" data-handbook-course-link>← Büyük Veri Teknolojileri</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Koyu Mod</button>
+  </div>
+</header>
+
+<div class="main-container handbook-page">
+  <aside class="sidebar handbook-sidebar">
+    <a href="../../index.html" class="handbook-back-link">← Kitap ana sayfası</a>
+    <div class="toc-title">Bölümler</div>
+    <div class="chapter-list handbook-chapter-list"></div>
+    <div class="toc-title">Bu Bölümde</div>
+    <div class="chapter-list handbook-section-list"></div>
+    <div class="toc-title">Bu Sayfada</div>
+    <nav></nav>
+  </aside>
+
+  <main class="content handbook-content">
+
+    <div class="alert alert-info handbook-attribution">
+      <div class="alert-title">📜 Orijinal kaynak</div>
+      <p>Bu sayfa orijinal kitap bölümünün <strong>eksiksiz</strong> Türkçe uyarlamasıdır — atlanan başlık/kod yoktur.
+      Zor yerlerde ek <span class="handbook-addon-tag">ders notu</span> ve
+      <strong>🧪 Şimdi deneyin</strong> kutuları vardır.</p>
+      <p>Orijinal (EN): <a href="https://jakevdp.github.io/PythonDataScienceHandbook/01.07-timing-and-profiling.html" target="_blank" rel="noopener">07 Profiling and Timing Code</a>
+      · <a href="https://github.com/jakevdp/PythonDataScienceHandbook" target="_blank" rel="noopener">Jupyter notebook</a></p>
+    </div>
+
+<h1>1.7 Profil ve Zamanlama</h1>
+
+    <p><em>Orijinal: <a href="https://jakevdp.github.io/PythonDataScienceHandbook/01.07-timing-and-profiling.html" target="_blank" rel="noopener">Profiling and Timing Code</a></em></p>
+
+    <p>Kod geliştirirken ve veri işleme hatları kurarken çeşitli uygulamalar arasında ödünleşimler yapmanız gerekir. Algoritmanızı geliştirirken erken aşamada bunları düşünmek genelde verimsizdir. Donald Knuth'un ünlü sözüyle: “Küçük verimlilikleri, zamanın yaklaşık %97'sinde unutmalıyız: erken optimizasyon tüm kötülüklerin köküdür.”</p>
+
+    <p>Ancak kodunuz çalıştığında verimliliğine biraz bakmak faydalı olabilir. Bazen tek bir komutun veya komut kümesinin yürütme süresini kontrol etmek; bazen de çok adımlı bir süreçte darboğazın nerede olduğunu görmek gerekir. IPython bu tür zamanlama ve profilleme için geniş bir işlevsellik sunar. Burada şu IPython magic komutlarını ele alacağız:</p>
+
+    <ul>
+      <li><code>%time</code>: Tek bir ifadenin yürütme süresini ölç</li>
+      <li><code>%timeit</code>: Daha doğru sonuç için tek bir ifadenin tekrarlı yürütmesini zamanla</li>
+      <li><code>%prun</code>: Kodu profiler ile çalıştır</li>
+      <li><code>%lprun</code>: Satır satır profiler ile çalıştır</li>
+      <li><code>%memit</code>: Tek bir ifadenin bellek kullanımını ölç</li>
+      <li><code>%mprun</code>: Satır satır bellek profiler'ı ile çalıştır</li>
+    </ul>
+
+    <p>Son dört komut IPython ile birlikte gelmez; kullanmak için <code>line_profiler</code> ve <code>memory_profiler</code> eklentilerini kurmanız gerekir — aşağıdaki bölümlerde bunları ele alacağız.</p>
+
+    <h2 id="timeit-time">Kod parçalarını zamanlama: %timeit ve %time</h2>
+
+    <p><a href="03-magic-commands.html">1.3 Magic Komutlar</a> bölümünde <code>%timeit</code> satır magic'i ve <code>%%timeit</code> hücre magic'ini görmüştük; bunlar kod parçalarının tekrarlı yürütmesini zamanlamak için kullanılır:</p>
+
+    <div class="code-block" data-lang="python" data-readonly="true" data-filename="timeit_sum.ipynb">
+      <pre><code>%timeit sum(range(100))</code></pre>
+    </div>
+
+    <p>İşlem çok hızlı olduğu için <code>%timeit</code> otomatik olarak çok sayıda tekrar yapar. Daha yavaş komutlarda <code>%timeit</code> otomatik ayarlanır ve daha az tekrar yapar:</p>
+
+    <div class="code-block" data-lang="python" data-readonly="true" data-filename="timeit_cell.ipynb">
+      <pre><code>%%timeit
+total = 0
+for i in range(1000):
+    for j in range(1000):
+        total += i * (-1) ** j</code></pre>
+    </div>
+
+    <p>Bazen bir işlemi tekrarlamak en iyi seçenek değildir. Örneğin sıralamak istediğimiz bir listede yanıltılabiliriz; önceden sıralanmış bir listeyi sıralamak sıralanmamış listeden çok daha hızlıdır, bu yüzden tekrar sonucu çarpıtır:</p>
+
+    <div class="code-block" data-lang="python" data-readonly="true" data-filename="timeit_sort.ipynb">
+      <pre><code>import random
+L = [random.random() for i in range(100000)]
+%timeit L.sort()</code></pre>
+    </div>
+
+    <p>Bunun için <code>%time</code> magic fonksiyonu daha iyi bir seçenek olabilir. Kısa sistem gecikmelerinin sonucu etkilemeyeceği uzun süren komutlar için de uygundur. Sıralanmamış ve önceden sıralanmış bir listeyi zamanlayalım:</p>
+
+    <div class="code-block" data-lang="python" data-readonly="true" data-filename="time_sort1.ipynb">
+      <pre><code>import random
+L = [random.random() for i in range(100000)]
+print("sorting an unsorted list:")
+%time L.sort()</code></pre>
+    </div>
+
+    <div class="code-block" data-lang="python" data-readonly="true" data-filename="time_sort2.ipynb">
+      <pre><code>print("sorting an already sorted list:")
+%time L.sort()</code></pre>
+    </div>
+
+    <p>Önceden sıralanmış listenin ne kadar daha hızlı sıralandığına dikkat edin; aynı zamanda önceden sıralanmış liste için bile <code>%time</code>'ın <code>%timeit</code>'e kıyasla zamanlamanın ne kadar daha uzun sürdüğüne bakın! Bunun nedeni <code>%timeit</code>'in zamanlamayı bozabilecek sistem çağrılarını engellemek için arka planda akıllı işler yapmasıdır. Örneğin kullanılmayan Python nesnelerinin temizlenmesini (<em>garbage collection</em>) engelleyebilir. Bu yüzden <code>%timeit</code> sonuçları genelde <code>%time</code> sonuçlarından belirgin şekilde daha hızlıdır.</p>
+
+    <p><code>%time</code> için de <code>%timeit</code> gibi <code>%%</code> hücre magic sözdizimi çok satırlı betikleri zamanlamaya izin verir:</p>
+
+    <div class="code-block" data-lang="python" data-readonly="true" data-filename="time_cell.ipynb">
+      <pre><code>%%time
+total = 0
+for i in range(1000):
+    for j in range(1000):
+        total += i * (-1) ** j</code></pre>
+    </div>
+
+    <p><code>%time</code> ve <code>%timeit</code> hakkında daha fazla bilgi ve seçenekler için IPython yardımını kullanın (örneğin IPython isteminde <code>%time?</code> yazın).</p>
+
+    <div class="alert alert-tip handbook-addon">
+      <div class="alert-title">💡 Ders notu</div>
+      <p>Magic komutlar bu handbook'ta çalışmaz. Aşağıda <code>time.perf_counter()</code> ile benzer bir karşılaştırma yapabilirsiniz.</p>
+    </div>
+
+    <div class="try-it-box">
+      <div class="try-it-title">🧪 Şimdi deneyin — perf_counter</div>
+      <p>Python <code>sum</code> ile NumPy <code>np.sum</code> süresini karşılaştırın:</p>
+      <div class="code-block" data-lang="python" data-filename="perf_counter.py">
+        <pre><code>import time
+import numpy as np
+
+big = np.random.rand(1_000_000)
+
+t0 = time.perf_counter()
+sum(big)
+t1 = time.perf_counter()
+np.sum(big)
+t2 = time.perf_counter()
+
+print(f"Python sum: {(t1-t0)*1000:.1f} ms")
+print(f"NumPy sum:  {(t2-t1)*1000:.2f} ms")</code></pre>
+      </div>
+    </div>
+
+    <h2 id="prun">Tam betik profilleme: %prun</h2>
+
+    <p>Bir program birçok tek ifadeden oluşur; bazen bu ifadeleri bağlam içinde zamanlamak, tek başına zamanlamaktan daha önemlidir. Python yerleşik bir kod profiler'ı içerir (Python dokümantasyonunda okuyabilirsiniz); IPython bunu <code>%prun</code> magic fonksiyonu biçiminde çok daha kullanışlı sunar.</p>
+
+    <p>Örnek olarak bazı hesaplamalar yapan basit bir fonksiyon tanımlayalım:</p>
+
+    <div class="code-block" data-lang="python" data-filename="sum_of_lists.py">
+      <pre><code>def sum_of_lists(N):
+    total = 0
+    for i in range(5):
+        L = [j ^ (j >> i) for j in range(N)]
+        total += sum(L)
+    return total</code></pre>
+    </div>
+
+    <p>Profil sonuçlarını görmek için <code>%prun</code>'u bir fonksiyon çağrısıyla çağırabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-readonly="true" data-filename="prun.ipynb">
+      <pre><code>%prun sum_of_lists(1000000)</code></pre>
+    </div>
+
+    <p>Sonuç, her fonksiyon çağrısında toplam süreye göre sıralanmış bir tablodur; yürütmenin en çok zamanı nerede harcadığını gösterir. Bu örnekte yürütme süresinin büyük kısmı <code>sum_of_lists</code> içindeki liste üretecindedir. Buradan algoritmanın performansını iyileştirmek için hangi değişiklikleri düşünebileceğimize başlayabiliriz.</p>
+
+    <p><code>%prun</code> ve seçenekleri hakkında daha fazla bilgi için IPython yardımını kullanın (IPython isteminde <code>%prun?</code>).</p>
+
+    <h2 id="lprun">%lprun ile satır satır profilleme</h2>
+
+    <p><code>%prun</code>'un fonksiyon bazlı profillemesi yararlıdır; ancak bazen satır satır profil raporu daha uygundur. Bu Python veya IPython'a gömülü değildir; kurulabilir <code>line_profiler</code> paketi vardır. Python paketleme aracı <code>pip</code> ile kurun:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="pip_line_profiler.sh">
+      <pre><code>$ pip install line_profiler</code></pre>
+    </div>
+
+    <p>Ardından IPython ile bu paketin parçası olan <code>line_profiler</code> uzantısını yükleyin:</p>
+
+    <div class="code-block" data-lang="python" data-readonly="true" data-filename="load_line_profiler.ipynb">
+      <pre><code>%load_ext line_profiler</code></pre>
+    </div>
+
+    <p>Artık <code>%lprun</code> herhangi bir fonksiyonu satır satır profiller. Bu örnekte hangi fonksiyonları profillemek istediğimizi açıkça belirtmemiz gerekir:</p>
+
+    <div class="code-block" data-lang="python" data-readonly="true" data-filename="lprun.ipynb">
+      <pre><code>%lprun -f sum_of_lists sum_of_lists(5000)</code></pre>
+    </div>
+
+    <p>Üstteki bilgi sonuçları okumanın anahtarıdır: süre mikrosaniye cinsinden raporlanır; programın en çok zamanı nerede harcadığını görebiliriz. Bu noktada betiği istediğimiz kullanım için daha iyi performans gösterecek şekilde değiştirebiliriz.</p>
+
+    <p><code>%lprun</code> ve seçenekleri için IPython yardımını kullanın (<code>%lprun?</code>).</p>
+
+    <h2 id="memit-mprun">Bellek kullanımını profilleme: %memit ve %mprun</h2>
+
+    <p>Profillemenin bir başka yönü bir işlemin ne kadar bellek kullandığıdır. Bunu <code>memory_profiler</code> adlı başka bir IPython uzantısıyla değerlendirebilirsiniz. <code>line_profiler</code> gibi önce <code>pip</code> ile kurun:</p>
+
+    <div class="code-block" data-lang="text" data-readonly="true" data-filename="pip_memory_profiler.sh">
+      <pre><code>$ pip install memory_profiler</code></pre>
+    </div>
+
+    <p>Ardından IPython ile yükleyin:</p>
+
+    <div class="code-block" data-lang="python" data-readonly="true" data-filename="load_memory_profiler.ipynb">
+      <pre><code>%load_ext memory_profiler</code></pre>
+    </div>
+
+    <p>Bellek profiler uzantısı iki yararlı magic içerir: <code>%memit</code> (<code>%timeit</code>'in bellek ölçen karşılığı) ve <code>%mprun</code> (<code>%lprun</code>'un bellek ölçen karşılığı). <code>%memit</code> oldukça basit kullanılır:</p>
+
+    <div class="code-block" data-lang="python" data-readonly="true" data-filename="memit.ipynb">
+      <pre><code>%memit sum_of_lists(1000000)</code></pre>
+    </div>
+
+    <p>Bu fonksiyonun yaklaşık 140 MB bellek kullandığını görürüz.</p>
+
+    <p>Bellek kullanımının satır satır açıklaması için <code>%mprun</code> kullanılabilir. Ne yazık ki bu yalnızca notebook'un kendisinde değil, ayrı modüllerde tanımlı fonksiyonlar için çalışır; bu yüzden <code>%%file</code> hücre magic'i ile <code>mprun_demo.py</code> adlı basit bir modül oluşturarak <code>sum_of_lists</code> fonksiyonumuzu (bellek profili sonuçlarını netleştirmek için <code>del L</code> eklenmiş haliyle) yazacağız:</p>
+
+    <div class="code-block" data-lang="python" data-readonly="true" data-filename="mprun_demo.py">
+      <pre><code>%%file mprun_demo.py
+def sum_of_lists(N):
+    total = 0
+    for i in range(5):
+        L = [j ^ (j >> i) for j in range(N)]
+        total += sum(L)
+        del L # remove reference to L
+    return total</code></pre>
+    </div>
+
+    <p>Şimdi bu fonksiyonun yeni sürümünü içe aktarıp bellek satır profiler'ını çalıştırabiliriz:</p>
+
+    <div class="code-block" data-lang="python" data-readonly="true" data-filename="mprun.ipynb">
+      <pre><code>from mprun_demo import sum_of_lists
+%mprun -f sum_of_lists sum_of_lists(1000000)</code></pre>
+    </div>
+
+    <p>Burada <code>Increment</code> sütunu her satırın toplam bellek bütçesini ne kadar etkilediğini söyler: <code>L</code> listesini oluşturup sildiğimizde yaklaşık 30 MB bellek kullanımı eklenir. Bu, Python yorumlayıcısının kendi arka plan bellek kullanımının üzerinedir.</p>
+
+    <p><code>%memit</code> ve <code>%mprun</code> hakkında daha fazla bilgi için IPython yardımını kullanın (örneğin <code>%memit?</code>).</p>
+
+    <div class="alert alert-info">
+      <div class="alert-title">🔗 Sonraki konu</div>
+      <p><a href="08-more-resources.html">1.8 Daha Fazla IPython Kaynağı →</a></p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="page-footer">
+  <div class="footer-nav">
+    <a href="#" data-nav-prev>← Önceki</a>
+    <a href="../../index.html">Ana sayfa</a>
+    <a href="#" data-nav-next>Sonraki →</a>
+  </div>
+  <p class="footer-text">Python Data Science Handbook — Jake VanderPlas · Türkçe ders uyarlaması</p>
+</footer>
+
+<button class="scroll-top" title="Yukarı çık">↑</button>
+
+<div class="pyodide-status">
+  <span class="dot"></span>
+  <span class="status-text">Python yükleniyor...</span>
+</div>
+
+<script src="../../assets/nav.js"></script>
+<script src="../../assets/script.js"></script>
+</body>
+</html>
