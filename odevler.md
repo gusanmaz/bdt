@@ -89,7 +89,7 @@ Açık veri platformlarındaki büyük veri setlerinden ilginç ve beklenmedik b
 
 ## Ödev 2: Proje Geliştirme (İsteğe Bağlı)
 
-**GitHub Classroom davet linki:** https://classroom.github.com/a/8cz9U_sc
+**GitHub Classroom davet linki:** https://classroom.github.com/a/zyewswQh
 
 ### Amaç
 
@@ -152,7 +152,7 @@ Notebook'un başında veya uygun bir hücrede **ad, soyad, öğrenci numarası**
 | Ödev | Davet Linki |
 |------|-------------|
 | Ödev 1 | https://classroom.github.com/a/FODBhjUj |
-| Ödev 2 | https://classroom.github.com/a/8cz9U_sc |
+| Ödev 2 | https://classroom.github.com/a/zyewswQh |
 | Ödev 3 | https://classroom.github.com/a/twiY3bdy |
 
 ---
